@@ -1,244 +1,218 @@
 % =====================================================================
-%  Chapitre 4 : opérateurs, matrice de densité, sphère de Bloch
+%  Chapitre 4 : Portes quantiques et systèmes multi-qubits
 %  Fichier importé par main.tex avec \include{chapitre4}.
-%  Contrairement à chapitre2.tex et chapitre3.tex (qui prolongent la
-%  section 1), ce fichier ouvre une NOUVELLE SECTION (numéro 2).
-%  Pour le rattacher à la section 1, remplacer la ligne \section{...}
-%  par \subsection{...} et les \subsection par des \subsubsection.
-%  Pas de préambule : environnements (definition, resultat, remarque),
-%  macros (\ii, \ee, \dd, \ket, \bra, \braket) et couleurs (insarouge,
-%  insagris) sont définis dans main.tex.
+%  Il ne contient ni préambule ni \begin{document} : les environnements
+%  (definition, resultat, remarque, aretenir, savoirfaire, exercice, correction),
+%  les macros (\ii, \ee, \dd, \pd, \pdd, \Hop, \ket, \bra, \braket), les symboles
+%  de circuits (ctl, cible, croix, mesure, porte) et les couleurs (insarouge,
+%  insagris) sont définis dans main.tex. Un chapitre = une \section.
 % =====================================================================
 
-% Macros de Dirac (déjà définies dans main.tex récent ; ce bloc évite l'erreur
+% Macros de Dirac (déjà définies dans main.tex ; ce bloc évite l'erreur
 % « Undefined control sequence \ket » si main.tex est une ancienne version).
 \providecommand{\ket}[1]{|#1\rangle}
 \providecommand{\bra}[1]{\langle #1|}
 \providecommand{\braket}[2]{\langle #1|#2\rangle}
 
 % =====================================================================
-\section{Opérateurs, matrice de densité et sphère de Bloch}\label{sec:densite}
+\section{Portes quantiques et systèmes multi-qubits}\label{chap:portes}
 % =====================================================================
 
-Jusqu'ici un qubit est décrit par un vecteur $\ket{\Psi}$. Cette section ajoute trois
-outils : l'écriture d'un opérateur avec des « ket-bra », la \emph{matrice de densité},
-qui décrit aussi les états dont on ne connaît que des probabilités, et la
-\emph{sphère de Bloch}, qui permet de visualiser un qubit.
+Un calcul quantique est une suite de transformations unitaires appliquées à des qubits. Ce
+chapitre décrit les portes à un qubit (Pauli, Hadamard, phase) et leur effet sur la sphère de
+Bloch, la lecture d'un circuit, puis les portes qui agissent sur plusieurs qubits : CNOT, SWAP et
+portes contrôlées.
 
 % ---------------------------------------------------------------------
-\subsection{Opérateurs en notation de Dirac}\label{sec:op-dirac}
+\subsection{Portes quantiques}\label{sec:portes}
 % ---------------------------------------------------------------------
 
-Les projecteurs $\hat P_0=\ket{0}\bra{0}$ et $\hat P_1=\ket{1}\bra{1}$
-(section~\ref{sec:projecteurs}) sont des cas particuliers : tout opérateur $A$
-s'écrit comme une somme de ket-bra.
+Un calcul quantique transforme des états. Les opérations sur un seul qubit sont appelées
+\emph{portes} ; les sections suivantes passent à plusieurs qubits.
 
-\begin{definition}{Décomposition d'un opérateur sur la base $\{\ket{0},\ket{1}\}$}
-\[
-  A=\begin{pmatrix}A_{00} & A_{01}\\ A_{10} & A_{11}\end{pmatrix}
-  =A_{00}\ket{0}\bra{0}+A_{01}\ket{0}\bra{1}+A_{10}\ket{1}\bra{0}+A_{11}\ket{1}\bra{1},
-  \qquad A_{ij}=\bra{i}A\ket{j}.
-\]
-\end{definition}
-
-Chaque ket-bra est une matrice qui ne contient qu'un seul $1$, à la ligne $i$ et à la
-colonne $j$ :
-\[
-  \ket{0}\bra{1}=\begin{pmatrix}1\\ 0\end{pmatrix}\begin{pmatrix}0 & 1\end{pmatrix}
-  =\begin{pmatrix}0 & 1\\ 0 & 0\end{pmatrix},
-  \qquad
-  \ket{1}\bra{0}=\begin{pmatrix}0\\ 1\end{pmatrix}\begin{pmatrix}1 & 0\end{pmatrix}
-  =\begin{pmatrix}0 & 0\\ 1 & 0\end{pmatrix}.
-\]
-
-\paragraph{Exemples.} Les trois matrices de Pauli s'écrivent
-\begin{align*}
-  X&=\ket{0}\bra{1}+\ket{1}\bra{0}=\begin{pmatrix}0 & 1\\ 1 & 0\end{pmatrix},\\
-  Y&=-\ii\ket{0}\bra{1}+\ii\ket{1}\bra{0}=\begin{pmatrix}0 & -\ii\\ \ii & 0\end{pmatrix},\\
-  Z&=\ket{0}\bra{0}-\ket{1}\bra{1}=\begin{pmatrix}1 & 0\\ 0 & -1\end{pmatrix}.
-\end{align*}
-Leur action se lit directement sur l'écriture ket-bra, grâce à
-$\braket{0}{0}=\braket{1}{1}=1$ et $\braket{0}{1}=0$ :
-$X\ket{0}=\ket{0}\braket{1}{0}+\ket{1}\braket{0}{0}=\ket{1}$ (et de même $X\ket{1}=\ket{0}$) :
-$X$ échange $\ket{0}$ et $\ket{1}$ ; $Z\ket{0}=\ket{0}$ et $Z\ket{1}=-\ket{1}$.
-
-% ---------------------------------------------------------------------
-\subsection{Matrice de densité}\label{sec:rho}
-% ---------------------------------------------------------------------
-
-\begin{definition}{Matrice de densité d'un état pur}
-Pour $\ket{\Psi}=\alpha\ket{0}+\beta\ket{1}$ avec $|\alpha|^2+|\beta|^2=1$ :
-\[
-  \rho=\ket{\Psi}\bra{\Psi}
-  =\begin{pmatrix}\alpha\\ \beta\end{pmatrix}\begin{pmatrix}\alpha^* & \beta^*\end{pmatrix}
-  =\begin{pmatrix}|\alpha|^2 & \alpha\beta^*\\ \alpha^*\beta & |\beta|^2\end{pmatrix}.
-\]
-\end{definition}
-
-La diagonale contient les probabilités de mesure ($\rho_{00}=|\alpha|^2=P(0)$,
-$\rho_{11}=|\beta|^2=P(1)$, ce sont les \emph{populations}) ; les termes hors diagonale
-(les \emph{cohérences}) contiennent la phase relative entre $\alpha$ et $\beta$.
-Une phase globale $\ket{\Psi}\to\ee^{\ii\gamma}\ket{\Psi}$ disparaît de $\rho$ :
-$\ee^{\ii\gamma}\ee^{-\ii\gamma}=1$.
-
-\begin{resultat}{Propriétés d'une matrice de densité $\rho$}
-Notons $\lambda_i$ les valeurs propres de $\rho$.
-\begin{enumerate}[nosep]
-  \item $\operatorname{Tr}\rho=1=\displaystyle\sum_i\lambda_i$ ;
-  \item $\rho$ est \emph{hermitienne} : $\rho^\dagger=\rho$ (transposée conjuguée) ;
-  \item $\rho$ est \emph{positive} : $\bra{\Phi}\rho\ket{\Phi}\geq0$ pour tout
-        $\ket{\Phi}$, ce qui équivaut à $\lambda_i\geq0$.
-\end{enumerate}
+\begin{resultat}{Postulat 4 : évolution d'un système isolé}
+L'évolution d'un système isolé est décrite par un opérateur unitaire : $\ket{\Psi}\to U\ket{\Psi}$
+avec $U^\dagger U=\mathrm{Id}$.
 \end{resultat}
 
-Vérification pour $\rho=\ket{\Psi}\bra{\Psi}$ :
-$\operatorname{Tr}\rho=|\alpha|^2+|\beta|^2=1$ ; $(\ket{\Psi}\bra{\Psi})^\dagger
-=\ket{\Psi}\bra{\Psi}$ ; et $\bra{\Phi}\rho\ket{\Phi}=\braket{\Phi}{\Psi}\braket{\Psi}{\Phi}
-=|\braket{\Psi}{\Phi}|^2\geq0$.
+C'est la forme de l'équation de Schrödinger du chapitre~\ref{chap:histoire}. Pour un hamiltonien
+$\Hop$ indépendant du temps, $\ii\hbar\,\partial_t\ket{\Psi}=\Hop\ket{\Psi}$ a pour solution
+$\ket{\Psi(t)}=U(t)\ket{\Psi(0)}$ avec $U(t)=\ee^{-\ii\Hop t/\hbar}$. Comme $\Hop$ est hermitien,
+$U(t)^\dagger=\ee^{+\ii\Hop t/\hbar}$ et $U^\dagger U=\mathrm{Id}$ : l'évolution est unitaire. Une
+porte est une telle évolution, obtenue en contrôlant $\Hop$ pendant une durée donnée.
 
-\begin{remarque}[Hermitienne, pas seulement symétrique]
-Il faut $\rho^\dagger=\rho$ et non $\rho^{\mathsf T}=\rho$ : la seconde égalité n'est vraie
-que si $\rho$ est réelle. Ainsi $\ket{\Psi'}\bra{\Psi'}$ avec un facteur $\ii$ (exemple
-ci-dessous) est hermitienne mais pas symétrique.
-\end{remarque}
-
-\paragraph{Exemples.} Pour $\ket{\Psi}=\frac{1}{\sqrt5}\ket{0}+\frac{2}{\sqrt5}\ket{1}$ et
-pour $\ket{\Psi'}=\frac{1}{\sqrt5}\ket{0}+\frac{2\ii}{\sqrt5}\ket{1}$
-(section~\ref{sec:projecteurs}) :
-\[
-  \rho=\begin{pmatrix}\dfrac15 & \dfrac25\\[0.6ex] \dfrac25 & \dfrac45\end{pmatrix},
-  \qquad
-  \rho'=\begin{pmatrix}\dfrac15 & -\dfrac{2\ii}{5}\\[0.6ex] \dfrac{2\ii}{5} & \dfrac45\end{pmatrix}.
-\]
-Les diagonales sont identiques (mêmes probabilités $\frac15$ et $\frac45$), seules les
-cohérences diffèrent : la matrice de densité voit la phase relative que la mesure en
-base $Z$ ne voit pas.
-
-\begin{remarque}[Probabilités et valeurs moyennes avec $\rho$]
-$P(i)=\bra{i}\rho\ket{i}=\rho_{ii}$ et $\langle A\rangle=\bra{\Psi}A\ket{\Psi}
-=\operatorname{Tr}(\rho A)$. Ces deux formules restent valables pour les états mixtes
-de la section suivante.
-\end{remarque}
-
-% ---------------------------------------------------------------------
-\subsection{État pur ou état mixte}\label{sec:pur-mixte}
-% ---------------------------------------------------------------------
-
-Comme $\sum_i\lambda_i=1$ et $0\leq\lambda_i\leq1$, on a
-$\operatorname{Tr}\rho^2=\sum_i\lambda_i^2\leq1$, avec égalité si et seulement si une
-seule valeur propre vaut $1$ (les autres sont nulles).
-
-\begin{definition}{Pur ou mixte}
-\begin{itemize}[nosep]
-  \item $\rho$ est \emph{pur} si $\operatorname{Tr}\rho^2=1$ : il existe $a$ avec
-        $\lambda_a=1$ et $\lambda_b=0$ pour $b\neq a$. Alors $\rho=\ket{\Psi}\bra{\Psi}$
-        et $\rho^2=\rho$.
-  \item $\rho$ est \emph{mixte} si $\operatorname{Tr}\rho^2<1$ : c'est un mélange
-        statistique $\rho=\sum_ip_i\ket{\Psi_i}\bra{\Psi_i}$ d'états purs, chacun avec la
-        probabilité $p_i$ ($\sum_ip_i=1$). On ne sait pas dans lequel des $\ket{\Psi_i}$
-        se trouve le système.
-\end{itemize}
+\begin{definition}{Porte quantique}
+Une porte à un qubit est un opérateur $U$ (matrice $2\times2$) \emph{unitaire} :
+$U^\dagger U=\mathrm{Id}$. Elle transforme $\ket{\Psi}\to U\ket{\Psi}$, conserve la norme
+($\bra{\Psi}U^\dagger U\ket{\Psi}=\braket{\Psi}{\Psi}=1$) et est réversible
+($U^{-1}=U^\dagger$). Sur la sphère de Bloch (section~\ref{sec:bloch}), c'est une
+\emph{rotation}.
 \end{definition}
 
+% ---------------------------------------------------------------------
+\subsection{Portes de Pauli}\label{sec:pauli}
+% ---------------------------------------------------------------------
+
+Les matrices de Pauli de la section~\ref{sec:op-dirac} sont trois portes.
+
+\begin{definition}{Portes $X$, $Y$, $Z$}
 \begin{center}
+\renewcommand{\arraystretch}{1}
 \begin{tabular}{@{}lccl@{}}
-\toprule
-\textbf{Matrice de densité} & $\operatorname{Tr}\rho$ & $\operatorname{Tr}\rho^2$ & \textbf{Nature} \\
-\midrule
-$\ket{0}\bra{0}=\begin{pmatrix}1 & 0\\ 0 & 0\end{pmatrix}$ & $1$ & $1$ & pur \\[1.6ex]
-$\dfrac12\begin{pmatrix}1 & -1\\ -1 & 1\end{pmatrix}=\ket{-}\bra{-}$ & $1$ & $1$ & pur \\[1.6ex]
-$\dfrac12\begin{pmatrix}1 & 0\\ 0 & 1\end{pmatrix}=\dfrac{\mathrm{Id}}{2}$ & $1$ & $\dfrac12$ & mixte \\[1.6ex]
-$\begin{pmatrix}\frac34 & 0\\ 0 & \frac14\end{pmatrix}$ & $1$ & $\dfrac58$ & mixte \\
-\bottomrule
+\textbf{Porte} & \textbf{Matrice} & \textbf{Ket-bra} & \textbf{Nom} \\[0.8ex]
+$X=\sigma_x$ & $\begin{pmatrix}0 & 1\\ 1 & 0\end{pmatrix}$
+  & $\ket{0}\bra{1}+\ket{1}\bra{0}$ & bit flip \\[2.2ex]
+$Y=\sigma_y$ & $\begin{pmatrix}0 & -\ii\\ \ii & 0\end{pmatrix}$
+  & $-\ii\ket{0}\bra{1}+\ii\ket{1}\bra{0}$ &  \\[2.2ex]
+$Z=\sigma_z$ & $\begin{pmatrix}1 & 0\\ 0 & -1\end{pmatrix}$
+  & $\ket{0}\bra{0}-\ket{1}\bra{1}$ & phase flip \\
 \end{tabular}
 \end{center}
+\end{definition}
 
-Détails. Pour la deuxième ligne :
-$\dfrac12\begin{pmatrix}1 & -1\\ -1 & 1\end{pmatrix}
-=\dfrac12\big[\ket{0}\bra{0}-\ket{0}\bra{1}-\ket{1}\bra{0}+\ket{1}\bra{1}\big]$,
-qui est bien $\ket{-}\bra{-}$ avec $\ket{-}=\frac{1}{\sqrt2}(\ket{0}-\ket{1})$ ; comme
-$\rho^2=\frac14\begin{pmatrix}2 & -2\\ -2 & 2\end{pmatrix}=\rho$, on a
-$\operatorname{Tr}\rho^2=1$. Pour la troisième : $\rho^2=\frac14\mathrm{Id}$, donc
-$\operatorname{Tr}\rho^2=\frac12$. Pour la quatrième :
-$\operatorname{Tr}\rho^2=\frac{9}{16}+\frac1{16}=\frac58$.
+\paragraph{Porte $X$ (inverseur).} Avec $\braket{0}{0}=\braket{1}{1}=1$ et
+$\braket{0}{1}=\braket{1}{0}=0$ :
+\begin{align*}
+  X\ket{0}&=\ket{0}\braket{1}{0}+\ket{1}\braket{0}{0}=0\cdot\ket{0}+1\cdot\ket{1}=\ket{1},\\
+  X\ket{1}&=\ket{0}\braket{1}{1}+\ket{1}\braket{0}{1}=1\cdot\ket{0}+0\cdot\ket{1}=\ket{0}.
+\end{align*}
+$X$ échange $\ket{0}$ et $\ket{1}$ : c'est le NOT quantique (\emph{bit flip}). Sur la
+sphère de Bloch, c'est une rotation de $\pi$ autour de l'axe $x$ : le pôle nord devient
+le pôle sud. Les états de l'axe $x$ ne bougent pas : $X\ket{+}=\ket{+}$ et
+$X\ket{-}=-\ket{-}$.
 
-\begin{remarque}[Mélange $\neq$ superposition]
-$\rho_{\text{mél}}=\frac12\ket{0}\bra{0}+\frac12\ket{1}\bra{1}=\mathrm{Id}/2$ (le système
-est $\ket{0}$ ou $\ket{1}$, une fois sur deux) n'est pas l'état pur
-$\ket{+}\bra{+}=\frac12\begin{pmatrix}1 & 1\\ 1 & 1\end{pmatrix}$ (superposition
-cohérente). Les deux donnent $P(0)=P(1)=\frac12$, mais une mesure dans la base
-$\{\ket{+},\ket{-}\}$ les distingue : $\bra{+}\rho_{\text{mél}}\ket{+}=\frac12$, alors que
-$\bra{+}\big(\ket{+}\bra{+}\big)\ket{+}=1$. Ce sont les termes hors diagonale qui font la
-différence.
+\paragraph{Porte $Z$ (changement de phase).}
+\begin{align*}
+  Z\ket{0}&=\ket{0}\braket{0}{0}-\ket{1}\braket{1}{0}=\ket{0},\\
+  Z\ket{1}&=\ket{0}\braket{0}{1}-\ket{1}\braket{1}{1}=-\ket{1},
+\end{align*}
+donc $Z$ change le signe de la composante sur $\ket{1}$ (\emph{phase flip}). Sur les
+états de la base $X$, par linéarité :
+\begin{align*}
+  Z\ket{+}&=\tfrac{1}{\sqrt2}\big(Z\ket{0}+Z\ket{1}\big)=\tfrac{1}{\sqrt2}\big(\ket{0}-\ket{1}\big)=\ket{-},\\
+  Z\ket{-}&=\tfrac{1}{\sqrt2}\big(Z\ket{0}-Z\ket{1}\big)=\tfrac{1}{\sqrt2}\big(\ket{0}+\ket{1}\big)=\ket{+}.
+\end{align*}
+Sous forme matricielle, $Z\ket{+}=\begin{pmatrix}1 & 0\\ 0 & -1\end{pmatrix}
+\frac{1}{\sqrt2}\begin{pmatrix}1\\ 1\end{pmatrix}=\frac{1}{\sqrt2}\begin{pmatrix}1\\ -1\end{pmatrix}=\ket{-}$.
+$Z$ est une rotation de $\pi$ autour de l'axe $z$ : elle laisse $\ket{0}$ et $\ket{1}$ en
+place et échange $\ket{+}$ et $\ket{-}$.
+
+\paragraph{Porte $Y$.} Avec $Y=-\ii\ket{0}\bra{1}+\ii\ket{1}\bra{0}$ :
+\begin{align*}
+  Y\ket{0}&=-\ii\ket{0}\braket{1}{0}+\ii\ket{1}\braket{0}{0}=\ii\ket{1},\\
+  Y\ket{1}&=-\ii\ket{0}\braket{1}{1}+\ii\ket{1}\braket{0}{1}=-\ii\ket{0}.
+\end{align*}
+Sur les états de la base $X$ :
+\begin{align*}
+  Y\ket{+}&=\tfrac{1}{\sqrt2}\big(\ii\ket{1}-\ii\ket{0}\big)=-\ii\,\tfrac{1}{\sqrt2}\big(\ket{0}-\ket{1}\big)=-\ii\ket{-},\\
+  Y\ket{-}&=\tfrac{1}{\sqrt2}\big(\ii\ket{1}+\ii\ket{0}\big)=\ii\,\tfrac{1}{\sqrt2}\big(\ket{0}+\ket{1}\big)=\ii\ket{+}.
+\end{align*}
+Un facteur global ($-\ii$ ou $\ii$) ne change pas l'état physique : $Y$ échange bien
+$\ket{+}$ et $\ket{-}$. Sur les états de l'axe $y$ :
+\begin{align*}
+  Y\ket{{+}\ii}&=\tfrac{1}{\sqrt2}\big(Y\ket{0}+\ii Y\ket{1}\big)
+   =\tfrac{1}{\sqrt2}\big(\ii\ket{1}+\ket{0}\big)=\ket{{+}\ii},\\
+  Y\ket{{-}\ii}&=\tfrac{1}{\sqrt2}\big(Y\ket{0}-\ii Y\ket{1}\big)
+   =\tfrac{1}{\sqrt2}\big(\ii\ket{1}-\ket{0}\big)=-\ket{{-}\ii}.
+\end{align*}
+$Y$ est une rotation de $\pi$ autour de l'axe $y$.
+
+\begin{remarque}[Chaque Pauli fixe son axe]
+$Z\ket{0}=\ket{0}$, $Z\ket{1}=-\ket{1}$ ; $X\ket{\pm}=\pm\ket{\pm}$ ; $Y\ket{{\pm}\ii}=\pm\ket{{\pm}\ii}$.
+Les bases $Z$, $X$, $Y$ de la section~\ref{sec:bloch} sont les bases propres de
+$Z$, $X$, $Y$. Une porte de Pauli laisse donc son propre axe invariant et retourne les
+deux autres ; c'est pourquoi les exemples utilisent les états des deux autres axes.
 \end{remarque}
 
 % ---------------------------------------------------------------------
-\subsection{Théorème de décomposition spectrale}\label{sec:spectral}
+\subsection{Porte de Hadamard}\label{sec:hadamard}
 % ---------------------------------------------------------------------
 
-\begin{resultat}{Décomposition spectrale}
-Pour toute matrice de densité $\rho$, il existe une base orthonormée $\{\ket{i}\}$ telle que
+\begin{definition}{Porte de Hadamard}
 \[
-  \rho=\sum_i\lambda_i\ket{i}\bra{i},
-  \qquad\lambda_i\geq0,\qquad\sum_i\lambda_i=1 .
-\]
-\end{resultat}
-
-C'est la diagonalisation d'une matrice hermitienne : les $\lambda_i$ sont réelles, elles
-sont positives car $\rho$ l'est, et de somme $1$ car $\operatorname{Tr}\rho=1$. Les
-$\ket{i}$ sont les vecteurs propres ; les $\lambda_i$ se lisent donc comme des
-probabilités : tout état est un mélange d'états purs \emph{orthogonaux}. Un état pur n'a
-qu'un seul terme.
-
-\paragraph{Exemple.} Soit
-\[
-  \rho=\begin{pmatrix}\dfrac12 & \dfrac14\\[0.6ex] \dfrac14 & \dfrac12\end{pmatrix}.
-\]
-Ses valeurs propres sont $\frac12+\frac14=\frac34$ et $\frac12-\frac14=\frac14$, de
-vecteurs propres $\ket{\pm}=\frac{1}{\sqrt2}(\ket{0}\pm\ket{1})$, donc
-\[
-  \rho=\frac34\ket{+}\bra{+}+\frac14\ket{-}\bra{-},
-  \qquad \operatorname{Tr}\rho^2=\frac9{16}+\frac1{16}=\frac58<1 :
-\]
-$\rho$ est mixte.
-Si une valeur propre est dégénérée (comme pour $\mathrm{Id}/2$), la base $\{\ket{i}\}$
-n'est pas unique.
-
-% ---------------------------------------------------------------------
-\subsection{Sphère de Bloch}\label{sec:bloch}
-% ---------------------------------------------------------------------
-
-Un état pur $\alpha\ket{0}+\beta\ket{1}$ contient deux complexes, soit quatre réels. La
-normalisation en retire un, la phase globale (inobservable) un autre : il reste
-\emph{deux} paramètres réels, ce qui définit un point sur une sphère.
-
-\begin{definition}{Paramétrisation de Bloch}
-\[
-  \ket{\Psi}=\cos\frac{\theta}{2}\,\ket{0}+\ee^{\ii\varphi}\sin\frac{\theta}{2}\,\ket{1},
-  \qquad \theta\in[0,\pi],\quad\varphi\in[0,2\pi[ .
-\]
-La normalisation est automatique : $\cos^2\frac\theta2+|\ee^{\ii\varphi}|^2\sin^2\frac\theta2=1$
-car $|\ee^{\ii\varphi}|=1$. L'état est représenté par le point de la sphère unité de
-coordonnées
-\[
-  \vec r=(\sin\theta\cos\varphi,\ \sin\theta\sin\varphi,\ \cos\theta).
+  H=\frac{1}{\sqrt2}\begin{pmatrix}1 & 1\\ 1 & -1\end{pmatrix}
+  =\ket{+}\bra{0}+\ket{-}\bra{1}.
 \]
 \end{definition}
+
+\begin{align*}
+  H\ket{0}&=\frac{1}{\sqrt2}\begin{pmatrix}1 & 1\\ 1 & -1\end{pmatrix}\begin{pmatrix}1\\ 0\end{pmatrix}
+    =\frac{1}{\sqrt2}\begin{pmatrix}1\\ 1\end{pmatrix}=\ket{+},\\[0.6ex]
+  H\ket{1}&=\frac{1}{\sqrt2}\begin{pmatrix}1 & 1\\ 1 & -1\end{pmatrix}\begin{pmatrix}0\\ 1\end{pmatrix}
+    =\frac{1}{\sqrt2}\begin{pmatrix}1\\ -1\end{pmatrix}=\ket{-},\\[0.6ex]
+  H\ket{+}&=\frac{1}{2}\begin{pmatrix}1 & 1\\ 1 & -1\end{pmatrix}\begin{pmatrix}1\\ 1\end{pmatrix}
+    =\frac{1}{2}\begin{pmatrix}2\\ 0\end{pmatrix}=\ket{0},\qquad
+  H\ket{-}=\frac{1}{2}\begin{pmatrix}0\\ 2\end{pmatrix}=\ket{1}.
+\end{align*}
+Comme $H\ket{+}=\ket{0}$ et $H\ket{-}=\ket{1}$, on a $H^2=\mathrm{Id}$ ($H$ est son propre
+inverse). Sur la sphère de Bloch, $H$ est une rotation de $\pi$ autour de l'axe
+$(x+z)/\sqrt2$ : elle échange l'axe $x$ et l'axe $z$.
+
+\begin{remarque}[À quoi sert $H$ ?]
+\begin{itemize}[nosep]
+  \item Elle \emph{crée une superposition} à partir d'un état de base :
+        $H\ket{0}=\ket{+}$ donne $P(0)=P(1)=\frac12$. C'est la première étape de
+        la plupart des algorithmes quantiques.
+  \item Elle \emph{change de base} : elle envoie la base $Z$ sur la base $X$ et
+        inversement. Mesurer dans la base $X$ revient à appliquer $H$ puis à mesurer
+        dans la base $Z$ (figure~\ref{fig:mesurex}).
+  \item Elle est réversible ($H^2=\mathrm{Id}$).
+\end{itemize}
+\end{remarque}
+
+% ---------------------------------------------------------------------
+\subsection{Portes de phase}\label{sec:phase}
+% ---------------------------------------------------------------------
+
+\begin{definition}{Portes de phase $P_\theta$, $S$ et $T$}
+\[
+  P_\theta=\begin{pmatrix}1 & 0\\ 0 & \ee^{\ii\theta}\end{pmatrix}
+  =\ket{0}\bra{0}+\ee^{\ii\theta}\ket{1}\bra{1},
+  \qquad
+  S=P_{\pi/2}=\begin{pmatrix}1 & 0\\ 0 & \ii\end{pmatrix},
+  \qquad
+  T=P_{\pi/4}=\begin{pmatrix}1 & 0\\ 0 & \dfrac{1+\ii}{\sqrt2}\end{pmatrix}.
+\]
+\end{definition}
+
+Ici $\ee^{\ii\pi/2}=\ii$ et $\ee^{\ii\pi/4}=\cos\frac\pi4+\ii\sin\frac\pi4=\frac{1+\ii}{\sqrt2}$.
+$P_\theta$ laisse $\ket{0}$ inchangé et multiplie $\ket{1}$ par $\ee^{\ii\theta}$ :
+\[
+  P_\theta\big(\alpha\ket{0}+\beta\ket{1}\big)=\alpha\ket{0}+\ee^{\ii\theta}\beta\ket{1}.
+\]
+Dans la paramétrisation de Bloch, $\varphi\to\varphi+\theta$ : $P_\theta$ est une rotation
+d'angle $\theta$ autour de l'axe $z$. On retrouve $P_\pi=Z$, et $S^2=Z$, $T^2=S$.
+
+\paragraph{Exemples.}
+\begin{align*}
+  S\ket{+}&=\tfrac{1}{\sqrt2}\big(\ket{0}+\ii\ket{1}\big)=\ket{{+}\ii},\\
+  S\ket{{+}\ii}&=\tfrac{1}{\sqrt2}\big(\ket{0}+\ii\cdot\ii\ket{1}\big)=\tfrac{1}{\sqrt2}\big(\ket{0}-\ket{1}\big)=\ket{-},\\
+  T\ket{+}&=\tfrac{1}{\sqrt2}\begin{pmatrix}1 & 0\\ 0 & \frac{1+\ii}{\sqrt2}\end{pmatrix}\begin{pmatrix}1\\ 1\end{pmatrix}
+    =\tfrac{1}{\sqrt2}\begin{pmatrix}1\\ \frac{1+\ii}{\sqrt2}\end{pmatrix}
+    =\tfrac{1}{\sqrt2}\big(\ket{0}+\ee^{\ii\pi/4}\ket{1}\big)\quad\big(\text{angle polaire }\tfrac\pi2,\ \text{azimut }\tfrac\pi4\big).
+\end{align*}
+$S$ tourne donc $\ket{+}$ d'un quart de tour autour de $z$ (de l'axe $x$ à l'axe $y$),
+puis d'un second quart de tour jusqu'à $\ket{-}$ ; $T$ fait un huitième de tour.
+
+\begin{remarque}[Une porte de phase est une évolution libre]
+Pour $\Hop=\frac{\hbar\omega}{2}Z$, $U(t)=\ee^{-\ii\Hop t/\hbar}=\mathrm{diag}\big(\ee^{-\ii\omega t/2},\ee^{\ii\omega t/2}\big)
+=\ee^{-\ii\omega t/2}\,P_{\omega t}$. Au facteur global près, laisser évoluer le qubit pendant la
+durée $t$ applique la porte de phase $P_{\omega t}$ : une rotation d'angle $\omega t$ autour de
+l'axe $z$.
+\end{remarque}
+
+% ---------------------------------------------------------------------
+\subsection{Portes et sphère de Bloch}\label{sec:portes-bloch}
+% ---------------------------------------------------------------------
+
+Toute porte à un qubit est une rotation de la sphère de Bloch. La figure~\ref{fig:portes} montre
+les axes des portes usuelles et le tableau qui suit les résume.
 
 \begin{figure}[!ht]
 \centering
-\begin{tikzpicture}[x={(-1.63cm,-0.56cm)}, y={(1.63cm,-0.56cm)}, z={(0cm,2.16cm)}, >=Stealth]
-  % angles de l'état représenté (modifiables)
-  \pgfmathsetmacro{\thb}{55}
-  \pgfmathsetmacro{\phb}{80}
-  \pgfmathsetmacro{\rx}{sin(\thb)*cos(\phb)}
-  \pgfmathsetmacro{\ry}{sin(\thb)*sin(\phb)}
-  \pgfmathsetmacro{\rz}{cos(\thb)}
-
-  % sphère
+\begin{tikzpicture}[x={(-1.63cm,-0.56cm)}, y={(1.63cm,-0.56cm)}, z={(0cm,2.16cm)}, >=Stealth, scale=0.9]
+  % sphère et grands cercles
   \shade[ball color=insagris!15, opacity=0.55] (0,0,0) circle[radius=2.3cm];
-
-  % grands cercles : partie cachée en pointillés, partie visible en trait plein
   \begin{scope}[insagris!75, thin]
     \draw[domain=-45:135, samples=60, variable=\t] plot ({cos(\t)},{sin(\t)},0);
     \draw[domain=135:315, samples=60, variable=\t, dashed] plot ({cos(\t)},{sin(\t)},0);
@@ -247,112 +221,897 @@ coordonnées
     \draw[domain=-62.7:117.3, samples=60, variable=\t] plot (0,{cos(\t)},{sin(\t)});
     \draw[domain=117.3:297.3, samples=60, variable=\t, dashed] plot (0,{cos(\t)},{sin(\t)});
   \end{scope}
-
-  % axes : moitié négative (cachée) en pointillés
+  % axes x, y, z (portes X, Y, Z)
   \draw[insagris, dashed] (0,0,0) -- (-1,0,0);
   \draw[insagris, dashed] (0,0,0) -- (0,-1,0);
-  \draw[insarouge, dashed] (0,0,0) -- (0,0,-1);
+  \draw[insagris, dashed] (0,0,0) -- (0,0,-1);
   \draw[insagris] (-1,0,0) -- (-1.3,0,0);
   \draw[insagris] (0,-1,0) -- (0,-1.3,0);
-  \draw[insarouge] (0,0,-1) -- (0,0,-1.3);
+  \draw[insagris] (0,0,-1) -- (0,0,-1.3);
   \draw[insagris, -{Stealth[length=2.2mm]}] (0,0,0) -- (1.3,0,0);
   \draw[insagris, -{Stealth[length=2.2mm]}] (0,0,0) -- (0,1.3,0);
-  \draw[insarouge, -{Stealth[length=2.2mm]}] (0,0,0) -- (0,0,1.3);
-
-  % les six états remarquables
-  \foreach \ax/\ay/\az in {1/0/0, -1/0/0, 0/1/0, 0/-1/0, 0/0/1, 0/0/-1}
-    \fill[insagris!80!black] (\ax,\ay,\az) circle[radius=1.3pt];
-  \node[insarouge, anchor=south] at (0,0,1.33) {$\ket{0}$};
-  \node[insarouge, anchor=north] at (0,0,-1.33) {$\ket{1}$};
-  \node[anchor=east]  at (1.33,0,0)  {$\ket{+}$};
-  \node[anchor=west]  at (-1.33,0,0) {$\ket{-}$};
-  \node[anchor=west]  at (0,1.33,0)  {$\ket{{+}\ii}$};
-  \node[anchor=east]  at (0,-1.33,0) {$\ket{{-}\ii}$};
-
-  % état |Psi> : vecteur, projections, angles
-  \draw[dashed, insarouge!70] (0,0,0) -- (\rx,\ry,0) -- (\rx,\ry,\rz);
-  \draw[very thick, insarouge, -{Stealth[length=3mm]}] (0,0,0) -- (\rx,\ry,\rz);
-  \fill[insarouge] (\rx,\ry,\rz) circle[radius=1.6pt];
-  \node[insarouge, anchor=south] at (\rx,\ry,\rz) {$\ket{\Psi}$};
-  \draw[insarouge, domain=0:\thb, samples=25, variable=\t]
-    plot ({0.32*sin(\t)*cos(\phb)},{0.32*sin(\t)*sin(\phb)},{0.32*cos(\t)});
-  \draw[insarouge, domain=0:\phb, samples=40, variable=\t]
-    plot ({0.4*cos(\t)},{0.4*sin(\t)},0);
-  \node[insarouge, font=\small] at ({0.55*sin(\thb/2)*cos(\phb)},{0.55*sin(\thb/2)*sin(\phb)},{0.55*cos(\thb/2)}) {$\theta$};
-  \node[insarouge, font=\small] at ({0.75*cos(\phb/2)},{0.75*sin(\phb/2)},0) {$\varphi$};
+  \draw[insagris, -{Stealth[length=2.2mm]}] (0,0,0) -- (0,0,1.3);
+  \node[anchor=east]  at (1.33,0,0) {$x$};
+  \node[anchor=west]  at (0,1.33,0) {$y$};
+  \node[anchor=south] at (0,0,1.33) {$z$};
+  % axe de la porte H : (x+z)/sqrt(2)
+  \draw[insarouge, dashed] (0,0,0) -- (-0.707,0,-0.707);
+  \draw[insarouge, very thick, -{Stealth[length=2.6mm]}] (0,0,0) -- (0.98,0,0.98);
+  \node[insarouge, anchor=south east] at (0.98,0,0.98) {axe de $H$};
+  % rotation autour de z (portes de phase)
+  \draw[insarouge, thick, -{Stealth[length=2.2mm]}, domain=15:105, samples=30, variable=\t]
+    plot ({1.15*cos(\t)},{1.15*sin(\t)},0);
+  \node[insarouge, anchor=north west, font=\small] at ({1.15*cos(60)},{1.15*sin(60)},0) {$P_\theta$};
 \end{tikzpicture}
-\caption{Sphère de Bloch. Le pôle nord est $\ket{0}$, le pôle sud $\ket{1}$ (axe $z$, base $Z$) ;
-$\ket{\pm}$ sont sur l'axe $x$ (base $X$) et $\ket{{\pm}\ii}$ sur l'axe $y$ (base $Y$).
-$\theta$ est l'angle avec l'axe $z$, $\varphi$ l'angle de la projection sur le plan
-équatorial avec l'axe $x$.}
-\label{fig:bloch}
+\caption{Portes et rotations sur la sphère de Bloch. Les portes $X$, $Y$, $Z$ sont des
+rotations de $\pi$ autour des axes $x$, $y$, $z$ ; $H$ est une rotation de $\pi$ autour de
+l'axe $(x+z)/\sqrt2$ (rouge) ; $P_\theta$ (donc $Z$, $S$, $T$) tourne d'un angle $\theta$
+autour de $z$.}
+\label{fig:portes}
 \end{figure}
 
 \begin{center}
-\renewcommand{\arraystretch}{1.5}
-\begin{tabular}{@{}lcccc@{}}
+\renewcommand{\arraystretch}{1}
+\begin{tabular}{@{}lccc@{}}
 \toprule
-\textbf{État} & $\theta$ & $\varphi$ & $\vec r$ & \textbf{Base} \\
+\textbf{Porte} & \textbf{Matrice} & \textbf{Effet sur la base} & \textbf{Rotation de Bloch} \\
 \midrule
-$\ket{0}$ & $0$ & --- & $(0,0,1)$ & $Z$ \\
-$\ket{1}$ & $\pi$ & --- & $(0,0,-1)$ & $Z$ \\
-$\ket{+}=\frac{1}{\sqrt2}(\ket{0}+\ket{1})$ & $\frac\pi2$ & $0$ & $(1,0,0)$ & $X$ \\
-$\ket{-}=\frac{1}{\sqrt2}(\ket{0}-\ket{1})$ & $\frac\pi2$ & $\pi$ & $(-1,0,0)$ & $X$ \\
-$\ket{{+}\ii}=\frac{1}{\sqrt2}(\ket{0}+\ii\ket{1})$ & $\frac\pi2$ & $\frac\pi2$ & $(0,1,0)$ & $Y$ \\
-$\ket{{-}\ii}=\frac{1}{\sqrt2}(\ket{0}-\ii\ket{1})$ & $\frac\pi2$ & $-\frac\pi2$ & $(0,-1,0)$ & $Y$ \\
+$X$ & $\begin{pmatrix}0 & 1\\ 1 & 0\end{pmatrix}$ & $\ket{0}\leftrightarrow\ket{1}$ & $\pi$ autour de $x$ \\[2.2ex]
+$Y$ & $\begin{pmatrix}0 & -\ii\\ \ii & 0\end{pmatrix}$ & $\ket{0}\to\ii\ket{1},\ \ket{1}\to-\ii\ket{0}$ & $\pi$ autour de $y$ \\[2.2ex]
+$Z$ & $\begin{pmatrix}1 & 0\\ 0 & -1\end{pmatrix}$ & $\ket{1}\to-\ket{1},\ \ket{\pm}\leftrightarrow\ket{\mp}$ & $\pi$ autour de $z$ \\[2.2ex]
+$H$ & $\dfrac{1}{\sqrt2}\begin{pmatrix}1 & 1\\ 1 & -1\end{pmatrix}$ & $\ket{0}\leftrightarrow\ket{+},\ \ket{1}\leftrightarrow\ket{-}$ & $\pi$ autour de $\frac{x+z}{\sqrt2}$ \\[2.2ex]
+$S$ & $\begin{pmatrix}1 & 0\\ 0 & \ii\end{pmatrix}$ & $\ket{1}\to\ii\ket{1}$ & $\frac\pi2$ autour de $z$ \\[2.2ex]
+$T$ & $\begin{pmatrix}1 & 0\\ 0 & \frac{1+\ii}{\sqrt2}\end{pmatrix}$ & $\ket{1}\to\ee^{\ii\pi/4}\ket{1}$ & $\frac\pi4$ autour de $z$ \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-Aux pôles ($\theta=0$ ou $\pi$) l'angle $\varphi$ n'a pas de sens : il ne reste qu'un
-facteur global.
-
-\begin{resultat}{Lecture de la sphère}
-\begin{itemize}[nosep]
-  \item \textbf{Mesure en base $Z$} : $P(0)=\cos^2\frac\theta2=\frac{1+r_z}{2}$ et
-        $P(1)=\sin^2\frac\theta2=\frac{1-r_z}{2}$. L'angle $\varphi$ n'y intervient pas
-        (c'est la phase relative).
-  \item \textbf{États orthogonaux} $\Leftrightarrow$ \textbf{points antipodaux} :
-        $\ket{0}\perp\ket{1}$, $\ket{+}\perp\ket{-}$, $\ket{{+}\ii}\perp\ket{{-}\ii}$.
-        Une base orthonormée est donc un diamètre de la sphère.
-  \item \textbf{Composantes} : $r_x=\langle X\rangle$, $r_y=\langle Y\rangle$,
-        $r_z=\langle Z\rangle$ (moyennes des matrices de Pauli de la
-        section~\ref{sec:op-dirac}).
-\end{itemize}
-\end{resultat}
-
-\paragraph{Boule de Bloch.} Avec $\vec r=(r_x,r_y,r_z)$, la matrice de densité s'écrit
-\[
-  \rho=\frac12\begin{pmatrix}1+r_z & r_x-\ii r_y\\ r_x+\ii r_y & 1-r_z\end{pmatrix},
-  \qquad
-  \operatorname{Tr}\rho^2=\frac{1+|\vec r|^2}{2}.
-\]
-Un état pur ($\operatorname{Tr}\rho^2=1$) vérifie $|\vec r|=1$ : il est \emph{sur} la
-sphère. Un état mixte a $|\vec r|<1$ : il est \emph{à l'intérieur} de la boule, et
-$\mathrm{Id}/2$ en est le centre ($\vec r=\vec0$, $\operatorname{Tr}\rho^2=\frac12$). Les
-exemples de la section précédente donnent $\vec r=(\frac12,0,0)$ pour
-$\frac34\ket{+}\bra{+}+\frac14\ket{-}\bra{-}$ et $\vec r=(0,0,\frac12)$ pour
-$\mathrm{diag}(\frac34,\frac14)$.
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[x={(-1.63cm,-0.56cm)}, y={(1.63cm,-0.56cm)}, z={(0cm,2.16cm)}, >=Stealth, scale=0.9]
+  % sphère et grands cercles
+  \shade[ball color=insagris!15, opacity=0.55] (0,0,0) circle[radius=2.3cm];
+  \begin{scope}[insagris!75, thin]
+    \draw[domain=-45:135, samples=60, variable=\t] plot ({cos(\t)},{sin(\t)},0);
+    \draw[domain=135:315, samples=60, variable=\t, dashed] plot ({cos(\t)},{sin(\t)},0);
+    \draw[domain=-62.7:117.3, samples=60, variable=\t] plot ({cos(\t)},0,{sin(\t)});
+    \draw[domain=117.3:297.3, samples=60, variable=\t, dashed] plot ({cos(\t)},0,{sin(\t)});
+    \draw[domain=-62.7:117.3, samples=60, variable=\t] plot (0,{cos(\t)},{sin(\t)});
+    \draw[domain=117.3:297.3, samples=60, variable=\t, dashed] plot (0,{cos(\t)},{sin(\t)});
+  \end{scope}
+  % axes x, y, z (portes X, Y, Z)
+  \draw[insagris, dashed] (0,0,0) -- (-1,0,0);
+  \draw[insagris, dashed] (0,0,0) -- (0,-1,0);
+  \draw[insagris, dashed] (0,0,0) -- (0,0,-1);
+  \draw[insagris] (-1,0,0) -- (-1.3,0,0);
+  \draw[insagris] (0,-1,0) -- (0,-1.3,0);
+  \draw[insagris] (0,0,-1) -- (0,0,-1.3);
+  \draw[insagris, -{Stealth[length=2.2mm]}] (0,0,0) -- (1.3,0,0);
+  \draw[insagris, -{Stealth[length=2.2mm]}] (0,0,0) -- (0,1.3,0);
+  \draw[insagris, -{Stealth[length=2.2mm]}] (0,0,0) -- (0,0,1.3);
+  % trajet : |0> --H--> |+> --S--> |+i>
+  \draw[insarouge, very thick, -{Stealth[length=2.6mm]}, domain=3:87, samples=30, variable=\t]
+    plot ({sin(\t)},0,{cos(\t)});
+  \draw[insarouge, very thick, -{Stealth[length=2.6mm]}, domain=3:87, samples=30, variable=\t]
+    plot ({cos(\t)},{sin(\t)},0);
+  \foreach \ax/\ay/\az in {0/0/1, 1/0/0, 0/1/0} \fill[insarouge] (\ax,\ay,\az) circle[radius=2pt];
+  \node[insarouge, anchor=south] at (0,0,1.33) {$\ket{0}$};
+  \node[insarouge, anchor=east] at (1.33,0,0) {$\ket{+}$};
+  \node[insarouge, anchor=west] at (0,1.33,0) {$\ket{{+}\ii}$};
+  \node[insarouge, font=\small, anchor=south west] at ({sin(45)},0,{cos(45)}) {$H$};
+  \node[insarouge, font=\small, anchor=north west] at ({cos(45)},{sin(45)},0) {$S$};
+\end{tikzpicture}
+\caption{Trajet d'un état sous le circuit $H$ puis $S$ (flèches schématiques). $H$ envoie
+$\ket{0}$ sur $\ket{+}$ ; $S$, rotation d'un quart de tour autour de $z$, envoie $\ket{+}$ sur
+$\ket{{+}\ii}$. Les trois états sont alignés sur les axes $z$, $x$ et $y$.}
+\label{fig:trajet}
+\end{figure}
 
 % ---------------------------------------------------------------------
-\subsection{Récapitulatif du chapitre}
+\subsection{Circuits quantiques}\label{sec:circuits}
+% ---------------------------------------------------------------------
+
+Un \emph{circuit} représente un calcul : chaque qubit est un fil horizontal, le temps va de gauche
+à droite, et chaque porte est un symbole posé sur les fils qu'elle concerne. La
+figure~\ref{fig:symboles} donne les symboles utilisés dans ce document.
+
+\begin{figure}[!ht]
+\centering
+\begin{adjustbox}{max width=\linewidth}
+\begin{tikzpicture}[>=Stealth, font=\small,
+    nom/.style={font=\footnotesize, align=center, anchor=north}]
+  % (a) porte à un qubit
+  \draw (0,0) -- (1.8,0);
+  \node[porte] at (0.9,0) {$U$};
+  \node[nom] at (0.9,-1.15) {porte $U$\\ à un qubit};
+  % (b) CNOT
+  \begin{scope}[xshift=3.2cm]
+    \draw (0,0.6) -- (1.8,0.6);
+    \draw (0,-0.6) -- (1.8,-0.6);
+    \draw[insarouge, thick] (0.9,0.6) -- (0.9,-0.6);
+    \pic at (0.9,0.6) {ctl};
+    \pic at (0.9,-0.6) {cible};
+    \node[nom] at (0.9,-1.15) {CNOT\\ (contrôle $\bullet$, cible $\oplus$)};
+  \end{scope}
+  % (c) SWAP
+  \begin{scope}[xshift=6.4cm]
+    \draw (0,0.6) -- (1.8,0.6);
+    \draw (0,-0.6) -- (1.8,-0.6);
+    \draw[insarouge, thick] (0.9,0.6) -- (0.9,-0.6);
+    \pic at (0.9,0.6) {croix};
+    \pic at (0.9,-0.6) {croix};
+    \node[nom] at (0.9,-1.15) {SWAP\\ (échange)};
+  \end{scope}
+  % (d) contrôlé-U
+  \begin{scope}[xshift=9.6cm]
+    \draw (0,0.6) -- (1.8,0.6);
+    \draw (0,-0.6) -- (1.8,-0.6);
+    \draw[insarouge, thick] (0.9,-0.6) -- (0.9,0.3);
+    \pic at (0.9,-0.6) {ctl};
+    \node[porte] at (0.9,0.6) {$U$};
+    \node[nom] at (0.9,-1.15) {contrôlé-$U$\\ (contrôle en bas)};
+  \end{scope}
+  % (e) mesure
+  \begin{scope}[xshift=12.8cm]
+    \draw (0,0) -- (0.6,0);
+    \pic at (0.9,0) {mesure};
+    \draw (1.2,0.03) -- (2.0,0.03);
+    \draw (1.2,-0.03) -- (2.0,-0.03);
+    \node[nom] at (1.0,-1.15) {mesure\\ (fil double : bit)};
+  \end{scope}
+\end{tikzpicture}
+\end{adjustbox}
+\caption{Symboles des circuits quantiques. Le point noir $\bullet$ marque un qubit de contrôle,
+le symbole $\oplus$ une cible qui subit $X$, les deux croix un échange. Après une mesure, le fil
+double transporte un bit classique.}
+\label{fig:symboles}
+\end{figure}
+
+\begin{remarque}[Conventions de lecture]
+\begin{itemize}[nosep]
+  \item Le temps va de gauche à droite. Deux portes successives $U_1$ puis $U_2$ se multiplient
+        dans l'ordre inverse : la matrice du circuit est $U_2U_1$, car $U_1$ agit d'abord sur le ket.
+  \item Avec plusieurs fils, le fil du \emph{haut} porte le \emph{dernier} chiffre du ket et le
+        fil du \emph{bas} le premier : si $A$ est le premier qubit et $B$ le second,
+        $\ket{a,b}=\ket{a}_A\otimes\ket{b}_B$ et $B$ est dessiné au-dessus de $A$.
+  \item Deux portes placées dans la même colonne, sur deux fils, agissent en parallèle : c'est un
+        produit tensoriel $U_A\otimes U_B$ (section~\ref{sec:op2}).
+\end{itemize}
+\end{remarque}
+
+\paragraph{Exemple.} Le circuit de la figure~\ref{fig:circuit-hs} applique $H$ puis $S$ à
+$\ket{0}$. Sa matrice est $SH$ :
+\[
+  SH=\begin{pmatrix}1&0\\0&\ii\end{pmatrix}\frac{1}{\sqrt2}\begin{pmatrix}1&1\\1&-1\end{pmatrix}
+  =\frac{1}{\sqrt2}\begin{pmatrix}1&1\\ \ii&-\ii\end{pmatrix},
+  \qquad
+  SH\ket{0}=\frac{1}{\sqrt2}\begin{pmatrix}1\\ \ii\end{pmatrix}=\ket{{+}\ii}.
+\]
+Le circuit prépare donc l'état $\ket{{+}\ii}$ de la base $Y$ à partir de $\ket{0}$
+(figure~\ref{fig:trajet}). L'ordre compte : $HS\ket{0}=H\ket{0}=\ket{+}$, car $S\ket{0}=\ket{0}$.
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, font=\small]
+  \draw (0,0) -- (6.6,0);
+  \node[anchor=east] at (0,0) {$\ket{0}$};
+  \node[porte] at (2.0,0) {$H$};
+  \node[porte] at (4.3,0) {$S$};
+  \node[anchor=west] at (6.6,0) {$\ket{{+}\ii}$};
+  \foreach \x in {0.7, 3.15, 5.5} \draw[dashed, insagris!70] (\x,0.6) -- (\x,-0.95);
+  \node[font=\footnotesize, anchor=north] at (0.7,-0.95) {$\ket{0}$};
+  \node[font=\footnotesize, anchor=north] at (3.15,-0.95) {$\ket{+}$};
+  \node[font=\footnotesize, anchor=north] at (5.5,-0.95) {$\ket{{+}\ii}$};
+\end{tikzpicture}
+\caption{Circuit $H$ puis $S$ appliqué à $\ket{0}$. Les états intermédiaires sont indiqués sous
+les traits pointillés ; la matrice du circuit est $SH$.}
+\label{fig:circuit-hs}
+\end{figure}
+
+\paragraph{Mesure.} Le symbole de mesure (compteur) donne le résultat $0$ ou $1$ dans la base $Z$.
+Mesurer dans la base $X$ revient à appliquer $H$ puis à mesurer dans la base $Z$
+(figure~\ref{fig:mesurex}) : comme $H\ket{\pm}=\ket{0}$ ou $\ket{1}$, le résultat $0$ correspond à
+$\ket{+}$ et le résultat $1$ à $\ket{-}$, avec $P(\pm)=|\braket{\pm}{\Psi}|^2$.
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, font=\small]
+  % (a) base Z
+  \draw (0,0) -- (1.2,0);
+  \node[anchor=east] at (0,0) {$\ket{\Psi}$};
+  \pic at (1.5,0) {mesure};
+  \draw (1.8,0.03) -- (2.6,0.03);
+  \draw (1.8,-0.03) -- (2.6,-0.03);
+  \node[anchor=west] at (2.7,0) {$0$ ou $1$};
+  \node[font=\footnotesize] at (1.5,-0.95) {(a) mesure en base $Z$};
+  % (b) base X
+  \begin{scope}[xshift=7.5cm]
+    \draw (0,0) -- (2.6,0);
+    \node[anchor=east] at (0,0) {$\ket{\Psi}$};
+    \node[porte] at (1.0,0) {$H$};
+    \pic at (2.3,0) {mesure};
+    \draw (2.6,0.03) -- (3.4,0.03);
+    \draw (2.6,-0.03) -- (3.4,-0.03);
+    \node[anchor=west] at (3.5,0) {$+$ ou $-$};
+    \node[font=\footnotesize] at (1.9,-0.95) {(b) mesure en base $X$};
+  \end{scope}
+\end{tikzpicture}
+\caption{(a) Mesure dans la base $Z$. (b) Mesure dans la base $X$ : porte de Hadamard, puis
+mesure dans la base $Z$ ; les résultats $0$ et $1$ se lisent $+$ et $-$.}
+\label{fig:mesurex}
+\end{figure}
+
+% ---------------------------------------------------------------------
+\subsection{Portes locales sur deux qubits}\label{sec:op2}
+% ---------------------------------------------------------------------
+
+Une porte appliquée à un seul qubit d'un système de deux s'écrit avec un produit tensoriel
+(section~\ref{sec:tenseur}) : $U\otimes I$ agit sur $A$ (premier facteur, fil du bas), $I\otimes U$
+agit sur $B$, et $U_A\otimes U_B$ agit sur les deux en parallèle (figure~\ref{fig:local}).
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, font=\small]
+  \foreach \xs/\haut/\bas/\tit in {0/{}/{$X$}/{(a) $X\otimes I$},
+                                   5.4/{$X$}/{}/{(b) $I\otimes X$},
+                                   10.8/{$H$}/{$H$}/{(c) $H\otimes H$}} {
+    \begin{scope}[xshift=\xs cm]
+      \draw (0,0.75) -- (2.6,0.75);
+      \draw (0,0) -- (2.6,0);
+      \node[anchor=east] at (0,0.75) {$B$};
+      \node[anchor=east] at (0,0) {$A$};
+      \ifx\haut\empty\else \node[porte] at (1.3,0.75) {\haut}; \fi
+      \ifx\bas\empty\else \node[porte] at (1.3,0) {\bas}; \fi
+      \node[font=\footnotesize] at (1.3,-0.85) {\tit};
+    \end{scope}
+  }
+\end{tikzpicture}
+\caption{Portes en parallèle sur deux qubits. Le qubit $A$, premier facteur du produit tensoriel,
+est sur le fil du bas. (a) $X$ sur $A$ seulement. (b) $X$ sur $B$ seulement. (c) $H$ sur les deux.}
+\label{fig:local}
+\end{figure}
+
+\subsubsection{Portes agissant sur un seul des deux qubits}
+
+On note $I=\mathrm{Id}$ ($2\times2$). $X\otimes I$ agit sur $A$, $I\otimes X$ agit sur $B$ :
+\begin{align*}
+  I\otimes X&=\begin{pmatrix}1\cdot X & 0\cdot X\\ 0\cdot X & 1\cdot X\end{pmatrix}
+    =\begin{pmatrix}0 & 1 & 0 & 0\\ 1 & 0 & 0 & 0\\ 0 & 0 & 0 & 1\\ 0 & 0 & 1 & 0\end{pmatrix},\\[1ex]
+  X\otimes I&=\begin{pmatrix}0\cdot I & 1\cdot I\\ 1\cdot I & 0\cdot I\end{pmatrix}
+    =\begin{pmatrix}0 & 0 & 1 & 0\\ 0 & 0 & 0 & 1\\ 1 & 0 & 0 & 0\\ 0 & 1 & 0 & 0\end{pmatrix}.
+\end{align*}
+Sur $\ket{00}=(1,0,0,0)^{\mathsf T}$ (première colonne de la matrice) :
+$(I\otimes X)\ket{00}=(0,1,0,0)^{\mathsf T}=\ket{01}$ et
+$(X\otimes I)\ket{00}=(0,0,1,0)^{\mathsf T}=\ket{10}$. Avec la règle :
+$(I\otimes X)\ket{00}=I\ket{0}\otimes X\ket{0}=\ket{0}\otimes\ket{1}=\ket{01}$.
+
+Pour la porte de Hadamard, avec $H=\frac{1}{\sqrt2}\begin{pmatrix}1 & 1\\ 1 & -1\end{pmatrix}$ :
+\[
+  H\otimes I=\frac{1}{\sqrt2}\begin{pmatrix}1\cdot I & 1\cdot I\\ 1\cdot I & -1\cdot I\end{pmatrix}
+  =\frac{1}{\sqrt2}\begin{pmatrix}1 & 0 & 1 & 0\\ 0 & 1 & 0 & 1\\ 1 & 0 & -1 & 0\\ 0 & 1 & 0 & -1\end{pmatrix}.
+\]
+Ses colonnes donnent l'image des quatre états de base :
+\begin{align*}
+  (H\otimes I)\ket{00}&=\tfrac{1}{\sqrt2}(1,0,1,0)^{\mathsf T}=\ket{+}\otimes\ket{0},&
+  (H\otimes I)\ket{01}&=\tfrac{1}{\sqrt2}(0,1,0,1)^{\mathsf T}=\ket{+}\otimes\ket{1},\\
+  (H\otimes I)\ket{10}&=\tfrac{1}{\sqrt2}(1,0,-1,0)^{\mathsf T}=\ket{-}\otimes\ket{0},&
+  (H\otimes I)\ket{11}&=\tfrac{1}{\sqrt2}(0,1,0,-1)^{\mathsf T}=\ket{-}\otimes\ket{1}.
+\end{align*}
+
+\subsubsection{Hadamard sur les deux qubits}
+
+\[
+  H\otimes H=\frac12\begin{pmatrix}1\cdot H' & 1\cdot H'\\ 1\cdot H' & -1\cdot H'\end{pmatrix},
+  \quad H'=\begin{pmatrix}1 & 1\\ 1 & -1\end{pmatrix},
+  \qquad
+  H\otimes H=\frac12\begin{pmatrix}1 & 1 & 1 & 1\\ 1 & -1 & 1 & -1\\ 1 & 1 & -1 & -1\\ 1 & -1 & -1 & 1\end{pmatrix}.
+\]
+La première colonne donne $(H\otimes H)\ket{00}=\frac12(1,1,1,1)^{\mathsf T}=\ket{+}\otimes\ket{+}$
+(cohérent avec $H\ket{0}\otimes H\ket{0}$) : les quatre résultats $00,01,10,11$ sont
+équiprobables, chacun avec la probabilité $\frac14$. Sur $n$ qubits, $H^{\otimes n}\ket{0\ldots0}$
+donne une superposition uniforme de $2^n$ états.
+
+% ---------------------------------------------------------------------
+\subsection{Porte CNOT}\label{sec:cnot}
+% ---------------------------------------------------------------------
+
+\begin{definition}{Porte CNOT (NOT contrôlé)}
+La porte CNOT agit sur deux qubits : le qubit $B$ est le \emph{contrôle}, le qubit $A$ est la
+\emph{cible}. La cible est inversée (porte $X$) si le contrôle vaut $1$ et reste inchangée
+s'il vaut $0$. Avec $\ket{a,b}=\ket{a}_A\otimes\ket{b}_B$ :
+\[
+  \mathrm{CNOT}\,\ket{a,b}=\ket{a\oplus b,\,b},
+  \qquad
+  \mathrm{CNOT}=I\otimes\ket{0}\bra{0}+X\otimes\ket{1}\bra{1},
+\]
+où $\oplus$ est l'addition modulo $2$ ($0\oplus0=1\oplus1=0$ et $0\oplus1=1\oplus0=1$).
+\end{definition}
+
+Sur le circuit de la figure~\ref{fig:cnot}, le point noir posé sur le fil de $B$ (en haut) marque
+le contrôle et le symbole $\oplus$ posé sur le fil de $A$ (en bas) marque la cible.
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, font=\small]
+  \draw (0,1.2) -- (6,1.2);
+  \draw (0,0) -- (6,0);
+  \node[anchor=east] at (0,1.2) {$\ket{b}_B$};
+  \node[anchor=east] at (0,0) {$\ket{a}_A$};
+  \node[anchor=west] at (6,1.2) {$\ket{b}_B$};
+  \node[anchor=west] at (6,0) {$\ket{a\oplus b}_A$};
+  \draw[insarouge, thick] (3,1.2) -- (3,0);
+  \pic at (3,1.2) {ctl};
+  \pic at (3,0) {cible};
+  \node[anchor=south, text=insagris] at (3,1.5) {qubit de contrôle};
+  \node[anchor=north, text=insagris] at (3,-0.5) {qubit cible};
+\end{tikzpicture}
+\caption{Porte CNOT : le fil du haut ($B$) est le contrôle, le fil du bas ($A$) est la cible. Le
+ket s'écrit $\ket{a,b}$ : le fil du haut donne le dernier chiffre.}
+\label{fig:cnot}
+\end{figure}
+
+\subsubsection{Table de vérité}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}cccc@{}}
+\toprule
+Entrée $\ket{a,b}$ & Contrôle $b$ & Sortie $\ket{a\oplus b,b}$ & Effet sur la cible $A$ \\
+\midrule
+$\ket{00}$ & $0$ & $\ket{00}$ & aucun \\
+$\ket{01}$ & $1$ & $\ket{11}$ & $0\to1$ \\
+$\ket{10}$ & $0$ & $\ket{10}$ & aucun \\
+$\ket{11}$ & $1$ & $\ket{01}$ & $1\to0$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Matrice du CNOT}
+
+La $j$-ième colonne d'une matrice $4\times4$ est l'image du $j$-ième vecteur de base
+($\ket{00},\ket{01},\ket{10},\ket{11}$, dans cet ordre). La table donne :
+\begin{align*}
+  \mathrm{CNOT}\ket{00}&=\ket{00}=\begin{pmatrix}1\\0\\0\\0\end{pmatrix},&
+  \mathrm{CNOT}\ket{01}&=\ket{11}=\begin{pmatrix}0\\0\\0\\1\end{pmatrix},\\[1.5ex]
+  \mathrm{CNOT}\ket{10}&=\ket{10}=\begin{pmatrix}0\\0\\1\\0\end{pmatrix},&
+  \mathrm{CNOT}\ket{11}&=\ket{01}=\begin{pmatrix}0\\1\\0\\0\end{pmatrix},
+\end{align*}
+d'où, en juxtaposant ces quatre colonnes,
+\[
+  \mathrm{CNOT}=\begin{pmatrix}
+    1 & 0 & 0 & 0\\ 0 & 0 & 0 & 1\\ 0 & 0 & 1 & 0\\ 0 & 1 & 0 & 0
+  \end{pmatrix}.
+\]
+
+On retrouve cette matrice avec la formule $I\otimes\ket{0}\bra{0}+X\otimes\ket{1}\bra{1}$ et
+la règle $A\otimes B=(A_{ij}B)$ (section~\ref{sec:tenseur}), où
+$\ket{0}\bra{0}=\begin{pmatrix}1&0\\0&0\end{pmatrix}$ et
+$\ket{1}\bra{1}=\begin{pmatrix}0&0\\0&1\end{pmatrix}$ :
+\[
+  I\otimes\ket{0}\bra{0}=\begin{pmatrix}1&0&0&0\\0&0&0&0\\0&0&1&0\\0&0&0&0\end{pmatrix},
+  \qquad
+  X\otimes\ket{1}\bra{1}=\begin{pmatrix}0&0&0&0\\0&0&0&1\\0&0&0&0\\0&1&0&0\end{pmatrix},
+\]
+et la somme de ces deux matrices est la matrice du CNOT.
+
+\subsubsection{Action sur un état quelconque}
+
+Pour $\ket{\Psi}=c_{00}\ket{00}+c_{01}\ket{01}+c_{10}\ket{10}+c_{11}\ket{11}$ :
+\[
+  \mathrm{CNOT}\begin{pmatrix}c_{00}\\c_{01}\\c_{10}\\c_{11}\end{pmatrix}
+  =\begin{pmatrix}
+    1\cdot c_{00}+0\cdot c_{01}+0\cdot c_{10}+0\cdot c_{11}\\
+    0\cdot c_{00}+0\cdot c_{01}+0\cdot c_{10}+1\cdot c_{11}\\
+    0\cdot c_{00}+0\cdot c_{01}+1\cdot c_{10}+0\cdot c_{11}\\
+    0\cdot c_{00}+1\cdot c_{01}+0\cdot c_{10}+0\cdot c_{11}
+  \end{pmatrix}
+  =\begin{pmatrix}c_{00}\\c_{11}\\c_{10}\\c_{01}\end{pmatrix}.
+\]
+Le CNOT échange les amplitudes de $\ket{01}$ et de $\ket{11}$, c'est-à-dire des deux états
+dont le contrôle vaut $1$, et laisse les autres.
+
+\paragraph{Exemple : contrôle en superposition.} Soit $\ket{0}_A\otimes\ket{+}_B
+=\frac{1}{\sqrt2}\big(\ket{00}+\ket{01}\big)=\frac{1}{\sqrt2}(1,1,0,0)^{\mathsf T}$,
+un état séparable. Alors
+\[
+  \mathrm{CNOT}\,\frac{1}{\sqrt2}\begin{pmatrix}1\\1\\0\\0\end{pmatrix}
+  =\frac{1}{\sqrt2}\begin{pmatrix}1\\0\\0\\1\end{pmatrix}
+  =\frac{1}{\sqrt2}\big(\ket{00}+\ket{11}\big).
+\]
+Le résultat est intriqué ($c_{00}c_{11}-c_{01}c_{10}=\frac12\neq0$ ; section~\ref{sec:separable}) :
+un CNOT dont le contrôle est en superposition crée de l'intrication. C'est l'état de Bell
+$\ket{\Phi^+}$ du chapitre~\ref{chap:bell}.
+
+\paragraph{Réversibilité.} Deux CNOT successifs redonnent l'état initial :
+$\ket{a,b}\to\ket{a\oplus b,b}\to\ket{a\oplus b\oplus b,b}=\ket{a,b}$, donc
+$\mathrm{CNOT}^2=\mathrm{Id}$. La matrice est réelle et symétrique, donc
+$\mathrm{CNOT}^\dagger\mathrm{CNOT}=\mathrm{CNOT}^2=\mathrm{Id}$ : elle est bien unitaire.
+
+\begin{remarque}[CNOT et copie d'un bit]
+Avec la cible dans l'état $\ket{0}$, $\mathrm{CNOT}\ket{0,b}=\ket{b,b}$ pour $b=0$ et $b=1$ : le CNOT
+copie le bit classique $b$. En revanche $\mathrm{CNOT}\big(\ket{0}\otimes\ket{+}\big)$ est l'état
+ci-dessus, et non $\ket{+}\otimes\ket{+}$ : un état quantique inconnu ne peut pas être copié
+(théorème de non-clonage, section~\ref{sec:teleportation}).
+\end{remarque}
+
+\begin{remarque}[Contrôle en dernier ou en premier]
+La matrice dépend de l'ordre d'écriture du ket. Notons $\mathrm{CNOT}_{21}$ le CNOT dont le
+contrôle est le \emph{second} chiffre du ket : c'est la matrice ci-dessus, adoptée dans ce
+document (fil du haut). Beaucoup d'ouvrages mettent le contrôle en \emph{premier} ; le CNOT
+correspondant est
+\[
+  \mathrm{CNOT}_{12}=\ket{0}\bra{0}\otimes I+\ket{1}\bra{1}\otimes X
+  =\begin{pmatrix}1&0&0&0\\0&1&0&0\\0&0&0&1\\0&0&1&0\end{pmatrix}.
+\]
+Le même circuit a donc deux matrices, selon que le contrôle est écrit en dernier ou en premier.
+Les deux sont reliées par le SWAP (section~\ref{sec:swap}). La section~\ref{sec:controlees} sur les
+portes contrôlées met le contrôle en premier, avec la matrice $\mathrm{diag}(I,U)$.
+\end{remarque}
+
+% ---------------------------------------------------------------------
+\subsection{Porte SWAP}\label{sec:swap}
+% ---------------------------------------------------------------------
+
+\begin{definition}{Porte SWAP (échange)}
+La porte SWAP échange les états des deux qubits :
+\[
+  \mathrm{SWAP}\big(\ket{\psi}\otimes\ket{\phi}\big)=\ket{\phi}\otimes\ket{\psi}.
+\]
+Sur les états de base, $\mathrm{SWAP}\ket{a,b}=\ket{b,a}$ ; on prolonge par linéarité.
+\end{definition}
+
+Son symbole est formé de deux croix reliées par un trait vertical
+(figure~\ref{fig:swap}).
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, font=\small]
+  \draw (0,1.2) -- (6,1.2);
+  \draw (0,0) -- (6,0);
+  \node[anchor=east] at (0,1.2) {$\ket{a}$};
+  \node[anchor=east] at (0,0) {$\ket{b}$};
+  \node[anchor=west] at (6,1.2) {$\ket{b}$};
+  \node[anchor=west] at (6,0) {$\ket{a}$};
+  \draw[insarouge, thick] (3,1.2) -- (3,0);
+  \pic at (3,1.2) {croix};
+  \pic at (3,0) {croix};
+\end{tikzpicture}
+\caption{Porte SWAP : les deux qubits échangent leurs états.}
+\label{fig:swap}
+\end{figure}
+
+\subsubsection{Table et matrice}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}cc@{}}
+\toprule
+Entrée & Sortie \\
+\midrule
+$\ket{00}$ & $\ket{00}$ \\
+$\ket{01}$ & $\ket{10}$ \\
+$\ket{10}$ & $\ket{01}$ \\
+$\ket{11}$ & $\ket{11}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Les images des quatre vecteurs de base sont les colonnes de la matrice :
+\[
+  \mathrm{SWAP}\ket{00}=\begin{pmatrix}1\\0\\0\\0\end{pmatrix},\quad
+  \mathrm{SWAP}\ket{01}=\begin{pmatrix}0\\0\\1\\0\end{pmatrix},\quad
+  \mathrm{SWAP}\ket{10}=\begin{pmatrix}0\\1\\0\\0\end{pmatrix},\quad
+  \mathrm{SWAP}\ket{11}=\begin{pmatrix}0\\0\\0\\1\end{pmatrix},
+\]
+\[
+  \mathrm{SWAP}=\begin{pmatrix}
+    1 & 0 & 0 & 0\\ 0 & 0 & 1 & 0\\ 0 & 1 & 0 & 0\\ 0 & 0 & 0 & 1
+  \end{pmatrix}.
+\]
+Appliquée à $\ket{01}=(0,1,0,0)^{\mathsf T}$, cette matrice sélectionne sa deuxième colonne :
+\[
+  \begin{pmatrix}
+    1 & 0 & 0 & 0\\ 0 & 0 & 1 & 0\\ 0 & 1 & 0 & 0\\ 0 & 0 & 0 & 1
+  \end{pmatrix}
+  \begin{pmatrix}0\\1\\0\\0\end{pmatrix}
+  =\begin{pmatrix}0\\0\\1\\0\end{pmatrix}=\ket{10}.
+\]
+Sur un état quelconque, $\mathrm{SWAP}\,(c_{00},c_{01},c_{10},c_{11})^{\mathsf T}
+=(c_{00},c_{10},c_{01},c_{11})^{\mathsf T}$ : les amplitudes de $\ket{01}$ et $\ket{10}$
+sont échangées.
+
+\subsubsection{Accord avec la définition}
+
+Pour deux états $\ket{\psi}=(a_0,a_1)^{\mathsf T}$ et $\ket{\phi}=(b_0,b_1)^{\mathsf T}$ :
+\[
+  \mathrm{SWAP}\,(\ket{\psi}\otimes\ket{\phi})
+  =\mathrm{SWAP}\begin{pmatrix}a_0b_0\\a_0b_1\\a_1b_0\\a_1b_1\end{pmatrix}
+  =\begin{pmatrix}a_0b_0\\a_1b_0\\a_0b_1\\a_1b_1\end{pmatrix}
+  =\begin{pmatrix}b_0\\b_1\end{pmatrix}\otimes\begin{pmatrix}a_0\\a_1\end{pmatrix}
+  =\ket{\phi}\otimes\ket{\psi},
+\]
+ce qui est bien la définition. La porte s'écrit aussi avec des projecteurs :
+\[
+  \mathrm{SWAP}=\sum_{a,b\in\{0,1\}}\ket{a}\bra{b}\otimes\ket{b}\bra{a}.
+\]
+En effet, pour $\ket{c}\otimes\ket{d}$ on trouve
+$\sum_{a,b}\ket{a}\braket{b}{c}\otimes\ket{b}\braket{a}{d}$, et seul le terme $b=c$, $a=d$
+est non nul : le résultat est $\ket{d}\otimes\ket{c}$.
+
+\paragraph{Exemples.}
+\begin{itemize}[nosep]
+  \item Deux états différents : $\mathrm{SWAP}\big(\ket{0}\otimes\ket{+}\big)
+        =\mathrm{SWAP}\,\frac{1}{\sqrt2}(1,1,0,0)^{\mathsf T}=\frac{1}{\sqrt2}(1,0,1,0)^{\mathsf T}
+        =\ket{+}\otimes\ket{0}$.
+  \item L'état $\ket{\psi}=\frac{1}{\sqrt2}\ket{00}+\frac{1}{\sqrt2}\ket{11}$ ne change pas :
+        $\mathrm{SWAP}\ket{\psi}=\frac{1}{\sqrt2}\ket{00}+\frac{1}{\sqrt2}\ket{11}=\ket{\psi}$,
+        car $\ket{00}$ et $\ket{11}$ sont invariants. De même
+        $\frac{1}{\sqrt2}(\ket{00}-\ket{11})$ et $\frac{1}{\sqrt2}(\ket{01}+\ket{10})$ sont invariants,
+        alors que $\mathrm{SWAP}\,\frac{1}{\sqrt2}(\ket{01}-\ket{10})=\frac{1}{\sqrt2}(\ket{10}-\ket{01})$
+        est l'opposé de l'état de départ. Ce sont les quatre états de Bell (chapitre~\ref{chap:bell}).
+\end{itemize}
+
+\paragraph{Propriétés.} Échanger deux fois redonne l'état de départ :
+$\mathrm{SWAP}^2=\mathrm{Id}$ ; la matrice est réelle et symétrique, donc
+$\mathrm{SWAP}^\dagger\mathrm{SWAP}=\mathrm{SWAP}^2=\mathrm{Id}$ : elle est unitaire.
+
+\subsubsection{Lien avec le CNOT}
+
+\begin{resultat}{SWAP échange les rôles de contrôle et de cible}
+\[
+  \mathrm{CNOT}_{21}=\mathrm{SWAP}\;\mathrm{CNOT}_{12}\;\mathrm{SWAP}.
+\]
+\end{resultat}
+
+\emph{Sur les états de base.}
+$\mathrm{SWAP}\,\mathrm{CNOT}_{12}\,\mathrm{SWAP}\ket{a,b}
+=\mathrm{SWAP}\,\mathrm{CNOT}_{12}\ket{b,a}
+=\mathrm{SWAP}\ket{b,\,b\oplus a}=\ket{b\oplus a,\,b}=\mathrm{CNOT}_{21}\ket{a,b}$.
+
+\emph{Par les matrices.} Multiplier à gauche par $\mathrm{SWAP}$ échange les lignes $2$ et
+$3$, multiplier à droite l'échange les colonnes $2$ et $3$ :
+\[
+  \mathrm{SWAP}\,\mathrm{CNOT}_{12}
+  =\begin{pmatrix}1&0&0&0\\0&0&0&1\\0&1&0&0\\0&0&1&0\end{pmatrix},
+  \qquad
+  \mathrm{SWAP}\,\mathrm{CNOT}_{12}\,\mathrm{SWAP}
+  =\begin{pmatrix}1&0&0&0\\0&0&0&1\\0&0&1&0\\0&1&0&0\end{pmatrix}=\mathrm{CNOT}_{21}.
+\]
+
+\begin{remarque}[SWAP avec trois CNOT]
+$\mathrm{SWAP}=\mathrm{CNOT}_{12}\,\mathrm{CNOT}_{21}\,\mathrm{CNOT}_{12}$. En effet, sur
+$\ket{a,b}$ (on applique les portes de droite à gauche) :
+\[
+  \ket{a,b}\ \xrightarrow{\ \mathrm{CNOT}_{12}\ }\ \ket{a,\,a\oplus b}
+  \ \xrightarrow{\ \mathrm{CNOT}_{21}\ }\ \ket{a\oplus(a\oplus b),\,a\oplus b}=\ket{b,\,a\oplus b}
+  \ \xrightarrow{\ \mathrm{CNOT}_{12}\ }\ \ket{b,\,b\oplus(a\oplus b)}=\ket{b,a}.
+\]
+Les deux membres coïncident sur les états de base, donc sur tous les états par linéarité.
+\end{remarque}
+
+% ---------------------------------------------------------------------
+\subsection{Portes contrôlées : contrôlé-\texorpdfstring{$U$}{U}, Fredkin et Toffoli}\label{sec:controlees}
+% ---------------------------------------------------------------------
+
+Le CNOT est le cas le plus simple d'une idée générale : appliquer une opération à un ou
+plusieurs qubits \emph{cibles} seulement si un ou plusieurs qubits de \emph{contrôle} valent $1$.
+Dans cette section, le contrôle est le \emph{premier} chiffre
+du ket (remarque de la section~\ref{sec:cnot}). Les qubits sont notés $x$, $y$, $z$ (le qubit $x$ est le contrôle) et
+$\ket{x,y,z}=\ket{x}\otimes\ket{y}\otimes\ket{z}$ ; d'après la convention de la section~\ref{sec:circuits}, le
+contrôle est dessiné en bas (figure~\ref{fig:controlees}). Pour éviter la confusion avec les
+matrices de Pauli, on écrit ici $\sigma_x=X$ pour la porte NOT.
+
+\begin{figure}[!ht]
+\centering
+\begin{adjustbox}{max width=\linewidth}
+\begin{tikzpicture}[>=Stealth, font=\small]
+  % (a) contrôlé-U : contrôle x en bas, cible y en haut
+  \draw (0,1.2) -- (3.4,1.2);
+  \draw (0,0) -- (3.4,0);
+  \node[anchor=east] at (0,1.2) {$y$};
+  \node[anchor=east] at (0,0) {$x$};
+  \draw[insarouge, thick] (1.7,0) -- (1.7,0.85);
+  \pic at (1.7,0) {ctl};
+  \node[porte] at (1.7,1.2) {$U$};
+  \node[anchor=north, font=\footnotesize] at (1.7,-0.5) {(a) contrôlé-$U$};
+  % (b) contrôlé-SWAP (Fredkin) : x contrôle, y et z échangés
+  \draw (5,2.4) -- (8.4,2.4);
+  \draw (5,1.2) -- (8.4,1.2);
+  \draw (5,0) -- (8.4,0);
+  \node[anchor=east] at (5,2.4) {$z$};
+  \node[anchor=east] at (5,1.2) {$y$};
+  \node[anchor=east] at (5,0) {$x$};
+  \draw[insarouge, thick] (6.7,0) -- (6.7,2.4);
+  \pic at (6.7,0) {ctl};
+  \pic at (6.7,1.2) {croix};
+  \pic at (6.7,2.4) {croix};
+  \node[anchor=north, font=\footnotesize] at (6.7,-0.5) {(b) Fredkin (C-SWAP)};
+  % (c) Toffoli (CCNOT) : x et y contrôlent, z cible
+  \draw (10,2.4) -- (13.4,2.4);
+  \draw (10,1.2) -- (13.4,1.2);
+  \draw (10,0) -- (13.4,0);
+  \node[anchor=east] at (10,2.4) {$z$};
+  \node[anchor=east] at (10,1.2) {$y$};
+  \node[anchor=east] at (10,0) {$x$};
+  \draw[insarouge, thick] (11.7,0) -- (11.7,2.4);
+  \pic at (11.7,0) {ctl};
+  \pic at (11.7,1.2) {ctl};
+  \pic at (11.7,2.4) {cible};
+  \node[anchor=north, font=\footnotesize] at (11.7,-0.5) {(c) Toffoli (CCNOT)};
+\end{tikzpicture}
+\end{adjustbox}
+\caption{Portes contrôlées. Le contrôle $x$ est le premier chiffre du ket, donc le fil du bas.
+(a) Le qubit $y$ subit $U$ si $x=1$ ; pour $U=X$ on retrouve le CNOT. (b) Si $x=1$, les qubits
+$y$ et $z$ sont échangés. (c) Si $x=y=1$, le qubit $z$ est inversé.}
+\label{fig:controlees}
+\end{figure}
+
+\subsubsection{Contrôlé-\texorpdfstring{$U$}{U}}
+
+\begin{definition}{Porte contrôlée-$U$}
+Soit $U$ une matrice unitaire $2\times2$. Sur le système $(x,y)$, de contrôle $x$ et de cible $y$,
+\[
+  \mathrm{C}U=\ket{0}\bra{0}_x\otimes I_y+\ket{1}\bra{1}_x\otimes U_y .
+\]
+Le premier terme agit quand le contrôle est $\ket{0}$ : la cible ne change pas ($I$). Le second
+agit quand le contrôle est $\ket{1}$ : la cible subit $U$.
+\end{definition}
+
+Comme $\ket{0}\bra{0}\ket{x}=\delta_{x0}\ket{0}$ et $\ket{1}\bra{1}\ket{x}=\delta_{x1}\ket{1}$,
+\[
+  \mathrm{C}U\big(\ket{x}\otimes\ket{y}\big)=\ket{x}\otimes U^x\ket{y},\qquad U^0=I,\ U^1=U .
+\]
+Par la règle $A\otimes B=(A_{ij}B)$, $\ket{0}\bra{0}\otimes I=\begin{pmatrix}I&0\\0&0\end{pmatrix}$
+et $\ket{1}\bra{1}\otimes U=\begin{pmatrix}0&0\\0&U\end{pmatrix}$ (blocs $2\times2$), donc
+\[
+  \mathrm{C}U=\begin{pmatrix}I&0\\0&U\end{pmatrix}
+  =\begin{pmatrix}1&0&0&0\\0&1&0&0\\0&0&u_{00}&u_{01}\\0&0&u_{10}&u_{11}\end{pmatrix}
+  \qquad\text{pour }U=\begin{pmatrix}u_{00}&u_{01}\\u_{10}&u_{11}\end{pmatrix}.
+\]
+Cette matrice est unitaire car $I^\dagger I=I$ et $U^\dagger U=I$.
+
+\paragraph{Le CNOT est un cas particulier.} Pour $U=\sigma_x$,
+$\mathrm{C}\sigma_x=\ket{0}\bra{0}_x\otimes I_y+\ket{1}\bra{1}_x\otimes\sigma_x$ est le CNOT de
+contrôle $x$ (premier chiffre), c'est-à-dire $\mathrm{CNOT}_{12}$ de la section~\ref{sec:cnot}.
+On calcule l'action sur les quatre états de base, avec $\braket{0}{0}=\braket{1}{1}=1$,
+$\braket{0}{1}=\braket{1}{0}=0$, $\sigma_x\ket{0}=\ket{1}$ et $\sigma_x\ket{1}=\ket{0}$ :
+\begin{align*}
+  \mathrm{C}\sigma_x\ket{00}&=\big[\ket{0}\bra{0}_x\otimes I_y\big]\ket{0}_x\ket{0}_y
+      +\big[\ket{1}\bra{1}_x\otimes\sigma_x\big]\ket{0}_x\ket{0}_y\\
+    &=\ket{0}\braket{0}{0}\otimes I\ket{0}+\ket{1}\braket{1}{0}\otimes\sigma_x\ket{0}
+     =\ket{0}\otimes\ket{0}+0=\ket{00},\\[1.2ex]
+  \mathrm{C}\sigma_x\ket{01}&=\ket{0}\braket{0}{0}\otimes I\ket{1}+\ket{1}\braket{1}{0}\otimes\sigma_x\ket{1}
+     =\ket{0}\otimes\ket{1}+0=\ket{01},\\[1.2ex]
+  \mathrm{C}\sigma_x\ket{10}&=\ket{0}\braket{0}{1}\otimes I\ket{0}+\ket{1}\braket{1}{1}\otimes\sigma_x\ket{0}
+     =0+\ket{1}\otimes\ket{1}=\ket{11},\\[1.2ex]
+  \mathrm{C}\sigma_x\ket{11}&=\ket{0}\braket{0}{1}\otimes I\ket{1}+\ket{1}\braket{1}{1}\otimes\sigma_x\ket{1}
+     =0+\ket{1}\otimes\ket{0}=\ket{10}.
+\end{align*}
+On retrouve la table du CNOT : la cible n'est inversée que si le contrôle vaut $1$.
+
+\paragraph{Un autre exemple : $U=Z$.} Ici
+\[
+  \mathrm{C}Z=\begin{pmatrix}I&0\\0&Z\end{pmatrix}=\mathrm{diag}(1,1,1,-1) :
+\]
+la porte multiplie $\ket{11}$ par $-1$ et ne touche pas les autres états de base. Elle est
+symétrique entre les deux qubits. Elle se déduit du CNOT par
+$\mathrm{C}Z=(I\otimes H)\,\mathrm{C}X\,(I\otimes H)$, où $\mathrm{C}X$ est le contrôlé-$X$.
+En effet, $I\otimes H=\mathrm{diag}(H,H)$ (deux blocs $2\times2$ égaux à $H$), et le produit de
+matrices diagonales par blocs se fait bloc par bloc :
+\[
+  (I\otimes H)\begin{pmatrix}I&0\\0&X\end{pmatrix}(I\otimes H)
+  =\begin{pmatrix}H\,I\,H&0\\0&H\,X\,H\end{pmatrix}
+  =\begin{pmatrix}I&0\\0&HXH\end{pmatrix},
+\]
+car $H^2=I$, et
+\[
+  HXH=\frac12\begin{pmatrix}1&1\\1&-1\end{pmatrix}\begin{pmatrix}0&1\\1&0\end{pmatrix}\begin{pmatrix}1&1\\1&-1\end{pmatrix}
+  =\frac12\begin{pmatrix}1&1\\1&-1\end{pmatrix}\begin{pmatrix}1&-1\\1&1\end{pmatrix}
+  =\frac12\begin{pmatrix}2&0\\0&-2\end{pmatrix}=Z
+\]
+(section~\ref{sec:hadamard} : $H$ échange les axes $x$ et $z$).
+
+\subsubsection{Contrôlé-SWAP : la porte de Fredkin}
+
+\begin{definition}{Porte de Fredkin (C-SWAP)}
+Sur trois qubits $(x,y,z)$ (espace de dimension $2^3=8$), avec $x$ pour contrôle,
+\[
+  \mathrm{C\text{-}SWAP}=\ket{0}\bra{0}_x\otimes I_y\otimes I_z+\ket{1}\bra{1}_x\otimes\mathrm{SWAP}_{yz}.
+\]
+Si $x=0$, rien ne change ; si $x=1$, les qubits $y$ et $z$ sont échangés.
+\end{definition}
+
+Calcul sur quatre états de base (avec $I\ket{ab}=\ket{ab}$ et $\mathrm{SWAP}\ket{ab}=\ket{ba}$) :
+\begin{align*}
+  \mathrm{C\text{-}SWAP}\ket{000}&=\ket{0}\braket{0}{0}\otimes I\ket{00}+\ket{1}\braket{1}{0}\otimes\mathrm{SWAP}\ket{00}
+     =\ket{0}\otimes\ket{00}+0=\ket{000},\\[1.2ex]
+  \mathrm{C\text{-}SWAP}\ket{101}&=\ket{0}\braket{0}{1}\otimes I\ket{01}+\ket{1}\braket{1}{1}\otimes\mathrm{SWAP}\ket{01}
+     =0+\ket{1}\otimes\ket{10}=\ket{110},\\[1.2ex]
+  \mathrm{C\text{-}SWAP}\ket{110}&=\ket{0}\braket{0}{1}\otimes I\ket{10}+\ket{1}\braket{1}{1}\otimes\mathrm{SWAP}\ket{10}
+     =0+\ket{1}\otimes\ket{01}=\ket{101},\\[1.2ex]
+  \mathrm{C\text{-}SWAP}\ket{010}&=\ket{0}\braket{0}{0}\otimes I\ket{10}+\ket{1}\braket{1}{0}\otimes\mathrm{SWAP}\ket{10}
+     =\ket{0}\otimes\ket{10}+0=\ket{010}.
+\end{align*}
+Les huit états de base donnent :
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}ccccccccc@{}}
+\toprule
+Entrée & $\ket{000}$ & $\ket{001}$ & $\ket{010}$ & $\ket{011}$ & $\ket{100}$ & $\ket{101}$ & $\ket{110}$ & $\ket{111}$ \\
+\midrule
+Sortie & $\ket{000}$ & $\ket{001}$ & $\ket{010}$ & $\ket{011}$ & $\ket{100}$ & $\ket{110}$ & $\ket{101}$ & $\ket{111}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+Seuls $\ket{101}$ et $\ket{110}$ changent (contrôle à $1$ et $y\neq z$) ; pour $\ket{100}$ et
+$\ket{111}$ l'échange de deux qubits égaux ne change rien. Dans la base
+$\ket{000},\ket{001},\dots,\ket{111}$ (ordre binaire), la matrice est
+$\mathrm{diag}(I_4,\mathrm{SWAP})$ (deux blocs $4\times4$) :
+\[
+  \mathrm{C\text{-}SWAP}=\begingroup\setlength{\arraycolsep}{3pt}\begin{pmatrix}
+    1&0&0&0&0&0&0&0\\
+    0&1&0&0&0&0&0&0\\
+    0&0&1&0&0&0&0&0\\
+    0&0&0&1&0&0&0&0\\
+    0&0&0&0&1&0&0&0\\
+    0&0&0&0&0&0&1&0\\
+    0&0&0&0&0&1&0&0\\
+    0&0&0&0&0&0&0&1
+  \end{pmatrix}\endgroup .
+\]
+C'est l'identité dont les lignes $6$ et $7$ sont échangées.
+
+\paragraph{Contrôle en superposition.} Avec $\ket{+}_x\otimes\ket{0}_y\otimes\ket{1}_z
+=\frac{1}{\sqrt2}\big(\ket{001}+\ket{101}\big)$ :
+\[
+  \mathrm{C\text{-}SWAP}\,\frac{1}{\sqrt2}\big(\ket{001}+\ket{101}\big)
+  =\frac{1}{\sqrt2}\big(\ket{001}+\ket{110}\big).
+\]
+Le résultat n'est pas un produit : les coefficients de $\ket{x}\otimes\ket{yz}$ forment la
+matrice (lignes $x=0,1$, colonnes $yz=00,01,10,11$)
+\[
+  \frac{1}{\sqrt2}\begin{pmatrix}0&1&0&0\\0&0&1&0\end{pmatrix},
+\]
+dont les deux lignes ne sont pas proportionnelles. Le qubit $x$ est intriqué avec la paire
+$(y,z)$.
+
+\subsubsection{Contrôlé-contrôlé-NOT : la porte de Toffoli}
+
+\begin{definition}{Porte de Toffoli (CCNOT)}
+Sur trois qubits $(x,y,z)$, avec $x$ et $y$ pour contrôles et $z$ pour cible,
+\[
+  \mathrm{CCNOT}=\ket{0}\bra{0}_x\otimes I_y\otimes I_z
+   +\ket{1}\bra{1}_x\otimes\Big[\ket{0}\bra{0}_y\otimes I_z+\ket{1}\bra{1}_y\otimes\sigma_x\Big].
+\]
+Le crochet est un CNOT (contrôle $y$, cible $z$), appliqué seulement si $x=1$ : si $x=0$, rien ;
+si $x=1$ et $y=0$, rien ; si $x=1$ et $y=1$, le qubit $z$ est inversé.
+\end{definition}
+
+Calcul de $\mathrm{CCNOT}\ket{110}$ :
+\begin{align*}
+  \mathrm{CCNOT}\ket{110}&=\ket{0}\braket{0}{1}\otimes I\ket{1}\otimes I\ket{0}
+     +\ket{1}\braket{1}{1}\otimes\Big[\ket{0}\braket{0}{1}\otimes I\ket{0}
+       +\ket{1}\braket{1}{1}\otimes\sigma_x\ket{0}\Big]\\
+  &=0+\ket{1}\otimes\Big[0+\ket{1}\otimes\ket{1}\Big]=\ket{111}.
+\end{align*}
+Pour les huit états de base, $\mathrm{CCNOT}\ket{x,y,z}=\ket{x,\,y,\,z\oplus xy}$ :
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}ccccccccc@{}}
+\toprule
+Entrée & $\ket{000}$ & $\ket{001}$ & $\ket{010}$ & $\ket{011}$ & $\ket{100}$ & $\ket{101}$ & $\ket{110}$ & $\ket{111}$ \\
+\midrule
+Sortie & $\ket{000}$ & $\ket{001}$ & $\ket{010}$ & $\ket{011}$ & $\ket{100}$ & $\ket{101}$ & $\ket{111}$ & $\ket{110}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+Seuls $\ket{110}$ et $\ket{111}$ sont échangés : la matrice est $\mathrm{diag}(I_6,X)$
+(un bloc $6\times6$ égal à l'identité, puis $X$),
+\[
+  \mathrm{CCNOT}=\begingroup\setlength{\arraycolsep}{3pt}\begin{pmatrix}
+    1&0&0&0&0&0&0&0\\
+    0&1&0&0&0&0&0&0\\
+    0&0&1&0&0&0&0&0\\
+    0&0&0&1&0&0&0&0\\
+    0&0&0&0&1&0&0&0\\
+    0&0&0&0&0&1&0&0\\
+    0&0&0&0&0&0&0&1\\
+    0&0&0&0&0&0&1&0
+  \end{pmatrix}\endgroup .
+\]
+
+\begin{remarque}[Portes réversibles]
+Les portes de Fredkin et de Toffoli sont des permutations des états de base qui échangent
+seulement deux d'entre eux : elles sont leurs propres inverses ($\mathrm{C\text{-}SWAP}^2=\mathrm{CCNOT}^2=\mathrm{Id}$)
+et unitaires. Avec $z=0$, la Toffoli calcule le ET logique $x\wedge y$ sans rien effacer :
+$\ket{x,y,0}\to\ket{x,y,xy}$ ; avec $z=1$, elle calcule le NON-ET. Elle sert à écrire tout calcul
+classique de façon réversible.
+\end{remarque}
+
+\clearpage
+% ---------------------------------------------------------------------
+\subsection{Récapitulatif du chapitre}\label{sec:recap4}
 % ---------------------------------------------------------------------
 
 \begin{center}
-\renewcommand{\arraystretch}{1.4}
-\begin{tabular}{@{}ll@{}}
+\adjustbox{max width=\linewidth}{%
+\begin{tikzpicture}[>=Stealth, font=\footnotesize,
+    boite/.style={draw=insarouge, fill=insarouge!6, rounded corners=2pt, thick,
+                  minimum width=4.4cm, minimum height=1.5cm, align=center, inner sep=3pt},
+    lien/.style={->, very thick, insagris},
+    etiq/.style={font=\scriptsize\itshape, text=insagris, inner sep=2pt}]
+  \node[boite] (uni) at (0,0)
+    {\textbf{Porte unitaire}\\ $U^\dagger U=\mathrm{Id}$, \ $\ket{\Psi}\to U\ket{\Psi}$\\ {\scriptsize\S\,\ref{sec:portes}}};
+  \node[boite] (un) at (5.9,0)
+    {\textbf{Portes à un qubit}\\ $X$, $Y$, $Z$, $H$, $S$, $T$\\ {\scriptsize\S\,\ref{sec:pauli}--\ref{sec:phase}}};
+  \node[boite] (blo) at (11.8,0)
+    {\textbf{Rotations de Bloch}\\ $X,Y,Z,H$ : angle $\pi$ ; $P_\theta$ autour de $z$\\
+     {\scriptsize\S\,\ref{sec:portes-bloch}}};
+  \node[boite] (cir) at (11.8,-2.5)
+    {\textbf{Circuits}\\ fils, boîtes, $U_2U_1$\\ {\scriptsize\S\,\ref{sec:circuits}, \ref{sec:op2}}};
+  \node[boite] (cn) at (5.9,-2.5)
+    {\textbf{CNOT et SWAP}\\ $\ket{a,b}\to\ket{a\oplus b,b}$\\ {\scriptsize\S\,\ref{sec:cnot}, \ref{sec:swap}}};
+  \node[boite] (cu) at (0,-2.5)
+    {\textbf{Portes contrôlées}\\ $\mathrm{C}U=\mathrm{diag}(I,U)$, Fredkin, Toffoli\\
+     {\scriptsize\S\,\ref{sec:controlees}}};
+  \draw[lien] (uni) -- (un);
+  \draw[lien] (un) -- (blo);
+  \draw[lien] (blo) -- (cir);
+  \draw[lien] (cir) -- (cn) node[etiq, midway, above=1pt] {2 qubits};
+  \draw[lien] (cn) -- (cu) node[etiq, midway, above=1pt] {contrôle};
+\end{tikzpicture}}
+\end{center}
+
+\begin{aretenir}
+\begin{itemize}
+  \item Une porte est un opérateur unitaire : elle conserve la norme, elle est réversible
+        ($U^{-1}=U^\dagger$) et agit sur la sphère de Bloch comme une rotation. C'est l'évolution de
+        Schrödinger, $U=\ee^{-\ii\Hop t/\hbar}$.
+  \item $X$ échange $\ket{0}$ et $\ket{1}$, $Z$ change le signe de $\ket{1}$, $Y=\ii XZ$ fait les deux ;
+        $H$ échange les bases $Z$ et $X$ et crée des superpositions ; $P_\theta$, $S=P_{\pi/2}$ et
+        $T=P_{\pi/4}$ font tourner autour de $z$ ($T^2=S$, $S^2=Z$).
+  \item Dans un circuit, le temps va de gauche à droite et la matrice est le produit dans l'ordre
+        inverse, $U_2U_1$. Le fil du haut porte le dernier chiffre du ket. Des portes en parallèle
+        forment un produit tensoriel $U_A\otimes U_B$.
+  \item Le CNOT inverse la cible si le contrôle vaut $1$ : $\ket{a,b}\to\ket{a\oplus b,b}$. Le SWAP
+        échange deux qubits ; $\mathrm{CNOT}_{21}=\mathrm{SWAP}\,\mathrm{CNOT}_{12}\,\mathrm{SWAP}$.
+  \item Une porte contrôlée a pour matrice $\mathrm{diag}(I,U)$. Fredkin (contrôlé-SWAP) et
+        Toffoli (CCNOT) sont des permutations des états de base : réversibles et universelles
+        pour le calcul classique.
+\end{itemize}
+\end{aretenir}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.45}
+\begin{tabular}{@{}l l r@{}}
 \toprule
-\textbf{Notion} & \textbf{Formule} \\
+\textbf{Notion} & \textbf{Formule} & \textbf{§} \\
 \midrule
-Opérateur & $A=\displaystyle\sum_{i,j}A_{ij}\ket{i}\bra{j}$, \quad $A_{ij}=\bra{i}A\ket{j}$ \\
-Matrice de densité (pur) & $\rho=\ket{\Psi}\bra{\Psi}={\renewcommand{\arraystretch}{1}\begin{pmatrix}|\alpha|^2 & \alpha\beta^*\\ \alpha^*\beta & |\beta|^2\end{pmatrix}}$ \\
-Propriétés & $\operatorname{Tr}\rho=1$, \quad $\rho^\dagger=\rho$, \quad $\rho\geq0$ \\
-Valeur moyenne & $\langle A\rangle=\operatorname{Tr}(\rho A)$, \quad $P(i)=\rho_{ii}$ \\
-Pur / mixte & $\operatorname{Tr}\rho^2=1$ / $\operatorname{Tr}\rho^2<1$ \\
-Spectral & $\rho=\displaystyle\sum_i\lambda_i\ket{i}\bra{i}$, \quad $\lambda_i\geq0$, \quad $\sum_i\lambda_i=1$ \\
-Sphère de Bloch & $\ket{\Psi}=\cos\frac\theta2\ket{0}+\ee^{\ii\varphi}\sin\frac\theta2\ket{1}$ \\
-Vecteur de Bloch & $\vec r=(\sin\theta\cos\varphi,\ \sin\theta\sin\varphi,\ \cos\theta)$, \quad
-                   $|\vec r|=1$ (pur), $<1$ (mixte) \\
+Porte unitaire & $U^\dagger U=\mathrm{Id}$, \quad $\bra{\Psi}U^\dagger U\ket{\Psi}=1$ & \ref{sec:portes} \\
+Pauli & $X\ket{0}=\ket{1}$, \quad $Z\ket{1}=-\ket{1}$, \quad $X^2=Y^2=Z^2=\mathrm{Id}$ & \ref{sec:pauli} \\
+Hadamard & $H\ket{0}=\ket{+}$, \quad $H\ket{1}=\ket{-}$, \quad $H^2=\mathrm{Id}$ & \ref{sec:hadamard} \\
+Phase & $P_\theta=\mathrm{diag}(1,\ee^{\ii\theta})$, \quad $S=P_{\pi/2}$, \quad $T=P_{\pi/4}$ & \ref{sec:phase} \\
+Circuit & $U_1$ puis $U_2$ : \quad $U_2U_1$ & \ref{sec:circuits} \\
+Portes locales & $(U\otimes I)(\ket{u}\otimes\ket{v})=U\ket{u}\otimes\ket{v}$ & \ref{sec:op2} \\
+CNOT & $\ket{a,b}\to\ket{a\oplus b,b}$, \quad $\mathrm{CNOT}=I\otimes\ket{0}\bra{0}+X\otimes\ket{1}\bra{1}$
+  & \ref{sec:cnot} \\
+SWAP & $\mathrm{SWAP}\ket{a,b}=\ket{b,a}$, \quad $\mathrm{SWAP}=\mathrm{CNOT}_{12}\mathrm{CNOT}_{21}\mathrm{CNOT}_{12}$
+  & \ref{sec:swap} \\
+Contrôlé-$U$ & $\mathrm{C}U=\ket{0}\bra{0}\otimes I+\ket{1}\bra{1}\otimes U=\mathrm{diag}(I,U)$ & \ref{sec:controlees} \\
+Toffoli & $\mathrm{CCNOT}\ket{x,y,z}=\ket{x,y,z\oplus xy}$ & \ref{sec:controlees} \\
 \bottomrule
 \end{tabular}
 \end{center}
+
+\begin{savoirfaire}
+\begin{itemize}
+  \item Appliquer une porte à un état (par la matrice ou par les ket-bra) et identifier sa rotation
+        de Bloch (exercices~\ref{ex:conj} et~\ref{ex:phases}).
+  \item Lire un circuit, écrire sa matrice dans le bon ordre et suivre l'état à chaque étape
+        (exercice~\ref{ex:kickback}).
+  \item Écrire la matrice de $U\otimes I$, du CNOT, du SWAP ou d'une porte contrôlée, et calculer
+        leur action sur les états de base.
+  \item Reconnaître une porte réversible qui calcule une fonction booléenne
+        (exercice~\ref{ex:toffoli}).
+\end{itemize}
+\end{savoirfaire}

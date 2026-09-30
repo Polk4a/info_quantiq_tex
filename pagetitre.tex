@@ -1,0 +1,72 @@
+% =====================================================================
+%  Page de titre : importée par main.tex avec \input{pagetitre}.
+%  Elle utilise \doctitre, \docsoustitre, \doctagline, \docauteur, \docprof,
+%  \docecole et \docdate, définis dans le bloc « Informations du document »
+%  de main.tex. Cette page est la page 1 du document : elle est comptée dans la
+%  numérotation, sans décalage entre le numéro affiché et la page du PDF. Elle
+%  n'a ni numéro (\thispagestyle{empty}) ni en-tête (compteur pagesdegarde de
+%  main.tex). Le \setcounter qui suit \end{titlepage} donne le numéro 2 au sommaire,
+%  car l'environnement titlepage remet sinon le compteur à 1.
+%  (TikZ « remember picture » : deux passes de compilation.)
+% =====================================================================
+\begin{titlepage}
+\thispagestyle{empty}
+\setcounter{page}{1}
+\begin{tikzpicture}[remember picture, overlay]
+  % logo en haut à gauche et filet rouge dessous (mêmes positions que l'en-tête des autres pages)
+  \node[anchor=south west, inner sep=0]
+    at ($(current page.north west)+(0.5cm,-1.5cm)$)
+    {\includegraphics[width=6cm]{images/logo_insa.png}};
+  \draw[insarouge, line width=1pt]
+    ($(current page.north west)+(0.5cm,-1.8cm)$) -- ($(current page.north east)+(-0.5cm,-1.8cm)$);
+
+  % titre du document sur un bandeau rouge
+  \fill[insarouge]
+    ($(current page.north west)+(0,-6.6cm)$) rectangle ($(current page.north east)+(0,-11.4cm)$);
+  \node[text=white, align=center, text width=17cm, font=\fontsize{38}{44}\selectfont\bfseries]
+    at ($(current page.north)+(0,-8.3cm)$) {\doctitre};
+  \node[text=white, align=center, text width=17cm, font=\Large]
+    at ($(current page.north)+(0,-10.1cm)$) {\docsoustitre};
+
+  % accroche et cours
+  \node[text=insagris, align=center, text width=16cm, font=\Large\itshape]
+    at ($(current page.north)+(0,-13.0cm)$) {\doctagline};
+  \node[text=insagris, align=center, text width=16cm, font=\large]
+    at ($(current page.north)+(0,-14.4cm)$) {Cours de \docprof{} -- \docecole};
+
+  % motif : de l'onde au circuit quantique
+  \begin{scope}[shift={($(current page.north)+(0,-18.4cm)$)}, >=Stealth, font=\small]
+    % paquet d'ondes (mécanique ondulatoire)
+    \draw[insagris, thick, domain=-7.6:-1.6, samples=240]
+      plot (\x, {0.65*sin(\x*115)*exp(-((\x+4.6)^2)/2.2)});
+    \draw[insagris!60, dashed, domain=-7.6:-1.6, samples=80]
+      plot (\x, {0.65*exp(-((\x+4.6)^2)/2.2)});
+    \draw[insagris!60, dashed, domain=-7.6:-1.6, samples=80]
+      plot (\x, {-0.65*exp(-((\x+4.6)^2)/2.2)});
+    \node[text=insagris, font=\footnotesize] at (-4.6,-1.15) {$\Psi(x,t)$};
+    % flèche
+    \draw[->, insarouge, very thick] (-1.1,0) -- (0.3,0);
+    % circuit à deux qubits : H, CNOT, mesure
+    \draw (0.8,0.45) -- (7.6,0.45);
+    \draw (0.8,-0.45) -- (7.6,-0.45);
+    \node[anchor=east, font=\footnotesize] at (0.8,0.45) {$\ket{0}$};
+    \node[anchor=east, font=\footnotesize] at (0.8,-0.45) {$\ket{0}$};
+    \node[porte] at (2.4,0.45) {$H$};
+    \draw[insarouge, thick] (4.2,0.45) -- (4.2,-0.45);
+    \pic at (4.2,0.45) {ctl};
+    \pic at (4.2,-0.45) {cible};
+    \pic at (6.2,0.45) {mesure};
+    \pic at (6.2,-0.45) {mesure};
+    \node[text=insagris, font=\footnotesize] at (4.2,-1.15) {$\ket{\Phi^+}=\tfrac{1}{\sqrt2}(\ket{00}+\ket{11})$};
+  \end{scope}
+
+  % auteur et date
+  \node[align=center, font=\Large]
+    at ($(current page.south)+(0,6.4cm)$) {\textbf{\docauteur}};
+  \draw[insarouge, line width=1pt]
+    ($(current page.south)+(-3cm,5.3cm)$) -- ($(current page.south)+(3cm,5.3cm)$);
+  \node[text=insagris, align=center, font=\large]
+    at ($(current page.south)+(0,4.4cm)$) {\docdate};
+\end{tikzpicture}
+\end{titlepage}
+\setcounter{page}{2}

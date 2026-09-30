@@ -1,0 +1,54 @@
+% =====================================================================
+%  Introduction : importée par main.tex avec \include{introduction}.
+%  Section non numérotée, ajoutée au sommaire. Pas de figure flottante ici
+%  (la numérotation des figures suit celle des chapitres) : le plan est un
+%  dessin TikZ en place.
+% =====================================================================
+
+% Macros de Dirac (déjà définies dans main.tex ; ce bloc évite l'erreur
+% « Undefined control sequence \ket » si main.tex est une ancienne version).
+\providecommand{\ket}[1]{|#1\rangle}
+\providecommand{\bra}[1]{\langle #1|}
+\providecommand{\braket}[2]{\langle #1|#2\rangle}
+
+\phantomsection
+\section*{Introduction}
+\addcontentsline{toc}{section}{Introduction}
+
+Ce document rassemble les notes du cours d'informatique quantique de \docprof{}
+(4A FISE SF). Il part de la mécanique ondulatoire (fonction d'onde de Schrödinger,
+interprétation de Born) et en tire, pas à pas, les outils de l'informatique
+quantique : états d'un \gls{qubit}, \glslink{hilbert}{espace de Hilbert}, opérateurs,
+matrice de densité, portes quantiques, systèmes de plusieurs qubits,
+\gls{intrication} et téléportation. Tous les calculs sont détaillés.
+
+\begin{center}
+\begin{tikzpicture}[>=Stealth, font=\scriptsize,
+    boite/.style={draw=insarouge, fill=insarouge!6, thick, rounded corners=2pt,
+                  text width=2.35cm, minimum height=1.55cm, align=center},
+    num/.style={circle, fill=insarouge, text=white, font=\small\bfseries, minimum size=5.5mm, inner sep=0pt}]
+  \foreach \i/\txt/\idee in {
+      1/{Histoire et mécanique quantique}/{onde de matière},
+      2/{Notation de Dirac et espace de Hilbert}/{états = vecteurs},
+      3/{Opérateurs, matrice de densité, sphère de Bloch, produit tensoriel}/{états mixtes, Bloch},
+      4/{Portes quantiques et systèmes multi-qubits}/{portes unitaires},
+      5/{États quantiques, intrication, états de Bell}/{corrélations, téléportation},
+      6/{Exemples et exercices corrigés}/{s'entraîner}} {
+    \node[boite] (b\i) at ({(\i-1)*2.72},0) {\txt};
+    \node[num] at ({(\i-1)*2.72},1.2) {\i};
+    \node[text=insagris, font=\scriptsize\itshape, text width=2.4cm, align=center] at ({(\i-1)*2.72},-1.25) {\idee};
+  }
+  \foreach \i/\j in {1/2, 2/3, 3/4, 4/5, 5/6}
+    \draw[->, insarouge, thick] (b\i.east) -- (b\j.west);
+\end{tikzpicture}
+\end{center}
+
+Chaque chapitre se termine par un \emph{récapitulatif} : schéma de synthèse, points à retenir,
+tableau de formules renvoyant aux sections, et liste de savoir-faire. Le chapitre~\ref{chap:exercices}
+rassemble des exemples et des exercices corrigés. Les termes techniques sont définis dans
+le glossaire, en fin de document ; les ouvrages de référence figurent dans la bibliographie
+\parencite[par exemple][]{nielsen2010,cohen1973}.
+
+\paragraph{Prérequis et conventions.} Algèbre linéaire (matrices, valeurs propres),
+nombres complexes, notions d'ondes. Le symbole $\ii$ désigne l'unité imaginaire, $\ket{0}$
+et $\ket{1}$ la base de calcul d'un qubit, et $\hbar=h/2\pi$.

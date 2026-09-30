@@ -1,0 +1,151 @@
+% =====================================================================
+%  glossaire.tex : entrées du glossaire (chargé par main.tex via \input{glossaire})
+%  Utilisation dans le texte : \gls{qubit} (le mot apparaît en rouge).
+%  Toutes les entrées sont imprimées en fin de document (\glsaddall dans main.tex).
+%  La clé sort={...} donne le texte brut utilisé pour le tri (accents, commandes).
+%  Compilation : deux passes de pdflatex suffisent (\makenoidxglossaries).
+% =====================================================================
+
+\newglossaryentry{amplitude}{name={amplitude de probabilité}, sort={amplitude},
+  description={Coefficient complexe $c_i$ devant un état de base dans une superposition ; la probabilité de mesurer cet état est $|c_i|^2$}}
+
+\newglossaryentry{basecalcul}{name={base de calcul}, sort={base de calcul},
+  description={Base orthonormée $\{\ket{0},\ket{1}\}$ d'un qubit (base $Z$) ; pour $n$ qubits, les $2^n$ états $\ket{i_1\dots i_n}$}}
+
+\newglossaryentry{bell}{name={Bell (état de)}, sort={Bell},
+  description={L'un des quatre états intriqués maximaux de deux qubits, $\ket{\Phi^\pm}$ et $\ket{\Psi^\pm}$ ; ils forment une base orthonormée}}
+
+\newglossaryentry{bloch}{name={Bloch (sphère de)}, sort={Bloch},
+  description={Sphère unité dont les points représentent les états purs d'un qubit ; l'intérieur de la boule représente les états mixtes}}
+
+\newglossaryentry{born}{name={Born (règle de)}, sort={Born},
+  description={La probabilité de trouver la particule en $x$ est $|\Psi(x,t)|^2\,\dd x$ ; pour un qubit, $P(i)=|\braket{i}{\Psi}|^2$}}
+
+\newglossaryentry{bra}{name={bra}, sort={bra},
+  description={Vecteur ligne $\bra{a}=(\ket{a})^\dagger$, transposé conjugué du ket $\ket{a}$}}
+
+\newglossaryentry{cnot}{name={CNOT}, sort={CNOT},
+  description={Porte à deux qubits : la cible est inversée ($X$) si le contrôle vaut $1$ ; avec la convention du cours (contrôle $B$, cible $A$), $\ket{a,b}\to\ket{a\oplus b,b}$}}
+
+\newglossaryentry{coherence}{name={cohérence}, sort={coherence},
+  description={Terme hors diagonale de la matrice de densité ; il contient la phase relative entre les composantes de l'état}}
+
+\newglossaryentry{densite}{name={densité (matrice de)}, sort={densite},
+  description={Opérateur $\rho$ hermitien, positif, de trace $1$, qui décrit un état pur ($\rho=\ket{\Psi}\bra{\Psi}$) ou mixte ($\rho=\sum_ip_i\ket{\Psi_i}\bra{\Psi_i}$)}}
+
+\newglossaryentry{dirac}{name={Dirac (notation de)}, sort={Dirac},
+  description={Notation $\ket{a}$ (ket), $\bra{a}$ (bra) et $\braket{a}{b}$ (produit scalaire) pour les vecteurs d'un espace de Hilbert}}
+
+\newglossaryentry{ebit}{name={e-bit}, sort={e-bit},
+  description={Paire de qubits maximalement intriqués, par exemple $\ket{\Phi^+}$, partagée entre deux parties ; ressource de la téléportation}}
+
+\newglossaryentry{entropie}{name={entropie de Shannon}, sort={entropie de Shannon},
+  description={$H(A)=-\sum_ap(a)\log_2p(a)$, incertitude moyenne (en bits) sur une variable aléatoire $A$}}
+
+\newglossaryentry{vonneumann}{name={entropie de von Neumann}, sort={entropie de von Neumann},
+  description={$S(\rho)=-\operatorname{Tr}(\rho\log_2\rho)=-\sum_i\lambda_i\log_2\lambda_i$ ; elle vaut $0$ pour un état pur}}
+
+\newglossaryentry{hilbert}{name={Hilbert (espace de)}, sort={Hilbert},
+  description={Espace vectoriel complexe muni d'un produit scalaire et complet ; c'est l'espace des états d'un système quantique}}
+
+\newglossaryentry{etatmixte}{name={état mixte}, sort={etat mixte},
+  description={État décrit par une matrice de densité avec $\operatorname{Tr}\rho^2<1$ : mélange statistique d'états purs}}
+
+\newglossaryentry{etatpur}{name={état pur}, sort={etat pur},
+  description={État décrit par un vecteur $\ket{\Psi}$, soit $\rho=\ket{\Psi}\bra{\Psi}$ et $\operatorname{Tr}\rho^2=1$}}
+
+\newglossaryentry{stationnaire}{name={état stationnaire}, sort={etat stationnaire},
+  description={Solution de l'équation de Schrödinger de la forme $\psi(x)\,\ee^{-\ii Et/\hbar}$ : énergie certaine et densité de probabilité indépendante du temps}}
+
+\newglossaryentry{fonctiononde}{name={fonction d'onde}, sort={fonction d'onde},
+  description={Fonction complexe $\Psi(x,t)$ décrivant l'état d'une particule ; $|\Psi|^2$ est une densité de probabilité de présence}}
+
+\newglossaryentry{fredkin}{name={Fredkin (porte de)}, sort={Fredkin},
+  description={Porte à trois qubits (C-SWAP) : échange les deux cibles si le contrôle vaut $1$}}
+
+\newglossaryentry{hadamard}{name={Hadamard (porte de)}, sort={Hadamard},
+  description={Porte $H=\frac{1}{\sqrt2}\begin{pmatrix}1&1\\1&-1\end{pmatrix}$ ; elle crée la superposition $\ket{+}$ à partir de $\ket{0}$ et change de base $Z\leftrightarrow X$}}
+
+\newglossaryentry{hamiltonien}{name={hamiltonien}, sort={hamiltonien},
+  description={Opérateur $\hat H=-\frac{\hbar^2}{2m}\partial_x^2+V(x)$ associé à l'énergie totale}}
+
+\newglossaryentry{hermitien}{name={hermitien}, sort={hermitien},
+  description={Se dit d'un opérateur égal à son adjoint, $A^\dagger=A$ ; ses valeurs propres sont réelles}}
+
+\newglossaryentry{informationmutuelle}{name={information mutuelle}, sort={information mutuelle},
+  description={$I(A;B)=H(A)+H(B)-H(A,B)$ : ce que la connaissance de $B$ apprend sur $A$}}
+
+\newglossaryentry{intrication}{name={intrication}, sort={intrication},
+  description={Propriété d'un état de plusieurs qubits qui n'est pas un produit d'états de chaque qubit}}
+
+\newglossaryentry{ket}{name={ket}, sort={ket},
+  description={Vecteur colonne $\ket{a}$ d'un espace de Hilbert ; il représente un état quantique}}
+
+\newglossaryentry{mesure}{name={mesure}, sort={mesure},
+  description={Opération qui donne l'un des résultats possibles avec la probabilité de Born et projette l'état sur l'état associé}}
+
+\newglossaryentry{nonclonage}{name={non-clonage (théorème du)}, sort={non-clonage},
+  description={Aucune opération ne copie un état quantique inconnu ; la téléportation déplace l'état sans le copier}}
+
+\newglossaryentry{operateur}{name={opérateur}, sort={operateur},
+  description={Application linéaire d'un espace de Hilbert dans lui-même ; en dimension finie, une matrice}}
+
+\newglossaryentry{orthonormee}{name={orthonormée (base)}, sort={orthonormee},
+  description={Base $\{\ket{e_i}\}$ de vecteurs de norme $1$ et deux à deux orthogonaux : $\braket{e_i}{e_j}=\delta_{ij}$}}
+
+\newglossaryentry{pauli}{name={Pauli (matrices de)}, sort={Pauli},
+  description={Les trois matrices $X=\sigma_x$, $Y=\sigma_y$, $Z=\sigma_z$ ; ce sont des portes à un qubit}}
+
+\newglossaryentry{population}{name={population}, sort={population},
+  description={Terme diagonal $\rho_{ii}$ de la matrice de densité : probabilité de mesurer l'état de base $\ket{i}$}}
+
+\newglossaryentry{tenseur}{name={produit tensoriel}, sort={produit tensoriel},
+  description={Construction $\mathcal{H}_A\otimes\mathcal{H}_B$ de l'espace de deux systèmes ; $\dim=\dim\mathcal{H}_A\times\dim\mathcal{H}_B$}}
+
+\newglossaryentry{projecteur}{name={projecteur}, sort={projecteur},
+  description={Opérateur $\hat P$ tel que $\hat P^2=\hat P$ et $\hat P^\dagger=\hat P$ ; par exemple $\hat P_i=\ket{i}\bra{i}$}}
+
+\newglossaryentry{qubit}{name={qubit}, sort={qubit},
+  description={Bit quantique : système à deux niveaux d'état $\alpha\ket{0}+\beta\ket{1}$, avec $|\alpha|^2+|\beta|^2=1$}}
+
+\newglossaryentry{schrodinger}{name={Schrödinger (équation de)}, sort={Schrodinger},
+  description={Équation $\ii\hbar\,\partial_t\Psi=\hat H\Psi$ qui gouverne l'évolution de la fonction d'onde}}
+
+\newglossaryentry{separable}{name={séparable (état)}, sort={separable},
+  description={État de deux qubits qui s'écrit $\ket{\Psi}_A\otimes\ket{\Psi}_B$ ; critère : $c_{00}c_{11}-c_{01}c_{10}=0$}}
+
+\newglossaryentry{superposition}{name={superposition}, sort={superposition},
+  description={Combinaison linéaire $\sum_ic_i\ket{i}$ d'états ; conséquence de la linéarité de l'équation de Schrödinger}}
+
+\newglossaryentry{swap}{name={SWAP}, sort={SWAP},
+  description={Porte à deux qubits qui échange leurs états : $\ket{a,b}\to\ket{b,a}$}}
+
+\newglossaryentry{teleportation}{name={téléportation quantique}, sort={teleportation},
+  description={Protocole qui transmet un état de qubit inconnu avec un e-bit et deux bits classiques, sans déplacer le qubit}}
+
+\newglossaryentry{toffoli}{name={Toffoli (porte de)}, sort={Toffoli},
+  description={Porte à trois qubits (CCNOT) : la cible est inversée si les deux contrôles valent $1$ ; $\ket{x,y,z}\to\ket{x,y,z\oplus xy}$}}
+
+\newglossaryentry{trace}{name={trace (partielle)}, sort={trace},
+  description={$\operatorname{Tr}_B$ : opération qui «~oublie~» le sous-système $B$ et donne l'état $\rho_A$ du sous-système $A$}}
+
+\newglossaryentry{unitaire}{name={unitaire}, sort={unitaire},
+  description={Matrice $U$ telle que $U^\dagger U=\mathrm{Id}$ ; elle conserve la norme et est réversible ; c'est une porte quantique}}
+
+\newglossaryentry{observable}{name={observable}, sort={observable},
+  description={Opérateur hermitien qui représente une grandeur mesurable ; ses valeurs propres sont les résultats possibles d'une mesure}}
+
+\newglossaryentry{effondrement}{name={effondrement (de l'état)}, sort={effondrement},
+  description={Changement brusque de l'état lors d'une mesure : il devient l'état propre associé au résultat obtenu}}
+
+\newglossaryentry{valeurpropre}{name={valeur propre}, sort={valeur propre},
+  description={Nombre $\lambda$ tel que $A\ket{v}=\lambda\ket{v}$ avec $\ket{v}\neq0$ (vecteur propre) ; pour une observable, résultat possible d'une mesure}}
+
+\newglossaryentry{phase}{name={phase (relative)}, sort={phase},
+  description={Angle $\varphi$ entre les amplitudes de $\ket{0}$ et $\ket{1}$ ; observable, contrairement à la phase globale}}
+
+\newglossaryentry{purete}{name={pureté}, sort={purete},
+  description={Nombre $\operatorname{Tr}\rho^2$, compris entre $\frac1d$ et $1$ (dimension $d$) ; il vaut $1$ si et seulement si l'état est pur}}
+
+\newglossaryentry{porte}{name={porte quantique}, sort={porte quantique},
+  description={Opération unitaire appliquée à un ou plusieurs qubits ; dessinée comme une boîte sur un circuit}}

@@ -1,0 +1,43 @@
+% =====================================================================
+%  Conclusion : importée par main.tex avec \include{conclusion}.
+%  Section non numérotée, ajoutée au sommaire.
+% =====================================================================
+
+% Macros de Dirac (déjà définies dans main.tex ; ce bloc évite l'erreur
+% « Undefined control sequence \ket » si main.tex est une ancienne version).
+\providecommand{\ket}[1]{|#1\rangle}
+\providecommand{\bra}[1]{\langle #1|}
+\providecommand{\braket}[2]{\langle #1|#2\rangle}
+
+\phantomsection
+\section*{Conclusion}
+\addcontentsline{toc}{section}{Conclusion}
+
+On est parti de l'onde de matière de de Broglie et de l'équation de Schrödinger pour
+aboutir à un modèle de calcul complet. Le tableau ci-dessous résume la traduction de la
+physique ondulatoire vers l'informatique quantique.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.45}
+\begin{tabular}{@{}p{3.6cm}p{5.4cm}p{5.6cm}@{}}
+\toprule
+\textbf{Notion} & \textbf{Mécanique ondulatoire} & \textbf{Informatique quantique} \\
+\midrule
+État & fonction d'onde $\Psi(x,t)$ & vecteur $\ket{\Psi}$ d'un espace de Hilbert, ou $\rho$ \\
+Grandeur physique & opérateur $\hat p$, $\hat H$ & matrice hermitienne \\
+Évolution & équation de Schrödinger & porte unitaire $U$ \\
+Mesure & règle de Born $|\Psi|^2$ & $P(i)=|\braket{i}{\Psi}|^2$ et projection \\
+Plusieurs systèmes & fonction de plusieurs variables & produit tensoriel $\otimes$ \\
+Corrélations & --- & intrication, états de Bell \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+L'intrication est la ressource qui distingue les systèmes quantiques : le protocole de
+téléportation du chapitre~\ref{chap:bell} la consomme pour transmettre un état inconnu, sans le copier.
+
+\paragraph{Pour aller plus loin.} Ce document ne traite ni les algorithmes (Deutsch, Grover,
+Shor \parencite{shor1997}), ni les inégalités de Bell et CHSH \parencite{bell1964}, ni la
+correction d'erreurs quantiques, qui prolongent directement les chapitres~\ref{chap:portes}
+et~\ref{chap:bell}. Les ouvrages de \textcite{nielsen2010} et de \textcite{mermin2007} en
+donnent une présentation complète.

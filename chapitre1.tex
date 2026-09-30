@@ -1,27 +1,86 @@
 % =====================================================================
-%  Chapitre 1 : Fondements physiques de la mécanique quantique
+%  Chapitre 1 : Histoire et mécanique quantique
 %  Fichier importé par main.tex avec \include{chapitre1}.
 %  Il ne contient ni préambule ni \begin{document} : les environnements
-%  (definition, resultat, remarque), les macros (\ii, \ee, \dd, \pd, \pdd,
-%  \Hop) et les couleurs (insarouge, insagris) sont définis dans main.tex.
+%  (definition, resultat, remarque, aretenir, savoirfaire, exercice, correction),
+%  les macros (\ii, \ee, \dd, \pd, \pdd, \Hop, \ket, \bra, \braket), les symboles
+%  de circuits (ctl, cible, croix, mesure, porte) et les couleurs (insarouge,
+%  insagris) sont définis dans main.tex. Un chapitre = une \section.
 % =====================================================================
 
+% Macros de Dirac (déjà définies dans main.tex ; ce bloc évite l'erreur
+% « Undefined control sequence \ket » si main.tex est une ancienne version).
+\providecommand{\ket}[1]{|#1\rangle}
+\providecommand{\bra}[1]{\langle #1|}
+\providecommand{\braket}[2]{\langle #1|#2\rangle}
+
 % =====================================================================
-\section{Fondements physiques de la mécanique quantique}\label{sec:fondements}
+\section{Histoire et mécanique quantique}\label{chap:histoire}
 % =====================================================================
 
-\begin{remarque}[Plan général du cours]
-\begin{enumerate}[nosep]
-  \item Mécanique quantique (ce chapitre) ;
-  \item Espace de Hilbert $\mathcal{H}$ ;
-  \item Notation de Dirac ;
-  \item Espace produit tensoriel ;
-  \item États quantiques, intrication quantique, états de Bell.
-\end{enumerate}
-\end{remarque}
+Ce chapitre présente la mécanique quantique ondulatoire : la double nature
+onde--corpuscule, l'équation de Schrödinger, la fonction d'onde et son interprétation
+probabiliste, les opérateurs, les états stationnaires du puits infini et le principe de
+superposition. Le chapitre~\ref{chap:dirac} reprend ces idées avec les outils de l'algèbre
+linéaire (notation de Dirac, espace de Hilbert). Pour approfondir, on peut consulter
+\textcite{griffiths2018} et \textcite{cohen1973}.
 
 % ---------------------------------------------------------------------
-\subsection{Dualité onde--corpuscule}
+\subsection{Repères historiques}\label{sec:histoire}
+% ---------------------------------------------------------------------
+
+À la fin du \textsc{xix}\textsuperscript{e} siècle, la physique classique échoue à expliquer
+le rayonnement du corps noir : Planck (1900) suppose que la matière échange de l'énergie par
+paquets $E=h\nu$. Einstein (1905) en déduit que la lumière est elle-même faite de quanta, les
+photons \parencite{einstein1905}, et de Broglie (1924) associe une onde à toute particule
+\parencite{debroglie1925}. Deux formulations équivalentes suivent : la mécanique des matrices
+(Heisenberg, 1925) et la mécanique ondulatoire de Schrödinger (1926)
+\parencite{schrodinger1926}, dont Born donne l'interprétation probabiliste
+\parencite{born1926}. Dirac unifie les deux approches \parencite{dirac1930} et introduit la
+notation qu'utilise ce cours \parencite{dirac1939}. L'étude de l'intrication, du paradoxe d'Einstein, Podolsky et Rosen (« EPR », 1935) aux
+inégalités de Bell (1964) \parencite{einstein1935,bell1964}, puis l'idée de Feynman d'utiliser
+des systèmes quantiques pour calculer \parencite{feynman1982} conduisent à l'informatique
+quantique : téléportation \parencite{bennett1993}, factorisation de Shor \parencite{shor1997}.
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, font=\scriptsize]
+  \def\dx{1.24}
+  \draw[insagris, thick] (-0.55,0) -- (11*\dx+0.55,0);
+  \foreach \i/\an/\qui/\quoi/\col in {
+      0/1900/Planck/{quanta d'énergie}/insarouge,
+      1/1905/Einstein/{le photon}/insarouge,
+      2/1924/{de Broglie}/{onde de matière}/insarouge,
+      3/1925/Heisenberg/{mécanique des matrices}/insarouge,
+      4/1926/{Schrödinger, Born}/{équation d'onde, probabilités}/insarouge,
+      5/1927/{Davisson, Germer}/{diffraction d'électrons}/insarouge,
+      6/1935/{EPR}/{paradoxe, intrication}/insarouge,
+      7/1939/Dirac/{notation bra-ket}/insarouge,
+      8/1964/Bell/{inégalités de Bell}/insagris,
+      9/1982/Feynman/{simulation quantique}/insagris,
+      10/1993/{Bennett et al.}/{téléportation}/insagris,
+      11/1994/Shor/{factorisation}/insagris} {
+    \pgfmathtruncatemacro{\haut}{mod(\i,2)}
+    \fill[\col] (\i*\dx,0) circle (2.3pt);
+    \ifnum\haut=0
+      \draw[\col] (\i*\dx,0) -- (\i*\dx,0.42);
+      \node[anchor=south, align=center, text width=2.35cm, inner sep=1pt]
+        at (\i*\dx,0.42) {{\normalsize\bfseries\color{\col}\an}\\ \qui\\ \itshape\quoi};
+    \else
+      \draw[\col] (\i*\dx,0) -- (\i*\dx,-0.42);
+      \node[anchor=north, align=center, text width=2.35cm, inner sep=1pt]
+        at (\i*\dx,-0.42) {{\normalsize\bfseries\color{\col}\an}\\ \qui\\ \itshape\quoi};
+    \fi
+  }
+\end{tikzpicture}
+\caption{Frise chronologique : en rouge, les jalons de la mécanique quantique (chapitres~\ref{chap:histoire}
+et~\ref{chap:dirac}) ; en gris, ceux de l'information quantique (chapitres~\ref{chap:portes}
+et~\ref{chap:bell}). Les dates sont espacées régulièrement pour la lisibilité.}
+\label{fig:frise}
+\end{figure}
+
+% ---------------------------------------------------------------------
+\subsection{Dualité onde--corpuscule}\label{sec:dualite}
 % ---------------------------------------------------------------------
 
 \subsubsection{Einstein : la lumière est faite de photons}
@@ -45,6 +104,45 @@ avec $h \approx 6{,}63\times10^{-34}\ \mathrm{J\cdot s}$ (constante de Planck),
 $\hbar = \dfrac{h}{2\pi}$, $\omega = 2\pi f$ (pulsation) et
 $k = \dfrac{2\pi}{\lambda}$ (nombre d'onde).
 \end{definition}
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, font=\small]
+  % (a) schéma : un photon arrache un électron au métal
+  \begin{scope}
+    \fill[insagris!35] (0,0) rectangle (5,0.55);
+    \node[font=\footnotesize] at (2.5,0.275) {métal};
+    \draw[decorate, decoration={snake, amplitude=1.2pt, segment length=5pt}, insarouge, thick, ->]
+      (0.2,2.7) -- (1.4,0.6);
+    \node[insarouge, anchor=east] at (0.75,1.75) {photon $hf$};
+    \draw[->, insagris, thick] (1.45,0.6) -- (3.0,1.85);
+    \shade[ball color=insagris!80] (3.15,1.97) circle (0.14);
+    \node[anchor=west] at (3.4,2.0) {$e^-$};
+    \node[anchor=west, align=left, font=\footnotesize] at (3.4,1.35) {$E_c=hf-W$};
+    \node[anchor=north, align=center, text width=5cm, font=\footnotesize] at (2.5,-0.1)
+      {travail d'extraction $W$ :\\ énergie minimale pour sortir du métal};
+    \node[above, font=\small\bfseries] at (2.5,3.95) {(a) schéma};
+  \end{scope}
+  % (b) énergie cinétique maximale en fonction de la fréquence
+  \begin{scope}[xshift=7.6cm]
+    \draw[->] (-0.2,0) -- (4.7,0) node[right] {$f$};
+    \draw[->] (0,-1.8) -- (0,3.4) node[above] {$E_{c,\max}$};
+    \draw[dashed, insarouge] (0,-1.5) -- (1.5,0);
+    \draw[very thick, insarouge] (1.5,0) -- (4.3,2.8);
+    \node[anchor=east] at (0,-1.5) {$-W$};
+    \node[anchor=north west, inner sep=2pt] at (1.5,0) {$f_0=W/h$};
+    \node[insarouge, anchor=south east] at (3.0,1.75) {pente $h$};
+    \node[insagris, font=\footnotesize, align=center, anchor=south west, text width=1.4cm] at (0.05,0.05)
+      {pas d'émission};
+    \node[above, font=\small\bfseries] at (2.2,3.95) {(b) $E_{c,\max}=hf-W$};
+  \end{scope}
+\end{tikzpicture}
+\caption{Effet photo-électrique. (a) Un photon d'énergie $hf$ arrache un électron si $hf>W$ ;
+l'excédent devient énergie cinétique. (b) $E_{c,\max}=hf-W$ est une droite de pente $h$ en fonction
+de la fréquence $f$ : aucune émission sous le seuil $f_0=W/h$, quelle que soit l'intensité de la
+lumière. L'intensité ne change que le nombre d'électrons émis.}
+\label{fig:photoelec}
+\end{figure}
 
 \subsubsection{de Broglie : la matière est une onde}
 
@@ -112,7 +210,7 @@ d'onde} qui gouverne cette onde de matière ? C'est la question à laquelle
 répond l'équation de Schrödinger (1926).
 
 % ---------------------------------------------------------------------
-\subsection{Rappel : l'onde classique}
+\subsection{Rappel : l'onde classique}\label{sec:onde}
 % ---------------------------------------------------------------------
 
 Une onde plane progressive sinusoïdale se propageant selon $x$ s'écrit
@@ -167,8 +265,48 @@ Schrödinger sera du \emph{premier} ordre en temps, avec une fonction d'onde
 \emph{complexe}.
 \end{remarque}
 
+\paragraph{Superposition et interférences.} L'équation des ondes est \emph{linéaire} : la somme
+de deux solutions est une solution. Deux ondes de même fréquence, d'amplitude $A$ et déphasées de
+$\Delta\varphi$, donnent
+\[
+  A\cos\theta+A\cos(\theta+\Delta\varphi)
+  =2A\cos\frac{\Delta\varphi}{2}\;\cos\!\Big(\theta+\frac{\Delta\varphi}{2}\Big),
+  \qquad\theta=kx-\omega t .
+\]
+L'amplitude résultante $2A\,|\cos(\Delta\varphi/2)|$ vaut $2A$ pour des ondes en phase
+($\Delta\varphi=0$, interférence \emph{constructive}) et $0$ pour des ondes en opposition de phase
+($\Delta\varphi=\pi$, interférence \emph{destructive}).
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, font=\small, x=0.4cm, y=0.5cm]
+  \foreach \dphi/\xs/\tit in {0/0/{(a) $\Delta\varphi=0$ : constructive},
+                              180/7.4/{(b) $\Delta\varphi=\pi$ : destructive}} {
+    \begin{scope}[xshift=\xs cm]
+      \draw[->] (-0.3,0) -- (15.6,0) node[right] {$x$};
+      \draw[thick, insagris, domain=0:15, samples=200]
+        plot (\x, {cos(360*\x/4)});
+      \draw[thick, dashed, insarouge, domain=0:15, samples=200]
+        plot (\x, {cos(360*\x/4+\dphi)});
+      \draw[very thick, black!80, domain=0:15, samples=200]
+        plot (\x, {cos(360*\x/4)+cos(360*\x/4+\dphi)});
+      \node[above] at (7.5,2.35) {\tit};
+    \end{scope}
+  }
+  % légende
+  \draw[thick, insagris] (0,-2.9) -- (1,-2.9) node[right, black] {$y_1$};
+  \draw[thick, dashed, insarouge] (4,-2.9) -- (5,-2.9) node[right, black] {$y_2$};
+  \draw[very thick, black!80] (8,-2.9) -- (9,-2.9) node[right, black] {$y_1+y_2$};
+\end{tikzpicture}
+\caption{Superposition de deux ondes $y_1$ et $y_2$ de même amplitude $A$ et de même
+longueur d'onde. (a) En phase, les amplitudes s'ajoutent. (b) En opposition de phase, elles se
+compensent. Le principe de superposition s'applique de même à l'équation de Schrödinger
+(hypothèse~(c) de la section~\ref{sec:construction}).}
+\label{fig:interferences}
+\end{figure}
+
 % ---------------------------------------------------------------------
-\subsection{Construction de l'équation de Schrödinger}
+\subsection{Construction de l'équation de Schrödinger}\label{sec:construction}
 % ---------------------------------------------------------------------
 
 \subsubsection{Particule libre et particule dans un potentiel}
@@ -230,7 +368,8 @@ On cherche une équation vérifiant les quatre hypothèses suivantes.
         \end{equation}
   \item \textbf{Linéarité :} si $\Psi_1$ et $\Psi_2$ sont solutions, alors
         $\Psi = c_1\Psi_1 + c_2\Psi_2$ l'est aussi. C'est le principe de
-        superposition, source des interférences constructives et destructives.
+        superposition, source des interférences constructives et destructives
+        (figure~\ref{fig:interferences}).
   \item \textbf{Particule libre :} si $V = V_0$, la solution est une onde plane
         progressive sinusoïdale.
 \end{enumerate}
@@ -327,12 +466,12 @@ Sur l'onde plane $\ee^{\ii(kx-\omega t)}$ :
 $\ii\hbar\,\partial_t\Psi = \hbar\omega\,\Psi = E\,\Psi$ et
 $-\ii\hbar\,\partial_x\Psi = \hbar k\,\Psi = p\,\Psi$. L'équation de Schrödinger
 traduit donc $E = \frac{p^2}{2m} + V$ avec $E\to\ii\hbar\,\partial_t$ et
-$p\to-\ii\hbar\,\partial_x$ : c'est le point de départ du chapitre sur les
-opérateurs quantiques.
+$p\to-\ii\hbar\,\partial_x$ : c'est le point de départ de la
+section~\ref{sec:operateurs} sur les opérateurs quantiques.
 \end{remarque}
 
 % ---------------------------------------------------------------------
-\subsection{Interprétation de Max Born}
+\subsection{Interprétation de Max Born}\label{sec:born}
 % ---------------------------------------------------------------------
 
 La fonction d'onde $\Psi:\mathbb{R}\times\mathbb{R}\to\mathbb{C}$ est à valeurs
@@ -380,6 +519,37 @@ normalisation}
 particule entre $a$ et $b$ est l'aire colorée.}
 \end{figure}
 
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, font=\small]
+  % partie réelle de Psi
+  \draw[->] (-0.2,0) -- (10.2,0) node[right] {$x$};
+  \draw[->] (0,-1.1) -- (0,1.3) node[above] {$\mathrm{Re}\,\Psi$};
+  \draw[insagris!60, dashed, domain=0.3:9.7, samples=100] plot (\x, {exp(-((\x-5)^2)/2.2)});
+  \draw[insagris!60, dashed, domain=0.3:9.7, samples=100] plot (\x, {-exp(-((\x-5)^2)/2.2)});
+  \draw[thick, insagris, domain=0.3:9.7, samples=300]
+    plot (\x, {exp(-((\x-5)^2)/2.2)*cos(360*\x/1.15)});
+  % densité de probabilité
+  \begin{scope}[yshift=-3.5cm]
+    \draw[->] (-0.2,0) -- (10.2,0) node[right] {$x$};
+    \draw[->] (0,0) -- (0,1.7) node[above] {$|\Psi|^2$};
+    \fill[insarouge!20] (0.3,0) -- plot[domain=0.3:9.7, samples=100]
+      (\x, {1.4*exp(-((\x-5)^2)/1.1)}) -- (9.7,0) -- cycle;
+    \draw[thick, insarouge, domain=0.3:9.7, samples=100]
+      plot (\x, {1.4*exp(-((\x-5)^2)/1.1)});
+    \draw[dotted] (5,0) -- (5,1.4);
+    \node[below] at (5,0) {$x_0$};
+    \draw[<->] (3.95,0.515) -- (6.05,0.515);
+    \node[right, font=\footnotesize, inner sep=3pt] at (6.05,0.515) {$\Delta x$};
+  \end{scope}
+\end{tikzpicture}
+\caption{Paquet d'ondes : superposition d'ondes planes de nombres d'onde voisins.
+En haut, la partie réelle de $\Psi$ (oscillation sous une enveloppe pointillée) ; en bas, la
+densité de probabilité $|\Psi|^2$ de Born, localisée autour de $x_0$ sur une largeur
+$\Delta x$.}
+\label{fig:paquet}
+\end{figure}
+
 \begin{remarque}
 \begin{itemize}[nosep]
   \item Multiplier $\Psi$ par une phase globale $\ee^{\ii\varphi}$ ne change pas
@@ -387,29 +557,632 @@ particule entre $a$ et $b$ est l'aire colorée.}
   \item L'onde plane $\ee^{\ii(kx-\omega t)}$ a $|\Psi|^2 = 1$ partout : elle
         n'est pas normalisable, la particule serait équiprobable à l'infini. Un
         état physique est une \emph{superposition} d'ondes planes (paquet
-        d'ondes), possible grâce à la linéarité (c).
-  \item Avec la notation de Dirac (chapitres suivants), $|\Psi\rangle$ désigne
+        d'ondes, figure~\ref{fig:paquet}), possible grâce à la linéarité (c).
+  \item Avec la notation de Dirac (section~\ref{sec:dirac}), $|\Psi\rangle$ désigne
         l'état et la normalisation s'écrit $\int\Psi^*\Psi\,\dd x = \langle\Psi|\Psi\rangle = 1$.
 \end{itemize}
 \end{remarque}
 
 % ---------------------------------------------------------------------
-\subsection{Récapitulatif}
+\subsection{Grandeurs physiques et opérateurs}\label{sec:operateurs}
 % ---------------------------------------------------------------------
 
+À chaque grandeur physique (position, quantité de mouvement, énergie) on associe
+un \emph{opérateur} $\hat O$ : une règle qui transforme une fonction d'onde en une
+autre, $\Psi\mapsto\hat O\Psi$. Le point de départ est l'onde plane de la
+section~\ref{sec:construction} : $\Psi=\ee^{\ii(kx-\omega t)}$ vérifie
+$-\ii\hbar\,\partial_x\Psi=\hbar k\,\Psi=p\,\Psi$.
+
+\begin{definition}{Opérateur quantité de mouvement}
+\[
+  \hat p = -\ii\hbar\,\frac{\partial}{\partial x},
+  \qquad
+  \hat p\,\Psi = -\ii\hbar\,\frac{\partial\Psi}{\partial x}.
+\]
+L'onde plane est fonction propre de $\hat p$, de valeur propre $p=\hbar k$.
+\end{definition}
+
+Les autres opérateurs s'obtiennent en remplaçant $p$ par $\hat p$ dans
+l'expression classique. Avec $E_c=\tfrac12 mv^2=p^2/2m$ :
+\[
+  \hat E_c = \frac{\hat p^{\,2}}{2m}
+  = \frac{1}{2m}\Big(-\ii\hbar\frac{\partial}{\partial x}\Big)
+                \Big(-\ii\hbar\frac{\partial}{\partial x}\Big)
+  = \frac{(-\ii\hbar)^2}{2m}\,\frac{\partial^2}{\partial x^2}
+  = -\frac{\hbar^2}{2m}\,\frac{\partial^2}{\partial x^2},
+  \qquad
+  \hat v = \frac{\hat p}{m} = -\frac{\ii\hbar}{m}\,\frac{\partial}{\partial x}.
+\]
+
 \begin{center}
-\renewcommand{\arraystretch}{1.5}
-\begin{tabular}{@{}ll@{}}
+\renewcommand{\arraystretch}{1.6}
+\begin{tabular}{@{}lll@{}}
 \toprule
-\textbf{Relation} & \textbf{Formule} \\
+\textbf{Grandeur} & \textbf{Classique} & \textbf{Opérateur} \\
 \midrule
-Planck--Einstein & $E = hf = \hbar\omega$ \\
-de Broglie & $\lambda = \dfrac{h}{p}$, \quad $p = \hbar k$ \\
-Énergie totale & $E = \dfrac{p^2}{2m} + V(x,t)$ \\
-Onde plane complexe & $\Psi = \ee^{\,\ii(kx-\omega t)}$ \\
-Schrödinger (dépendante du temps) & $\ii\hbar\,\partial_t\Psi = \Hop\Psi$, \quad
-   $\Hop = -\dfrac{\hbar^2}{2m}\partial_x^2 + V$ \\
-Born & $\dd P = |\Psi|^2\,\dd x$, \quad $\displaystyle\int_{-\infty}^{+\infty}|\Psi|^2\,\dd x = 1$ \\
+Position & $x$ & $\hat x = x\times$ \\
+Quantité de mouvement & $p$ & $\hat p = -\ii\hbar\,\partial_x$ \\
+Vitesse & $v=\dfrac{p}{m}$ & $\hat v = -\dfrac{\ii\hbar}{m}\,\partial_x$ \\
+Énergie cinétique & $E_c=\dfrac{p^2}{2m}$ & $\hat E_c = -\dfrac{\hbar^2}{2m}\,\partial_x^2$ \\
+Énergie potentielle & $V(x)$ & $\hat V = V(x)\times$ \\
+Énergie totale & $E=E_c+V$ & $\Hop = \hat E_c+\hat V = -\dfrac{\hbar^2}{2m}\,\partial_x^2+V(x)$ \\
 \bottomrule
 \end{tabular}
 \end{center}
+
+L'opérateur hamiltonien $\Hop$ représente l'énergie totale. Avec $E\to\ii\hbar\,\partial_t$,
+l'équation de Schrödinger de la section~\ref{sec:construction} n'est que la relation
+$E=E_c+V$ écrite avec des opérateurs : $\ii\hbar\,\partial_t\Psi=\Hop\Psi$.
+
+\begin{remarque}[Convention de signe]
+Le signe de $\hat p$ dépend du choix de l'onde plane $\ee^{\ii(kx-\omega t)}$. La
+convention conjuguée $\ee^{-\ii(kx-\omega t)}$ inverse les deux signes
+($\hat p=+\ii\hbar\,\partial_x$ et $E\to-\ii\hbar\,\partial_t$) sans changer les
+résultats physiques. Comme $\hat p$ intervient au carré, $\hat E_c$ est le même dans
+les deux conventions.
+\end{remarque}
+
+\begin{definition}{Valeur moyenne d'un opérateur}
+Pour une fonction d'onde normalisée $\Psi$,
+\[
+  \langle\hat O\rangle
+  = \int_{-\infty}^{+\infty}\Psi^*(x,t)\;\hat O\,\Psi(x,t)\,\dd x
+  = \bra{\Psi}\hat O\ket{\Psi}.
+\]
+C'est la moyenne des résultats obtenus en mesurant la grandeur sur un grand nombre
+de systèmes identiques, tous préparés dans l'état $\Psi$. L'opérateur agit sur
+$\Psi$ seul, à droite de $\Psi^*$. Pour la position,
+$\langle\hat x\rangle=\int x\,|\Psi|^2\,\dd x$ : c'est l'espérance de la densité
+de probabilité de Born.
+
+L'\emph{incertitude} (écart type) sur la grandeur associée à $\hat O$ mesure la
+dispersion des résultats autour de cette moyenne :
+\[
+  \sigma_O=\sqrt{\langle\hat O^{\,2}\rangle-\langle\hat O\rangle^2}\,,
+  \qquad
+  \langle\hat O^{\,2}\rangle=\int\Psi^*\,\hat O^{\,2}\,\Psi\,\dd x .
+\]
+Si $\Psi$ est une fonction propre de $\hat O$ ($\hat O\Psi=\lambda\Psi$), alors
+$\langle\hat O\rangle=\lambda$, $\langle\hat O^{\,2}\rangle=\lambda^2$ et
+$\sigma_O=0$ : la grandeur a une valeur certaine.
+\end{definition}
+
+% ---------------------------------------------------------------------
+\subsection{Solutions de l'équation de Schrödinger}\label{sec:solutions}
+% ---------------------------------------------------------------------
+
+\subsubsection{Du potentiel à la fonction d'onde}
+
+En mécanique classique, l'énergie potentielle $V(x,t)$ fixe la force
+$F=-\partial V/\partial x$, puis $\dd p/\dd t=F$ donne la trajectoire. En mécanique
+quantique, c'est l'équation de Schrödinger qui joue ce rôle : connaissant $V$, on la
+résout pour obtenir $\Psi(x,t)$.
+
+\begin{resultat}{ESDT : équation de Schrödinger dépendante du temps}
+\[
+  \ii\hbar\,\pd{\Psi(x,t)}{t} = \Hop\,\Psi(x,t),
+  \qquad
+  \Hop = -\frac{\hbar^2}{2m}\,\pdd{}{x} + V(x,t).
+\]
+\end{resultat}
+
+Si l'énergie potentielle ne dépend pas du temps, $V(x,t)=V(x)$, la force
+$F=-\dd V/\dd x$ (dérivée ordinaire) est constante dans le temps et l'énergie se
+conserve. L'équation se résout alors par séparation des variables.
+
+\subsubsection{Séparation des variables}
+
+On cherche des solutions produit d'une fonction de $x$ seul et d'une fonction de $t$
+seul :
+\[
+  \Psi(x,t)=\psi(x)\,\varphi(t).
+\]
+Dans l'ESDT, les dérivées partielles deviennent des dérivées ordinaires :
+\[
+  \ii\hbar\,\psi(x)\,\frac{\dd\varphi}{\dd t}
+  = \varphi(t)\left[-\frac{\hbar^2}{2m}\,\frac{\dd^2\psi}{\dd x^2}+V(x)\,\psi(x)\right].
+\]
+On divise par $\psi(x)\,\varphi(t)$ :
+\[
+  \underbrace{\ii\hbar\,\frac{1}{\varphi}\,\frac{\dd\varphi}{\dd t}}_{\text{ne dépend que de }t}
+  \;=\;
+  \underbrace{\frac{1}{\psi}\left[-\frac{\hbar^2}{2m}\,\frac{\dd^2\psi}{\dd x^2}+V(x)\,\psi\right]}_{\text{ne dépend que de }x}.
+\]
+Les deux membres dépendent de variables indépendantes et sont pourtant égaux pour
+tout $(x,t)$ : ils sont égaux à une même constante, notée $E$. On obtient deux
+équations.
+
+\paragraph{Partie temporelle.} $\ii\hbar\,\dd\varphi/\dd t=E\,\varphi$ donne
+\[
+  \varphi(t)=\ee^{-\ii Et/\hbar}=\ee^{-\ii\omega t},
+  \qquad \omega=\frac{E}{\hbar},
+\]
+la constante multiplicative étant absorbée dans $\psi$. On retrouve $E=\hbar\omega$ :
+la constante $E$ est bien l'énergie de la particule.
+
+\paragraph{Partie spatiale.} C'est l'ESIT ci-dessous.
+
+\begin{resultat}{ESIT : équation de Schrödinger indépendante du temps}
+\[
+  -\frac{\hbar^2}{2m}\,\frac{\dd^2\psi(x)}{\dd x^2}+V(x)\,\psi(x)=E\,\psi(x)
+  \qquad\Longleftrightarrow\qquad
+  \Hop\,\psi(x)=E\,\psi(x).
+\]
+C'est un \emph{problème aux valeurs propres} : $E$ est une valeur propre de $\Hop$
+(énergie permise) et $\psi$ la fonction propre associée. Chaque solution
+$(E_n,\psi_n)$ donne un \emph{état stationnaire}
+\[
+  \Psi_n(x,t)=\psi_n(x)\,\ee^{-\ii E_nt/\hbar}.
+\]
+\end{resultat}
+
+Dans un état stationnaire, $|\Psi_n(x,t)|^2=|\psi_n(x)|^2$ ne dépend pas du temps :
+le facteur temporel est une phase globale, non observable. Les conditions physiques
+($\psi$ continue et normalisable) ne sont satisfaites que pour certaines valeurs de
+$E$ : c'est l'origine de la quantification de l'énergie, illustrée ci-dessous.
+
+Comme l'ESDT est linéaire (hypothèse~(c) de la section~\ref{sec:construction}), toute
+superposition $\Psi=\sum_n c_n\,\Psi_n$ est aussi solution, normalisée si
+$\sum_n|c_n|^2=1$ et si les $\psi_n$ sont orthonormées. Une telle superposition
+n'est en général pas stationnaire : $|\Psi|^2$ contient des termes croisés en
+$\ee^{\ii(E_m-E_n)t/\hbar}$.
+
+\subsubsection{Exemple : puits de potentiel infini}
+
+Une particule de masse $m$ (un électron par exemple) est enfermée entre deux parois
+impénétrables, en $x=0$ et $x=a$ :
+\[
+  V(x)=
+  \begin{cases}
+    0 & \text{si } 0<x<a,\\
+    +\infty & \text{ailleurs.}
+  \end{cases}
+\]
+La particule ne peut pas se trouver hors du puits : $\psi=0$ pour $x\le0$ et
+$x\ge a$. La fonction $\psi$ est continue (mais pas sa dérivée, à cause du saut
+infini de $V$), d'où les conditions aux limites
+\[
+  \psi(0)=\psi(a)=0 .
+\]
+
+\paragraph{Opérateur hamiltonien.} Dans le puits $V=0$, donc $\Hop$ se réduit à
+l'opérateur énergie cinétique :
+\[
+  \Hop=\hat E_c=-\frac{\hbar^2}{2m}\,\frac{\dd^2}{\dd x^2}\qquad(0<x<a).
+\]
+
+\paragraph{Résolution de l'ESIT.} Avec $V=0$, l'ESIT s'écrit
+$\psi''=-k^2\psi$ avec $k=\sqrt{2mE}/\hbar$. On prend $E>0$ : pour $E\le0$, la seule
+solution vérifiant $\psi(0)=\psi(a)=0$ est $\psi\equiv0$. La solution générale est
+\[
+  \psi(x)=A\sin(kx)+B\cos(kx).
+\]
+\begin{itemize}[nosep]
+  \item $\psi(0)=0$ donne $B=0$ ;
+  \item $\psi(a)=A\sin(ka)=0$ avec $A\neq0$ (sinon $\psi\equiv0$ : pas de
+        particule) donne $ka=n\pi$, soit
+        $k_n=\dfrac{n\pi}{a}$ avec $n=1,2,3,\dots$
+        ($n=0$ donne $\psi\equiv0$, et $n<0$ redonne les mêmes états au signe près).
+\end{itemize}
+Cela revient à $\lambda_n=2\pi/k_n=2a/n$, soit $a=n\,\lambda_n/2$ : $n$ demi-longueurs
+d'onde tiennent dans le puits, comme pour une onde stationnaire.
+
+\begin{resultat}{Énergie quantifiée}
+\[
+  E_n=\frac{\hbar^2k_n^2}{2m}=\frac{n^2\pi^2\hbar^2}{2ma^2}=\frac{n^2h^2}{8ma^2}=n^2E_1,
+  \qquad n=1,2,3,\dots
+\]
+\textbf{Énergie fondamentale} (niveau $n=1$, le plus bas) :
+$\displaystyle E_1=\frac{\pi^2\hbar^2}{2ma^2}=\frac{h^2}{8ma^2}>0$.
+\end{resultat}
+
+\begin{remarque}[Lecture du résultat]
+\begin{itemize}[nosep]
+  \item Les énergies sont \emph{discrètes} : $E_{n+1}-E_n=(2n+1)E_1$. Comme
+        $E_n\propto1/a^2$, plus le puits est étroit, plus les énergies sont grandes.
+  \item $E_1\neq0$ : une particule confinée ne peut pas être au repos (énergie de
+        point zéro), conséquence du principe d'incertitude de Heisenberg.
+  \item Ordre de grandeur : pour un électron avec $a=1$~nm,
+        $E_1\approx0{,}38$~eV et $E_2=4E_1\approx1{,}5$~eV. Pour $a=1$~cm,
+        $E_1\approx4\times10^{-15}$~eV : la quantification est indétectable.
+\end{itemize}
+\end{remarque}
+
+\paragraph{Normalisation.} Le module de $\ee^{-\ii E_nt/\hbar}$ vaut 1, donc
+$|\Psi_n|^2=A^2\sin^2(n\pi x/a)$ et la condition de Born impose
+\[
+  \int_0^a|\Psi_n|^2\,\dd x
+  = A^2\int_0^a\frac{1-\cos\!\big(2n\pi x/a\big)}{2}\,\dd x
+  = A^2\,\frac{a}{2}=1
+  \quad\Longrightarrow\quad A=\sqrt{\frac{2}{a}},
+\]
+car l'intégrale du cosinus sur $n$ périodes est nulle.
+
+\begin{resultat}{États stationnaires du puits infini}
+\[
+  \Psi_n(x,t)=\sqrt{\frac{2}{a}}\;\sin\!\Big(\frac{n\pi x}{a}\Big)\,\ee^{-\ii E_nt/\hbar}
+  \quad(0<x<a),
+  \qquad
+  |\Psi_n|^2=\frac{2}{a}\,\sin^2\!\Big(\frac{n\pi x}{a}\Big).
+\]
+$\psi_n$ possède $n-1$ nœuds à l'intérieur du puits. Pour $n=1$ (état fondamental,
+d'énergie $E_1$) :
+\[
+  \Psi_1(x,t)=\sqrt{\frac{2}{a}}\;\sin\!\Big(\frac{\pi x}{a}\Big)\,\ee^{-\ii E_1t/\hbar}.
+\]
+\end{resultat}
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, x=1cm, y=0.95cm]
+  % ---------- (a) niveaux d'énergie et fonctions propres ----------
+  \begin{scope}
+    \node[above, font=\small] at (2,5.0) {(a) niveaux $E_n$ et fonctions propres $\psi_n$};
+    \draw[->] (-2.5,0) -- (-2.5,4.8) node[above] {$E$};
+    \draw[very thick, insarouge] (0,4.4) -- (0,0) -- (4,0) -- (4,4.4);
+    \node[insarouge, right, font=\small] at (4.05,3.9) {$V=+\infty$};
+    \node[insarouge, below, font=\small] at (2,0) {$V=0$};
+    \node[below, font=\small] at (0,-0.35) {$0$};
+    \node[below, font=\small] at (4,-0.35) {$a$};
+    \node[left, font=\small] at (-0.1,0.4) {$E_1$};
+    \node[left, font=\small] at (-0.1,1.6) {$E_2=4E_1$};
+    \node[left, font=\small] at (-0.1,3.6) {$E_3=9E_1$};
+    \foreach \n/\lev in {1/0.4, 2/1.6, 3/3.6} {
+      \draw[dashed, insagris!70] (0,\lev) -- (4,\lev);
+      \draw[thick, insagris, domain=0:1, samples=80]
+        plot ({4*\x}, {\lev+0.5*sin(\n*180*\x)});
+    }
+  \end{scope}
+  % ---------- (b) densités de probabilité ----------
+  \begin{scope}[xshift=7cm]
+    \node[above, font=\small] at (2,5.0) {(b) densités de probabilité $|\psi_n|^2$};
+    \draw[->] (-0.3,0) -- (4.6,0) node[right] {$x$};
+    \draw[thick, insarouge] (0,0) -- (0,4.4) (4,0) -- (4,4.4);
+    \node[below, font=\small] at (0,0) {$0$};
+    \node[below, font=\small] at (4,0) {$a$};
+    \node[below, font=\small] at (2,0) {$a/2$};
+    \foreach \n/\lev in {1/0.4, 2/1.6, 3/3.6} {
+      \draw[dashed, insagris!70] (0,\lev) -- (4,\lev);
+      \fill[insarouge!20] (0,\lev) -- plot[domain=0:1, samples=80]
+        ({4*\x}, {\lev+0.6*(sin(\n*180*\x))^2}) -- (4,\lev) -- cycle;
+      \draw[thick, insarouge, domain=0:1, samples=80]
+        plot ({4*\x}, {\lev+0.6*(sin(\n*180*\x))^2});
+    }
+    \draw[dotted, thick, insagris] (2,0) -- (2,4.4);
+    \node[above, font=\small] at (2,4.4) {$\langle\hat x\rangle=a/2$};
+  \end{scope}
+\end{tikzpicture}
+\caption{Puits de potentiel infini de largeur $a$. (a) Niveaux d'énergie
+$E_n=n^2E_1$ et fonctions propres $\psi_n$. (b) Densités de probabilité
+$|\psi_n|^2$, symétriques par rapport à $a/2$.}
+\end{figure}
+
+\subsubsection{Position moyenne dans le puits}
+
+D'après la définition de la valeur moyenne, avec $\hat x=x\times$ :
+\[
+  \langle\hat x\rangle
+  = \int_0^a\Psi_n^*(x,t)\;x\;\Psi_n(x,t)\,\dd x
+  = \frac{2}{a}\int_0^a x\,\sin^2\!\Big(\frac{n\pi x}{a}\Big)\dd x
+  = \frac{1}{a}\int_0^a x\Big(1-\cos\frac{2n\pi x}{a}\Big)\dd x .
+\]
+Le premier terme vaut $\dfrac1a\cdot\dfrac{a^2}{2}=\dfrac a2$. Pour le second, une
+intégration par parties donne
+\[
+  \int_0^a x\cos\frac{2n\pi x}{a}\,\dd x
+  =\Big[\frac{a\,x}{2n\pi}\sin\frac{2n\pi x}{a}\Big]_0^a
+   +\frac{a^2}{4n^2\pi^2}\Big[\cos\frac{2n\pi x}{a}\Big]_0^a = 0,
+\]
+puisque $\sin(2n\pi)=0$ et $\cos(2n\pi)=1$.
+
+\begin{resultat}{Position moyenne}
+\[
+  \langle\hat x\rangle=\frac{a}{2}\qquad\text{pour tout }n\text{ et à tout instant.}
+\]
+\end{resultat}
+
+Les phases $\ee^{\pm\ii E_nt/\hbar}$ se compensent dans $\Psi^*\Psi$. Le résultat se
+voit d'ailleurs sans calcul, car $|\Psi_n|^2$ est symétrique par rapport à $a/2$.
+
+\begin{remarque}[Moyenne et position la plus probable]
+Pour $n=2$, la densité de probabilité s'annule en $x=a/2$ alors que
+$\langle\hat x\rangle=a/2$ : la valeur moyenne n'est pas la position la plus
+probable, et la particule n'est jamais trouvée là.
+\end{remarque}
+
+\paragraph{Incertitude sur l'énergie.} Comme $\Hop\Psi_n=E_n\Psi_n$, on a aussi
+$\Hop^{2}\Psi_n=E_n^2\Psi_n$, donc $\langle\Hop\rangle=E_n$, $\langle\Hop^{2}\rangle=E_n^2$
+et
+\[
+  \sigma_E=\sqrt{\langle\Hop^{2}\rangle-\langle\Hop\rangle^2}=\sqrt{E_n^2-E_n^2}=0 .
+\]
+Dans un état propre (stationnaire) l'énergie est parfaitement déterminée, alors que la
+position ne l'est pas. Que se passe-t-il si la particule n'est pas dans un état propre ?
+C'est l'objet de la section~\ref{sec:superposition}.
+
+% ---------------------------------------------------------------------
+\subsection{Superposition d'états et mesure de l'énergie}\label{sec:superposition}
+% ---------------------------------------------------------------------
+
+\subsubsection{Un état qui n'est pas un état propre}
+
+Dans un état propre $\Psi_n$ du puits infini, l'énergie est certaine
+($\sigma_E=0$, section~\ref{sec:solutions}). Rien n'oblige pourtant la particule à
+être dans un état propre. Par linéarité de l'équation de Schrödinger
+(3\textsuperscript{e} hypothèse de la section~\ref{sec:construction}), toute
+combinaison de solutions est encore solution.
+
+\begin{definition}{Superposition quantique}
+\[
+  \Psi(x,t)=\sum_{i=1}^{N}c_i\,\Psi_i(x,t),
+  \qquad c_i\in\mathbb{C},
+\]
+où les $\Psi_i$ sont des états stationnaires d'énergies $E_i$ ($i$ est le nombre
+quantique de l'état $\Psi_i$). L'état n'a plus une énergie unique : il est
+\emph{probabiliste}, l'énergie mesurée pouvant valoir chacune des $E_i$.
+\end{definition}
+
+\subsubsection{Exemple : deux états du puits}
+
+À $t=0$, on prépare la particule dans l'état
+\[
+  \Psi(x,0)=A\left[\sqrt{\frac{2}{a}}\,\sin\!\Big(\frac{\pi x}{a}\Big)
+                  +\sqrt{\frac{2}{a}}\,\sin\!\Big(\frac{2\pi x}{a}\Big)\right]
+  =A\,\big[\psi_1(x)+\psi_2(x)\big].
+\]
+La normalisation $\int_0^a\Psi^*\Psi\,\dd x=1$ donne, en développant,
+\[
+  A^2\left[\int_0^a\psi_1^2\,\dd x+2\int_0^a\psi_1\psi_2\,\dd x+\int_0^a\psi_2^2\,\dd x\right]
+  =A^2\,(1+0+1)=2A^2=1
+  \quad\Longrightarrow\quad A=\frac{1}{\sqrt2}.
+\]
+Les $\psi_n$ étant normalisées, $\int\psi_n^2\,\dd x=1$. Le terme croisé s'annule :
+\[
+  \int_0^a\psi_1\psi_2\,\dd x
+  =\frac{1}{a}\int_0^a\Big[\cos\frac{\pi x}{a}-\cos\frac{3\pi x}{a}\Big]\dd x=0 .
+\]
+Chaque terme évolue avec sa propre phase (chacun est une solution stationnaire), donc
+\[
+  \Psi(x,t)=\frac{1}{\sqrt2}\Big[\psi_1(x)\,\ee^{-\ii E_1t/\hbar}
+                                 +\psi_2(x)\,\ee^{-\ii E_2t/\hbar}\Big],
+\]
+\[
+  |\Psi(x,t)|^2=\frac12\big[\psi_1^2+\psi_2^2\big]
+                +\psi_1\psi_2\,\cos\!\Big(\frac{E_2-E_1}{\hbar}\,t\Big).
+\]
+Le terme croisé oscille à la pulsation $(E_2-E_1)/\hbar$ : contrairement à un état
+stationnaire, la densité de probabilité dépend du temps.
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, x=1cm, y=1cm]
+  \draw[->] (-0.3,0) -- (6.0,0) node[right] {$x$};
+  \draw[->] (0,0) -- (0,4.2) node[above] {$|\Psi|^2$};
+  \draw[thick, insagris, dashed, domain=0:1, samples=100]
+    plot ({5*\x}, {1.0*(sin(180*\x)-sin(360*\x))^2});
+  \draw[thick, insarouge, domain=0:1, samples=100]
+    plot ({5*\x}, {1.0*(sin(180*\x)+sin(360*\x))^2});
+  \node[below] at (0,0) {$0$};
+  \node[below] at (5,0) {$a$};
+  \draw[insarouge, thick] (0.6,3.8) -- (1.2,3.8) node[right, black, font=\small] {$t=0$};
+  \draw[insagris, thick, dashed] (3.2,3.8) -- (3.8,3.8)
+    node[right, black, font=\small] {$t=T/2$};
+\end{tikzpicture}
+\caption{Densité de probabilité de $(\psi_1+\psi_2)/\sqrt2$ à $t=0$ et à une
+demi-période $T/2$ (avec $T=2\pi\hbar/(E_2-E_1)$) : le maximum passe de la gauche à
+la droite du puits. Unité verticale : $1/a$.}
+\end{figure}
+
+\subsubsection{Cas général : normalisation}
+
+Pour $\Psi=\sum_i c_i\Psi_i$, la condition $\int\Psi^*\Psi\,\dd x=1$ s'écrit
+\[
+  \int_0^a\Big[\sum_i c_i^*\Psi_i^*\Big]\Big[\sum_j c_j\Psi_j\Big]\dd x
+  =|c_1|^2\!\int\!\Psi_1^*\Psi_1\,\dd x+c_1^*c_2\!\int\!\Psi_1^*\Psi_2\,\dd x+\cdots=1 .
+\]
+Les $\Psi_i$ sont orthonormées, comme des vecteurs unitaires : le produit scalaire d'un
+vecteur avec lui-même vaut 1, celui de deux vecteurs orthogonaux vaut 0.
+
+\begin{resultat}{Orthonormalité et normalisation}
+\[
+  \int_0^a\Psi_i^*\Psi_j\,\dd x=\delta_{ij}=
+  \begin{cases}1 & \text{si } i=j,\\ 0 & \text{si } i\neq j,\end{cases}
+  \qquad\Longrightarrow\qquad
+  |c_1|^2+|c_2|^2+\cdots+|c_N|^2=\sum_{i=1}^{N}|c_i|^2=1
+\]
+\end{resultat}
+
+L'orthogonalité tient à tout instant, car les phases $\ee^{\ii(E_i-E_j)t/\hbar}$
+multiplient une intégrale nulle. En multipliant $\Psi=\sum_j c_j\Psi_j$ par $\Psi_i^*$
+et en intégrant, on obtient aussi $c_i=\int\Psi_i^*\,\Psi\,\dd x$.
+
+\subsubsection{Probabilités et énergie moyenne}
+
+L'énergie moyenne est la valeur moyenne de $\Hop$, avec $\Hop\Psi_j=E_j\Psi_j$ :
+\[
+  \langle E\rangle=\int_0^a\Psi^*\,\Hop\,\Psi\,\dd x
+  =\sum_{i,j}c_i^*c_jE_j\!\int\!\Psi_i^*\Psi_j\,\dd x
+  =\sum_{i=1}^{N}E_i\,|c_i|^2,
+\]
+et de même, avec $\Hop^{2}\Psi_j=E_j^2\Psi_j$,
+\[
+  \langle E^2\rangle=\int_0^a\Psi^*\,\Hop^{2}\,\Psi\,\dd x=\sum_{i=1}^{N}E_i^2\,|c_i|^2 ,
+  \qquad
+  \sigma_E=\sqrt{\langle E^2\rangle-\langle E\rangle^2}.
+\]
+
+\begin{resultat}{Probabilité de mesurer l'énergie $E_i$}
+\[
+  P(E_i)=|c_i|^2 ,\qquad
+  \langle E\rangle=\sum_i E_i\,P(E_i).
+\]
+$c_i$ est l'\emph{amplitude de probabilité} de l'état $\Psi_i$ et $|c_i|^2$ sa
+probabilité. Les $|c_i|^2$ ne dépendent pas du temps.
+\end{resultat}
+
+La moyenne pondérée garde un sens même si les $E_i$ sont discrets. Elle n'est
+d'ailleurs pas forcément une valeur mesurable : une mesure ne donne jamais que l'un des
+$E_i$.
+
+\paragraph{Application à l'exemple.} Avec $c_1=c_2=1/\sqrt2$ et $E_2=4E_1$ :
+$P(E_1)=P(E_2)=\tfrac12$,
+\[
+  \langle E\rangle=\frac{E_1+E_2}{2}=\frac{5}{2}\,E_1,
+  \qquad
+  \langle E^2\rangle=\frac{E_1^2+E_2^2}{2}=\frac{17}{2}\,E_1^2,
+  \qquad
+  \sigma_E=\sqrt{\frac{17}{2}-\frac{25}{4}}\;E_1=\frac{3}{2}\,E_1\neq0 .
+\]
+Ici l'énergie est incertaine, et la valeur moyenne $\tfrac52E_1$ n'est jamais obtenue :
+on mesure $E_1$ ou $E_2$, chacune avec la probabilité $1/2$.
+
+\begin{remarque}[Effondrement]
+Si la mesure donne $E_i$, l'état devient $\Psi_i$ : une seconde mesure faite
+aussitôt redonne $E_i$ avec certitude. La probabilité $|c_i|^2$ ne se lit donc que sur
+un grand nombre de systèmes identiques préparés dans le même état.
+\end{remarque}
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, font=\small]
+  % avant la mesure : |Psi|^2 de (psi_1 + psi_2)/sqrt(2) à t = 0
+  \begin{scope}
+    \draw[->] (-0.2,0) -- (3.7,0) node[right] {$x$};
+    \draw[->] (0,0) -- (0,2.2) node[above] {$|\Psi|^2$};
+    \fill[insarouge!15] (0,0) -- plot[domain=0:1, samples=100]
+      ({3.4*\x}, {0.6*(sin(180*\x)+sin(360*\x))^2}) -- (3.4,0) -- cycle;
+    \draw[thick, insarouge, domain=0:1, samples=100]
+      plot ({3.4*\x}, {0.6*(sin(180*\x)+sin(360*\x))^2});
+    \node[below] at (0,0) {$0$};
+    \node[below] at (3.4,0) {$a$};
+    \node[align=center, font=\footnotesize] at (1.7,-1.0)
+      {avant la mesure :\\ $\Psi=\frac{1}{\sqrt2}(\Psi_1+\Psi_2)$};
+  \end{scope}
+  % mesure de l'énergie : deux issues
+  \draw[->, insarouge, very thick] (4.1,1.0) -- (5.6,2.1);
+  \draw[->, insarouge, very thick] (4.1,0.8) -- (5.6,-0.3);
+  \node[insarouge, font=\footnotesize, anchor=south east, align=right] at (4.9,1.7)
+    {$E_1$ :\\ $|c_1|^2=\frac12$};
+  \node[insarouge, font=\footnotesize, anchor=north east, align=right] at (4.9,0.1)
+    {$E_2$ :\\ $|c_2|^2=\frac12$};
+  \node[font=\footnotesize\itshape, anchor=east] at (4.0,1.1) {mesure};
+  % après la mesure : Psi_1 ou Psi_2
+  \begin{scope}[xshift=6.0cm, yshift=1.2cm]
+    \draw[->] (-0.2,0) -- (3.7,0) node[right] {$x$};
+    \draw[->] (0,0) -- (0,1.4) node[above] {$|\Psi_1|^2$};
+    \fill[insarouge!15] (0,0) -- plot[domain=0:1, samples=80]
+      ({3.4*\x}, {0.6*2*(sin(180*\x))^2}) -- (3.4,0) -- cycle;
+    \draw[thick, insarouge, domain=0:1, samples=80]
+      plot ({3.4*\x}, {0.6*2*(sin(180*\x))^2});
+  \end{scope}
+  \begin{scope}[xshift=6.0cm, yshift=-1.0cm]
+    \draw[->] (-0.2,0) -- (3.7,0) node[right] {$x$};
+    \draw[->] (0,0) -- (0,1.4) node[above] {$|\Psi_2|^2$};
+    \fill[insarouge!15] (0,0) -- plot[domain=0:1, samples=80]
+      ({3.4*\x}, {0.6*2*(sin(360*\x))^2}) -- (3.4,0) -- cycle;
+    \draw[thick, insarouge, domain=0:1, samples=80]
+      plot ({3.4*\x}, {0.6*2*(sin(360*\x))^2});
+  \end{scope}
+  \node[font=\footnotesize, align=center] at (7.7,-1.55)
+    {après la mesure :\\ l'état est $\Psi_1$ ou $\Psi_2$};
+\end{tikzpicture}
+\caption{Effondrement de la fonction d'onde. Avant la mesure de l'énergie, la particule est dans
+la superposition $\frac{1}{\sqrt2}(\Psi_1+\Psi_2)$. La mesure donne $E_1$ ou $E_2$, chacune avec la
+probabilité $\frac12$, et l'état devient aussitôt $\Psi_1$ ou $\Psi_2$ : une seconde mesure
+redonne le même résultat.}
+\label{fig:collapse}
+\end{figure}
+
+% ---------------------------------------------------------------------
+\subsection{Récapitulatif du chapitre}\label{sec:recap1}
+% ---------------------------------------------------------------------
+
+Le schéma résume l'enchaînement des idées : chaque flèche indique une notion utilisée pour
+construire la suivante.
+
+\begin{center}
+\adjustbox{max width=\linewidth}{%
+\begin{tikzpicture}[>=Stealth, font=\footnotesize,
+    boite/.style={draw=insarouge, fill=insarouge!6, rounded corners=2pt, thick,
+                  minimum width=4.4cm, minimum height=1.5cm, align=center, inner sep=3pt},
+    lien/.style={->, very thick, insagris},
+    etiq/.style={font=\scriptsize\itshape, text=insagris, inner sep=2pt}]
+  \node[boite] (dua) at (0,0)
+    {\textbf{Dualité}\\ $E=hf=\hbar\omega$, \ $\lambda=h/p$\\ {\scriptsize\S\,\ref{sec:dualite}}};
+  \node[boite] (sch) at (5.9,0)
+    {\textbf{Équation de Schrödinger}\\ $\ii\hbar\,\partial_t\Psi=\Hop\Psi$\\
+     {\scriptsize\S\,\ref{sec:construction}}};
+  \node[boite] (bor) at (11.8,0)
+    {\textbf{Interprétation de Born}\\ $\dd P=|\Psi|^2\,\dd x$\\ {\scriptsize\S\,\ref{sec:born}}};
+  \node[boite] (ope) at (0,-2.5)
+    {\textbf{Opérateurs}\\ $\hat p=-\ii\hbar\,\partial_x$, \ $\Hop$\\ {\scriptsize\S\,\ref{sec:operateurs}}};
+  \node[boite] (sta) at (5.9,-2.5)
+    {\textbf{États stationnaires}\\ $\Hop\psi=E\psi$, \ $E_n=n^2E_1$\\ {\scriptsize\S\,\ref{sec:solutions}}};
+  \node[boite] (sup) at (11.8,-2.5)
+    {\textbf{Superposition}\\ $\Psi=\sum_n c_n\Psi_n$, \ $P(E_n)=|c_n|^2$\\
+     {\scriptsize\S\,\ref{sec:superposition}}};
+  \draw[lien] (dua) -- (sch);
+  \draw[lien] (sch) -- (bor) node[etiq, midway, above=1pt] {$|\Psi|^2$};
+  \draw[lien] (dua) -- (ope) node[etiq, midway, right=1pt] {$p=\hbar k$};
+  \draw[lien] (sch) -- (sta) node[etiq, midway, right=1pt] {séparation des variables};
+  \draw[lien] (ope) -- (sta);
+  \draw[lien] (sta) -- (sup) node[etiq, midway, above=1pt] {linéarité};
+  \draw[lien] (bor) -- (sup) node[etiq, midway, right=1pt] {probabilités};
+\end{tikzpicture}}
+\end{center}
+
+\begin{aretenir}
+\begin{itemize}
+  \item Lumière et matière ont une double nature onde--corpuscule : $E=hf$ et $\lambda=h/p$.
+  \item Une particule est décrite par une fonction d'onde complexe $\Psi(x,t)$, solution de
+        l'équation de Schrödinger $\ii\hbar\,\partial_t\Psi=\Hop\Psi$. Cette équation est
+        \emph{linéaire} : toute combinaison de solutions est une solution.
+  \item $|\Psi|^2$ est une densité de probabilité de présence, d'où la normalisation
+        $\int|\Psi|^2\dd x=1$. La phase globale de $\Psi$ n'est pas observable.
+  \item Une grandeur physique correspond à un opérateur. Mesurer $\hat O$ donne une valeur
+        propre ; l'écart-type $\sigma_O$ est nul si et seulement si $\Psi$ est un état propre de~$\hat O$.
+  \item Puits infini de largeur $a$ : $E_n=n^2\pi^2\hbar^2/(2ma^2)=n^2E_1$ avec $E_1>0$ (énergie
+        de point zéro) et $\psi_n=\sqrt{2/a}\,\sin(n\pi x/a)$.
+  \item Pour $\Psi=\sum_n c_n\Psi_n$ : $P(E_n)=|c_n|^2$, $\sum_n|c_n|^2=1$ et
+        $\langle E\rangle=\sum_n|c_n|^2E_n$. Une mesure fait « s'effondrer » l'état sur $\Psi_n$.
+\end{itemize}
+\end{aretenir}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.45}
+\begin{tabular}{@{}l l r@{}}
+\toprule
+\textbf{Notion} & \textbf{Formule} & \textbf{§} \\
+\midrule
+Planck--Einstein, de Broglie & $E=hf=\hbar\omega$, \quad $\lambda=\dfrac hp$, \quad $p=\hbar k$
+  & \ref{sec:dualite} \\
+Onde plane complexe & $\Psi=\ee^{\ii(kx-\omega t)}$ & \ref{sec:construction} \\
+Schrödinger (ESDT) & $\ii\hbar\,\partial_t\Psi=\Hop\Psi$, \quad
+  $\Hop=-\dfrac{\hbar^2}{2m}\partial_x^2+V(x)$ & \ref{sec:construction} \\
+Born & $\dd P=|\Psi|^2\dd x$, \quad $\displaystyle\int_{-\infty}^{+\infty}|\Psi|^2\dd x=1$
+  & \ref{sec:born} \\
+Quantité de mouvement & $\hat p=-\ii\hbar\,\partial_x$ & \ref{sec:operateurs} \\
+Valeur moyenne, écart-type & $\displaystyle\langle\hat O\rangle=\int\Psi^*\hat O\,\Psi\,\dd x$,
+  \quad $\sigma_O=\sqrt{\langle\hat O^2\rangle-\langle\hat O\rangle^2}$ & \ref{sec:operateurs} \\
+ESIT (états stationnaires) & $\Hop\psi=E\psi$, \quad $\Psi_n=\psi_n\,\ee^{-\ii E_nt/\hbar}$
+  & \ref{sec:solutions} \\
+Puits infini & $E_n=\dfrac{n^2\pi^2\hbar^2}{2ma^2}$, \quad
+  $\psi_n=\sqrt{\dfrac2a}\sin\dfrac{n\pi x}{a}$ & \ref{sec:solutions} \\
+Superposition & $P(E_i)=|c_i|^2$, \quad $\langle E\rangle=\sum_i|c_i|^2E_i$
+  & \ref{sec:superposition} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{savoirfaire}
+\begin{itemize}
+  \item Utiliser $E=hf$ et $\lambda=h/p$ pour des applications numériques
+        (exercice~\ref{ex:photoelec}).
+  \item Normaliser une fonction d'onde et en déduire la constante multiplicative.
+  \item Calculer une probabilité de présence $P(a<x<b)=\int_a^b|\Psi|^2\dd x$
+        (exercice~\ref{ex:probapuits}).
+  \item Retrouver les niveaux d'énergie d'un puits infini à partir des conditions aux limites.
+  \item Pour une superposition d'états stationnaires, calculer $P(E_i)$, $\langle E\rangle$,
+        $\langle E^2\rangle$ et $\sigma_E$ (exercice~\ref{ex:superpuits}).
+\end{itemize}
+\end{savoirfaire}

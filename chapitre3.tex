@@ -1,320 +1,792 @@
 % =====================================================================
-%  Chapitre 3 : suite de la section 1 (mécanique quantique)
+%  Chapitre 3 : Opérateurs, matrice de densité, sphère de Bloch et produit tensoriel
 %  Fichier importé par main.tex avec \include{chapitre3}.
-%  Il PROLONGE chapitre2.tex : pas de \section ici, les sous-sections
-%  1.10 à 1.13 font suite à 1.1 à 1.9 (la suite est le chapitre4.tex, section 2).
-%  Pas de préambule non plus : les
-%  environnements (definition, resultat, remarque), les macros (\ii, \ee,
-%  \dd, \Hop, \ket, \bra, \braket) et les couleurs (insarouge, insagris)
-%  sont définis dans main.tex.
+%  Il ne contient ni préambule ni \begin{document} : les environnements
+%  (definition, resultat, remarque, aretenir, savoirfaire, exercice, correction),
+%  les macros (\ii, \ee, \dd, \pd, \pdd, \Hop, \ket, \bra, \braket), les symboles
+%  de circuits (ctl, cible, croix, mesure, porte) et les couleurs (insarouge,
+%  insagris) sont définis dans main.tex. Un chapitre = une \section.
 % =====================================================================
 
-% Macros de Dirac (déjà définies dans main.tex récent ; ce bloc évite l'erreur
+% Macros de Dirac (déjà définies dans main.tex ; ce bloc évite l'erreur
 % « Undefined control sequence \ket » si main.tex est une ancienne version).
 \providecommand{\ket}[1]{|#1\rangle}
 \providecommand{\bra}[1]{\langle #1|}
 \providecommand{\braket}[2]{\langle #1|#2\rangle}
 
+% =====================================================================
+\section{Opérateurs, matrice de densité, sphère de Bloch et produit tensoriel}\label{chap:operateurs}
+% =====================================================================
+
+Le chapitre~\ref{chap:dirac} décrit l'état d'un qubit. Ce chapitre montre ce que l'on peut faire
+avec cet état (les \emph{opérateurs} : mesure d'une grandeur, évolution), comment décrire ce que
+l'on ignore de lui (la \emph{matrice de densité}, les états mixtes et la sphère de Bloch), puis
+comment réunir plusieurs qubits (le \emph{produit tensoriel}).
+
 % ---------------------------------------------------------------------
-\subsection{Superposition d'états stationnaires}\label{sec:superposition}
+\subsection{Opérateurs quantiques}\label{sec:op-dirac}
 % ---------------------------------------------------------------------
 
-\subsubsection{Un état qui n'est pas un état propre}
+Au chapitre~\ref{chap:histoire}, un opérateur transformait une fonction d'onde
+(section~\ref{sec:operateurs}). Pour un qubit, c'est une matrice $2\times2$. Les projecteurs
+$\hat P_0=\ket{0}\bra{0}$ et $\hat P_1=\ket{1}\bra{1}$ (section~\ref{sec:projecteurs}) sont des
+cas particuliers : tout opérateur $A$ s'écrit comme une somme de ket-bra.
 
-Dans un état propre $\Psi_n$ du puits infini, l'énergie est certaine
-($\sigma_E=0$, section~\ref{sec:solutions}). Rien n'oblige pourtant la particule à
-être dans un état propre. Par linéarité de l'équation de Schrödinger
-(3\textsuperscript{e} hypothèse de la section~\ref{sec:construction}), toute
-combinaison de solutions est encore solution.
-
-\begin{definition}{Superposition quantique}
+\begin{definition}{Décomposition d'un opérateur sur la base $\{\ket{0},\ket{1}\}$}
 \[
-  \Psi(x,t)=\sum_{i=1}^{N}c_i\,\Psi_i(x,t),
-  \qquad c_i\in\mathbb{C},
+  A=\begin{pmatrix}A_{00} & A_{01}\\ A_{10} & A_{11}\end{pmatrix}
+  =A_{00}\ket{0}\bra{0}+A_{01}\ket{0}\bra{1}+A_{10}\ket{1}\bra{0}+A_{11}\ket{1}\bra{1},
+  \qquad A_{ij}=\bra{i}A\ket{j}.
 \]
-où les $\Psi_i$ sont des états stationnaires d'énergies $E_i$ ($i$ est le nombre
-quantique de l'état $\Psi_i$). L'état n'a plus une énergie unique : il est
-\emph{probabiliste}, l'énergie mesurée pouvant valoir chacune des $E_i$.
 \end{definition}
 
-\subsubsection{Exemple : deux états du puits}
-
-À $t=0$, on prépare la particule dans l'état
+Chaque ket-bra est une matrice qui ne contient qu'un seul $1$, à la ligne $i$ et à la
+colonne $j$ :
 \[
-  \Psi(x,0)=A\left[\sqrt{\frac{2}{a}}\,\sin\!\Big(\frac{\pi x}{a}\Big)
-                  +\sqrt{\frac{2}{a}}\,\sin\!\Big(\frac{2\pi x}{a}\Big)\right]
-  =A\,\big[\psi_1(x)+\psi_2(x)\big].
-\]
-La normalisation $\int_0^a\Psi^*\Psi\,\dd x=1$ donne, en développant,
-\[
-  A^2\left[\int_0^a\psi_1^2\,\dd x+2\int_0^a\psi_1\psi_2\,\dd x+\int_0^a\psi_2^2\,\dd x\right]
-  =A^2\,(1+0+1)=2A^2=1
-  \quad\Longrightarrow\quad A=\frac{1}{\sqrt2}.
-\]
-Les $\psi_n$ étant normalisées, $\int\psi_n^2\,\dd x=1$. Le terme croisé s'annule :
-\[
-  \int_0^a\psi_1\psi_2\,\dd x
-  =\frac{1}{a}\int_0^a\Big[\cos\frac{\pi x}{a}-\cos\frac{3\pi x}{a}\Big]\dd x=0 .
-\]
-Chaque terme évolue avec sa propre phase (chacun est une solution stationnaire), donc
-\[
-  \Psi(x,t)=\frac{1}{\sqrt2}\Big[\psi_1(x)\,\ee^{-\ii E_1t/\hbar}
-                                 +\psi_2(x)\,\ee^{-\ii E_2t/\hbar}\Big],
-\]
-\[
-  |\Psi(x,t)|^2=\frac12\big[\psi_1^2+\psi_2^2\big]
-                +\psi_1\psi_2\,\cos\!\Big(\frac{E_2-E_1}{\hbar}\,t\Big).
-\]
-Le terme croisé oscille à la pulsation $(E_2-E_1)/\hbar$ : contrairement à un état
-stationnaire, la densité de probabilité dépend du temps.
-
-\begin{figure}[!ht]
-\centering
-\begin{tikzpicture}[>=Stealth, x=1cm, y=1cm]
-  \draw[->] (-0.3,0) -- (6.0,0) node[right] {$x$};
-  \draw[->] (0,0) -- (0,4.2) node[above] {$|\Psi|^2$};
-  \draw[thick, insagris, dashed, domain=0:1, samples=100]
-    plot ({5*\x}, {1.0*(sin(180*\x)-sin(360*\x))^2});
-  \draw[thick, insarouge, domain=0:1, samples=100]
-    plot ({5*\x}, {1.0*(sin(180*\x)+sin(360*\x))^2});
-  \node[below] at (0,0) {$0$};
-  \node[below] at (5,0) {$a$};
-  \draw[insarouge, thick] (0.6,3.8) -- (1.2,3.8) node[right, black, font=\small] {$t=0$};
-  \draw[insagris, thick, dashed] (3.2,3.8) -- (3.8,3.8)
-    node[right, black, font=\small] {$t=T/2$};
-\end{tikzpicture}
-\caption{Densité de probabilité de $(\psi_1+\psi_2)/\sqrt2$ à $t=0$ et à une
-demi-période $T/2$ (avec $T=2\pi\hbar/(E_2-E_1)$) : le maximum passe de la gauche à
-la droite du puits. Unité verticale : $1/a$.}
-\end{figure}
-
-\subsubsection{Cas général : normalisation}
-
-Pour $\Psi=\sum_i c_i\Psi_i$, la condition $\int\Psi^*\Psi\,\dd x=1$ s'écrit
-\[
-  \int_0^a\Big[\sum_i c_i^*\Psi_i^*\Big]\Big[\sum_j c_j\Psi_j\Big]\dd x
-  =|c_1|^2\!\int\!\Psi_1^*\Psi_1\,\dd x+c_1^*c_2\!\int\!\Psi_1^*\Psi_2\,\dd x+\cdots=1 .
-\]
-Les $\Psi_i$ sont orthonormées, comme des vecteurs unitaires : le produit scalaire d'un
-vecteur avec lui-même vaut 1, celui de deux vecteurs orthogonaux vaut 0.
-
-\begin{resultat}{Orthonormalité et normalisation}
-\[
-  \int_0^a\Psi_i^*\Psi_j\,\dd x=\delta_{ij}=
-  \begin{cases}1 & \text{si } i=j,\\ 0 & \text{si } i\neq j,\end{cases}
-  \qquad\Longrightarrow\qquad
-  |c_1|^2+|c_2|^2+\cdots+|c_N|^2=\sum_{i=1}^{N}|c_i|^2=1
-\]
-\end{resultat}
-
-L'orthogonalité tient à tout instant, car les phases $\ee^{\ii(E_i-E_j)t/\hbar}$
-multiplient une intégrale nulle. En multipliant $\Psi=\sum_j c_j\Psi_j$ par $\Psi_i^*$
-et en intégrant, on obtient aussi $c_i=\int\Psi_i^*\,\Psi\,\dd x$.
-
-\subsubsection{Probabilités et énergie moyenne}
-
-L'énergie moyenne est la valeur moyenne de $\Hop$, avec $\Hop\Psi_j=E_j\Psi_j$ :
-\[
-  \langle E\rangle=\int_0^a\Psi^*\,\Hop\,\Psi\,\dd x
-  =\sum_{i,j}c_i^*c_jE_j\!\int\!\Psi_i^*\Psi_j\,\dd x
-  =\sum_{i=1}^{N}E_i\,|c_i|^2,
-\]
-et de même, avec $\Hop^{2}\Psi_j=E_j^2\Psi_j$,
-\[
-  \langle E^2\rangle=\int_0^a\Psi^*\,\Hop^{2}\,\Psi\,\dd x=\sum_{i=1}^{N}E_i^2\,|c_i|^2 ,
+  \ket{0}\bra{1}=\begin{pmatrix}1\\ 0\end{pmatrix}\begin{pmatrix}0 & 1\end{pmatrix}
+  =\begin{pmatrix}0 & 1\\ 0 & 0\end{pmatrix},
   \qquad
-  \sigma_E=\sqrt{\langle E^2\rangle-\langle E\rangle^2}.
+  \ket{1}\bra{0}=\begin{pmatrix}0\\ 1\end{pmatrix}\begin{pmatrix}1 & 0\end{pmatrix}
+  =\begin{pmatrix}0 & 0\\ 1 & 0\end{pmatrix}.
 \]
 
-\begin{resultat}{Probabilité de mesurer l'énergie $E_i$}
-\[
-  P(E_i)=|c_i|^2 ,\qquad
-  \langle E\rangle=\sum_i E_i\,P(E_i).
-\]
-$c_i$ est l'\emph{amplitude de probabilité} de l'état $\Psi_i$ et $|c_i|^2$ sa
-probabilité. Les $|c_i|^2$ ne dépendent pas du temps.
-\end{resultat}
+\paragraph{Exemples.} Les trois matrices de Pauli s'écrivent
+\begin{align*}
+  X&=\ket{0}\bra{1}+\ket{1}\bra{0}=\begin{pmatrix}0 & 1\\ 1 & 0\end{pmatrix},\\
+  Y&=-\ii\ket{0}\bra{1}+\ii\ket{1}\bra{0}=\begin{pmatrix}0 & -\ii\\ \ii & 0\end{pmatrix},\\
+  Z&=\ket{0}\bra{0}-\ket{1}\bra{1}=\begin{pmatrix}1 & 0\\ 0 & -1\end{pmatrix}.
+\end{align*}
+Leur action se lit directement sur l'écriture ket-bra, grâce à
+$\braket{0}{0}=\braket{1}{1}=1$ et $\braket{0}{1}=0$ :
+$X\ket{0}=\ket{0}\braket{1}{0}+\ket{1}\braket{0}{0}=\ket{1}$ (et de même $X\ket{1}=\ket{0}$) :
+$X$ échange $\ket{0}$ et $\ket{1}$ ; $Z\ket{0}=\ket{0}$ et $Z\ket{1}=-\ket{1}$.
 
-La moyenne pondérée garde un sens même si les $E_i$ sont discrets. Elle n'est
-d'ailleurs pas forcément une valeur mesurable : une mesure ne donne jamais que l'un des
-$E_i$.
+\paragraph{Adjoint, opérateurs hermitiens et unitaires.} L'\emph{adjoint} $A^\dagger$ d'un opérateur
+est sa transposée conjuguée : $(A^\dagger)_{ij}=A_{ji}^*$, soit $\bra{a}A^\dagger\ket{b}=\bra{b}A\ket{a}^*$.
+On a $(\ket{a}\bra{b})^\dagger=\ket{b}\bra{a}$ et $(AB)^\dagger=B^\dagger A^\dagger$.
 
-\paragraph{Application à l'exemple.} Avec $c_1=c_2=1/\sqrt2$ et $E_2=4E_1$ :
-$P(E_1)=P(E_2)=\tfrac12$,
-\[
-  \langle E\rangle=\frac{E_1+E_2}{2}=\frac{5}{2}\,E_1,
-  \qquad
-  \langle E^2\rangle=\frac{E_1^2+E_2^2}{2}=\frac{17}{2}\,E_1^2,
-  \qquad
-  \sigma_E=\sqrt{\frac{17}{2}-\frac{25}{4}}\;E_1=\frac{3}{2}\,E_1\neq0 .
-\]
-Ici l'énergie est incertaine, et la valeur moyenne $\tfrac52E_1$ n'est jamais obtenue :
-on mesure $E_1$ ou $E_2$, chacune avec la probabilité $1/2$.
+\begin{definition}{Opérateurs hermitiens et unitaires}
+\begin{itemize}[nosep]
+  \item $A$ est \gls{hermitien} si $A^\dagger=A$. Ses valeurs propres sont réelles : si
+        $A\ket{a}=\lambda\ket{a}$, alors $\lambda\braket{a}{a}=\bra{a}A\ket{a}$ est réel, car
+        $\bra{a}A\ket{a}^*=\bra{a}A^\dagger\ket{a}=\bra{a}A\ket{a}$. Deux vecteurs propres de valeurs
+        propres différentes sont orthogonaux.
+  \item $U$ est \gls{unitaire} si $U^\dagger U=UU^\dagger=\mathrm{Id}$. Il conserve la norme :
+        $\big(U\ket{\Psi}\big)^\dagger U\ket{\Psi}=\bra{\Psi}U^\dagger U\ket{\Psi}=\braket{\Psi}{\Psi}$.
+\end{itemize}
+\end{definition}
 
-\begin{remarque}[Effondrement]
-Si la mesure donne $E_i$, l'état devient $\Psi_i$ : une seconde mesure faite
-aussitôt redonne $E_i$ avec certitude. La probabilité $|c_i|^2$ ne se lit donc que sur
-un grand nombre de systèmes identiques préparés dans le même état.
-\end{remarque}
-
-% ---------------------------------------------------------------------
-\subsection{Retour à la notation de Dirac : le qubit}\label{sec:qubit}
-% ---------------------------------------------------------------------
-
-On ne garde que deux états du puits, notés comme un bit quantique (\emph{qubit}) :
-$\ket{0}$ pour $\Psi_1$ et $\ket{1}$ pour $\Psi_2$. L'état de l'exemple s'écrit
-\[
-  \ket{\Psi}=\frac{1}{\sqrt2}\,\ket{0}+\frac{1}{\sqrt2}\,\ket{1}.
-\]
+Les matrices de Pauli sont à la fois hermitiennes et unitaires : $X^\dagger=X$, $Y^\dagger=Y$,
+$Z^\dagger=Z$ et $X^2=Y^2=Z^2=\mathrm{Id}$, donc $X^\dagger X=\mathrm{Id}$. Leurs valeurs propres sont
+$+1$ et $-1$, et leurs vecteurs propres sont les états des trois bases de la
+section~\ref{sec:qubit}.
 
 \begin{center}
 \renewcommand{\arraystretch}{1.5}
-\begin{tabular}{@{}ll@{}}
+\begin{tabular}{@{}c c c c@{}}
 \toprule
-\textbf{Fonctions d'onde} & \textbf{Notation de Dirac} \\
+\textbf{Observable} & \textbf{Écriture spectrale} & \textbf{Vecteur propre $+1$}
+  & \textbf{Vecteur propre $-1$} \\
 \midrule
-$\Psi=c_1\Psi_1+c_2\Psi_2$ & $\ket{\Psi}=c_1\ket{0}+c_2\ket{1}$ \\
-$\displaystyle\int\Psi_i^*\Psi_j\,\dd x=\delta_{ij}$ & $\braket{i}{j}=\delta_{ij}$ \\
-$\displaystyle\int\Psi^*\Psi\,\dd x=\sum_i|c_i|^2=1$ & $\braket{\Psi}{\Psi}=1$ \\
-$P(E_i)=|c_i|^2$ & $P(i)=|c_i|^2=|\braket{i}{\Psi}|^2$ \\
+$Z$ & $\ket{0}\bra{0}-\ket{1}\bra{1}$ & $\ket{0}$ & $\ket{1}$ \\
+$X$ & $\ket{+}\bra{+}-\ket{-}\bra{-}$ & $\ket{+}$ & $\ket{-}$ \\
+$Y$ & $\ket{{+}\ii}\bra{{+}\ii}-\ket{{-}\ii}\bra{{-}\ii}$ & $\ket{{+}\ii}$ & $\ket{{-}\ii}$ \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\paragraph{Probabilité.} La probabilité que $\ket{\Psi}$ soit mesuré dans l'état
-$\ket{0}$ est
+Vérification pour $Y$ : $Y\ket{0}=\ii\ket{1}$ et $Y\ket{1}=-\ii\ket{0}$, donc
 \[
-  P(\ket{\Psi}\to\ket{0})=P(0)=\left|\frac{1}{\sqrt2}\right|^2=\frac12 .
+  Y\ket{{+}\ii}=\frac{1}{\sqrt2}\Big(\ii\ket{1}+\ii\,(-\ii)\ket{0}\Big)
+  =\frac{1}{\sqrt2}\big(\ket{0}+\ii\ket{1}\big)=\ket{{+}\ii}.
 \]
 
-\paragraph{Normalisation.}
+\begin{resultat}{Observable, valeurs propres et valeur moyenne}
+Une grandeur physique est représentée par un opérateur hermitien $A$. Les résultats possibles d'une
+mesure sont ses valeurs propres. Si $A=\sum_a a\,\hat P_a$ où $\hat P_a$ est le projecteur sur le
+sous-espace propre de valeur propre $a$, alors
 \[
-  \braket{\Psi}{\Psi}
-  =\Big(\tfrac{1}{\sqrt2}\bra{0}+\tfrac{1}{\sqrt2}\bra{1}\Big)
-   \Big(\tfrac{1}{\sqrt2}\ket{0}+\tfrac{1}{\sqrt2}\ket{1}\Big)
-  =\tfrac12\braket{0}{0}+\tfrac12\braket{0}{1}+\tfrac12\braket{1}{0}+\tfrac12\braket{1}{1}
-  =\tfrac12\,(1+0+0+1)=1 .
+  P(a)=\bra{\Psi}\hat P_a\ket{\Psi},\qquad
+  \langle A\rangle=\sum_a a\,P(a)=\bra{\Psi}A\ket{\Psi}.
 \]
-
-\begin{definition}{Base de calcul (base $Z$)}
-$\{\ket{0},\ket{1}\}$ est une base \emph{orthonormée} de $\mathcal{H}^2=\mathbb{C}^2$ :
-\[
-  \ket{0}=\begin{pmatrix}1\\ 0\end{pmatrix},\qquad
-  \ket{1}=\begin{pmatrix}0\\ 1\end{pmatrix},\qquad
-  \braket{0}{0}=\begin{pmatrix}1 & 0\end{pmatrix}\begin{pmatrix}1\\ 0\end{pmatrix}=1,\qquad
-  \braket{0}{1}=\begin{pmatrix}1 & 0\end{pmatrix}\begin{pmatrix}0\\ 1\end{pmatrix}=0 .
-\]
-Tout état s'écrit $\ket{\Psi}=\alpha\ket{0}+\beta\ket{1}=\begin{pmatrix}\alpha\\ \beta\end{pmatrix}$
-avec $|\alpha|^2+|\beta|^2=1$ ; alors $P(0)=|\alpha|^2$ et $P(1)=|\beta|^2$.
-\end{definition}
-
-\paragraph{Exemple.} Soit $\ket{\Psi}=\dfrac{1}{\sqrt5}\,\ket{0}+\dfrac{2}{\sqrt5}\,\ket{1}$
-dans $\mathcal{H}^2$.
-\begin{enumerate}[nosep]
-  \item \emph{$\ket{\Psi}$ est-il normalisé ?}
-        $\braket{\Psi}{\Psi}=\dfrac15+\dfrac45=1$ : oui.
-  \item $P(0)=\left|\dfrac{1}{\sqrt5}\right|^2=\dfrac15$.
-  \item $P(1)=\left|\dfrac{2}{\sqrt5}\right|^2=\dfrac45$.
-\end{enumerate}
-
-\begin{remarque}[État non normalisé]
-Si $\braket{\Psi}{\Psi}\neq1$, on divise l'état par sa norme $\sqrt{\braket{\Psi}{\Psi}}$.
-Par exemple $\ket{0}+2\ket{1}$ a pour norme au carré $1+4=5$ : l'état normalisé est
-$\frac{1}{\sqrt5}\ket{0}+\frac{2}{\sqrt5}\ket{1}$, celui de l'exemple.
-\end{remarque}
-
-% ---------------------------------------------------------------------
-\subsection{Projecteurs et mesure}\label{sec:projecteurs}
-% ---------------------------------------------------------------------
-
-Le produit d'un ket par un bra est un opérateur (section~\ref{sec:dirac}). Avec les
-états de la base de calcul, on obtient deux \emph{projecteurs}.
-
-\begin{definition}{Projecteurs sur $\ket{0}$ et sur $\ket{1}$}
-\[
-  \hat P_0=\ket{0}\bra{0}=\begin{pmatrix}1\\ 0\end{pmatrix}\begin{pmatrix}1 & 0\end{pmatrix}
-  =\begin{pmatrix}1 & 0\\ 0 & 0\end{pmatrix},
-  \qquad
-  \hat P_1=\ket{1}\bra{1}=\begin{pmatrix}0\\ 1\end{pmatrix}\begin{pmatrix}0 & 1\end{pmatrix}
-  =\begin{pmatrix}0 & 0\\ 0 & 1\end{pmatrix}.
-\]
-Ils vérifient
-\[
-  \hat P_i^{\,2}=\hat P_i,
-  \qquad
-  \hat P_0+\hat P_1=\begin{pmatrix}1 & 0\\ 0 & 1\end{pmatrix}=\mathrm{Id}
-  \quad(\text{complétude}).
-\]
-\end{definition}
-
-En effet $\hat P_0^{\,2}=\ket{0}\braket{0}{0}\bra{0}=\ket{0}\bra{0}$ car
-$\braket{0}{0}=1$. Appliqué à $\ket{\Psi}=\alpha\ket{0}+\beta\ket{1}$, $\hat P_0$
-ne garde que la composante sur $\ket{0}$ : $\hat P_0\ket{\Psi}=\alpha\ket{0}$.
-
-\begin{resultat}{Probabilité de mesure}
-\[
-  P(\ket{\Psi}\to\ket{i})=\bra{\Psi}\hat P_i\ket{\Psi}
-  =\braket{\Psi}{i}\braket{i}{\Psi}=|\braket{i}{\Psi}|^2 .
-\]
-La complétude donne bien $\sum_i P(i)=\bra{\Psi}\big(\sum_i\hat P_i\big)\ket{\Psi}=\braket{\Psi}{\Psi}=1$.
 \end{resultat}
 
-\paragraph{Exemple.} Pour $\ket{\Psi}=\dfrac{1}{\sqrt5}\ket{0}+\dfrac{2}{\sqrt5}\ket{1}
-=\begin{pmatrix}1/\sqrt5\\ 2/\sqrt5\end{pmatrix}$ :
+C'est la formule $\langle\hat O\rangle=\int\Psi^*\hat O\,\Psi\,\dd x$ de la
+section~\ref{sec:operateurs}, écrite avec la notation de Dirac. Le tableau résume le lien entre
+les deux chapitres.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}l l l@{}}
+\toprule
+ & \textbf{Fonctions d'onde (chapitre~\ref{chap:histoire})} & \textbf{Qubit} \\
+\midrule
+État & $\Psi(x,t)$ & vecteur $\ket{\Psi}\in\mathbb{C}^2$ \\
+Grandeur & opérateur $\hat O$ ($\hat p$, $\hat H$) & matrice hermitienne $A$ \\
+Résultats possibles & valeurs propres de $\hat O$ & valeurs propres de $A$ \\
+Valeur moyenne & $\int\Psi^*\hat O\,\Psi\,\dd x$ & $\bra{\Psi}A\ket{\Psi}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Exemple.} Pour $\ket{\Psi}=\frac{1}{\sqrt5}\ket{0}+\frac{2}{\sqrt5}\ket{1}$,
+\begin{align*}
+  \langle Z\rangle&=\bra{\Psi}Z\ket{\Psi}
+    =\begin{pmatrix}\frac{1}{\sqrt5} & \frac{2}{\sqrt5}\end{pmatrix}
+     \begin{pmatrix}\frac{1}{\sqrt5}\\ -\frac{2}{\sqrt5}\end{pmatrix}=\frac15-\frac45=-\frac35,\\[1ex]
+  \langle X\rangle&=\begin{pmatrix}\frac{1}{\sqrt5} & \frac{2}{\sqrt5}\end{pmatrix}
+     \begin{pmatrix}\frac{2}{\sqrt5}\\ \frac{1}{\sqrt5}\end{pmatrix}=\frac25+\frac25=\frac45,\\[1ex]
+  \langle Y\rangle&=\begin{pmatrix}\frac{1}{\sqrt5} & \frac{2}{\sqrt5}\end{pmatrix}
+     \begin{pmatrix}-\frac{2\ii}{\sqrt5}\\ \frac{\ii}{\sqrt5}\end{pmatrix}=\frac{-2\ii+2\ii}{5}=0 .
+\end{align*}
+Ces trois nombres seront les coordonnées de l'état sur la sphère de Bloch (section~\ref{sec:bloch}).
+On retrouve $\langle Z\rangle=P(0)-P(1)$ et $\langle X\rangle=P(+)-P(-)=\frac{9}{10}-\frac{1}{10}$.
+
+% ---------------------------------------------------------------------
+\subsection{Matrice de densité}\label{sec:rho}
+% ---------------------------------------------------------------------
+
+\begin{definition}{Matrice de densité d'un état pur}
+Pour $\ket{\Psi}=\alpha\ket{0}+\beta\ket{1}$ avec $|\alpha|^2+|\beta|^2=1$ :
 \[
-  \hat P_0\ket{\Psi}=\begin{pmatrix}1 & 0\\ 0 & 0\end{pmatrix}
-  \begin{pmatrix}1/\sqrt5\\ 2/\sqrt5\end{pmatrix}
-  =\begin{pmatrix}1/\sqrt5\\ 0\end{pmatrix},
+  \rho=\ket{\Psi}\bra{\Psi}
+  =\begin{pmatrix}\alpha\\ \beta\end{pmatrix}\begin{pmatrix}\alpha^* & \beta^*\end{pmatrix}
+  =\begin{pmatrix}|\alpha|^2 & \alpha\beta^*\\ \alpha^*\beta & |\beta|^2\end{pmatrix}.
+\]
+\end{definition}
+
+La diagonale contient les probabilités de mesure ($\rho_{00}=|\alpha|^2=P(0)$,
+$\rho_{11}=|\beta|^2=P(1)$, ce sont les \emph{populations}) ; les termes hors diagonale
+(les \emph{cohérences}) contiennent la phase relative entre $\alpha$ et $\beta$.
+Une phase globale $\ket{\Psi}\to\ee^{\ii\gamma}\ket{\Psi}$ disparaît de $\rho$ :
+$\ee^{\ii\gamma}\ee^{-\ii\gamma}=1$.
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, font=\small,
+    pop/.style={draw=insarouge, fill=insarouge!15, minimum width=2.9cm, minimum height=1.0cm},
+    coh/.style={draw=insagris, fill=insagris!14, minimum width=2.9cm, minimum height=1.0cm}]
+  \draw[thick] (0.25,-1.15) -- (0,-1.15) -- (0,1.15) -- (0.25,1.15);
+  \draw[thick] (6.55,-1.15) -- (6.8,-1.15) -- (6.8,1.15) -- (6.55,1.15);
+  \node[pop] at (1.6,0.55) {$|\alpha|^2=P(0)$};
+  \node[coh] at (5.2,0.55) {$\alpha\beta^*$};
+  \node[coh] at (1.6,-0.55) {$\alpha^*\beta$};
+  \node[pop] at (5.2,-0.55) {$|\beta|^2=P(1)$};
+  \node[anchor=west, insarouge, align=left] at (7.2,0.55)
+    {\textbf{populations} (diagonale) :\\ probabilités de mesure};
+  \node[anchor=west, insagris, align=left] at (7.2,-0.55)
+    {\textbf{cohérences} (hors diagonale) :\\ phase relative de $\alpha$ et $\beta$};
+\end{tikzpicture}
+\caption{Matrice de densité $\rho=\ket{\Psi}\bra{\Psi}$ d'un état pur $\alpha\ket{0}+\beta\ket{1}$ : la
+diagonale (rouge) contient les probabilités de mesure en base $Z$, les termes hors diagonale (gris)
+contiennent la phase relative, que cette mesure ne voit pas.}
+\label{fig:rho}
+\end{figure}
+
+\begin{resultat}{Propriétés d'une matrice de densité $\rho$}
+Notons $\lambda_i$ les valeurs propres de $\rho$.
+\begin{enumerate}[nosep]
+  \item $\operatorname{Tr}\rho=1=\displaystyle\sum_i\lambda_i$ ;
+  \item $\rho$ est \emph{hermitienne} : $\rho^\dagger=\rho$ (transposée conjuguée) ;
+  \item $\rho$ est \emph{positive} : $\bra{\Phi}\rho\ket{\Phi}\geq0$ pour tout
+        $\ket{\Phi}$, ce qui équivaut à $\lambda_i\geq0$.
+\end{enumerate}
+\end{resultat}
+
+Vérification pour $\rho=\ket{\Psi}\bra{\Psi}$ :
+$\operatorname{Tr}\rho=|\alpha|^2+|\beta|^2=1$ ; $(\ket{\Psi}\bra{\Psi})^\dagger
+=\ket{\Psi}\bra{\Psi}$ ; et $\bra{\Phi}\rho\ket{\Phi}=\braket{\Phi}{\Psi}\braket{\Psi}{\Phi}
+=|\braket{\Psi}{\Phi}|^2\geq0$.
+
+\begin{remarque}[Hermitienne, pas seulement symétrique]
+Il faut $\rho^\dagger=\rho$ et non $\rho^{\mathsf T}=\rho$ : la seconde égalité n'est vraie
+que si $\rho$ est réelle. Ainsi $\ket{\Psi'}\bra{\Psi'}$ avec un facteur $\ii$ (exemple
+ci-dessous) est hermitienne mais pas symétrique.
+\end{remarque}
+
+\paragraph{Exemples.} Pour $\ket{\Psi}=\frac{1}{\sqrt5}\ket{0}+\frac{2}{\sqrt5}\ket{1}$ et
+pour $\ket{\Psi'}=\frac{1}{\sqrt5}\ket{0}+\frac{2\ii}{\sqrt5}\ket{1}$
+(section~\ref{sec:projecteurs}) :
+\[
+  \rho=\begin{pmatrix}\dfrac15 & \dfrac25\\[0.6ex] \dfrac25 & \dfrac45\end{pmatrix},
   \qquad
-  P(\ket{\Psi}\to\ket{0})=\bra{\Psi}\hat P_0\ket{\Psi}
-  =\begin{pmatrix}\frac{1}{\sqrt5} & \frac{2}{\sqrt5}\end{pmatrix}
-   \begin{pmatrix}\frac{1}{\sqrt5}\\ 0\end{pmatrix}=\frac15 ,
+  \rho'=\begin{pmatrix}\dfrac15 & -\dfrac{2\ii}{5}\\[0.6ex] \dfrac{2\ii}{5} & \dfrac45\end{pmatrix}.
 \]
-\[
-  P(\ket{\Psi}\to\ket{1})=\bra{\Psi}\hat P_1\ket{\Psi}
-  =\begin{pmatrix}\frac{1}{\sqrt5} & \frac{2}{\sqrt5}\end{pmatrix}
-   \begin{pmatrix}0 & 0\\ 0 & 1\end{pmatrix}
-   \begin{pmatrix}\frac{1}{\sqrt5}\\ \frac{2}{\sqrt5}\end{pmatrix}=\frac45 .
-\]
+Les diagonales sont identiques (mêmes probabilités $\frac15$ et $\frac45$), seules les
+cohérences diffèrent : la matrice de densité voit la phase relative que la mesure en
+base $Z$ ne voit pas.
 
-\paragraph{Effet d'une phase relative.} Soit $\ket{\Psi'}=\dfrac{1}{\sqrt5}\ket{0}
-+\dfrac{2\ii}{\sqrt5}\ket{1}$. Son bra est le \emph{conjugué} :
-$\bra{\Psi'}=\begin{pmatrix}\frac{1}{\sqrt5} & -\frac{2\ii}{\sqrt5}\end{pmatrix}$, donc
-\[
-  \braket{\Psi'}{\Psi'}=\frac15+\Big(-\frac{2\ii}{\sqrt5}\Big)\Big(\frac{2\ii}{\sqrt5}\Big)
-  =\frac15+\frac45=1 ,
-\]
-et $P(0)=1/5$, $P(1)=4/5$ comme pour $\ket{\Psi}$. Les deux états sont pourtant
-différents : le facteur $\ii$ est une phase \emph{relative} entre les deux composantes,
-que la mesure dans la base $Z$ ne voit pas (contrairement à une phase globale, jamais
-observable).
-
-\begin{remarque}[Rappels]
-$\hat P^{\,2}=\hat P$ définit un projecteur ; $\braket{a}{b}=\braket{b}{a}^*$ ;
-$\hat P_i$ est hermitien : $\hat P_i^{\,\dagger}=\hat P_i$.
+\begin{remarque}[Probabilités et valeurs moyennes avec $\rho$]
+$P(i)=\bra{i}\rho\ket{i}=\rho_{ii}$ et $\langle A\rangle=\bra{\Psi}A\ket{\Psi}
+=\operatorname{Tr}(\rho A)$. Ces deux formules restent valables pour les états mixtes
+de la section~\ref{sec:pur-mixte}.
 \end{remarque}
 
 % ---------------------------------------------------------------------
-\subsection{Récapitulatif du chapitre}
+\subsection{État pur ou état mixte}\label{sec:pur-mixte}
+% ---------------------------------------------------------------------
+
+Comme $\sum_i\lambda_i=1$ et $0\leq\lambda_i\leq1$, on a
+$\operatorname{Tr}\rho^2=\sum_i\lambda_i^2\leq1$, avec égalité si et seulement si une
+seule valeur propre vaut $1$ (les autres sont nulles).
+
+\begin{definition}{Pur ou mixte}
+\begin{itemize}[nosep]
+  \item $\rho$ est \emph{pur} si $\operatorname{Tr}\rho^2=1$ : il existe $a$ avec
+        $\lambda_a=1$ et $\lambda_b=0$ pour $b\neq a$. Alors $\rho=\ket{\Psi}\bra{\Psi}$
+        et $\rho^2=\rho$.
+  \item $\rho$ est \emph{mixte} si $\operatorname{Tr}\rho^2<1$ : c'est un mélange
+        statistique $\rho=\sum_ip_i\ket{\Psi_i}\bra{\Psi_i}$ d'états purs, chacun avec la
+        probabilité $p_i$ ($\sum_ip_i=1$). On ne sait pas dans lequel des $\ket{\Psi_i}$
+        se trouve le système.
+\end{itemize}
+\end{definition}
+
+\begin{center}
+\begin{tabular}{@{}lccl@{}}
+\toprule
+\textbf{Matrice de densité} & $\operatorname{Tr}\rho$ & $\operatorname{Tr}\rho^2$ & \textbf{Nature} \\
+\midrule
+$\ket{0}\bra{0}=\begin{pmatrix}1 & 0\\ 0 & 0\end{pmatrix}$ & $1$ & $1$ & pur \\[1.6ex]
+$\dfrac12\begin{pmatrix}1 & -1\\ -1 & 1\end{pmatrix}=\ket{-}\bra{-}$ & $1$ & $1$ & pur \\[1.6ex]
+$\dfrac12\begin{pmatrix}1 & 0\\ 0 & 1\end{pmatrix}=\dfrac{\mathrm{Id}}{2}$ & $1$ & $\dfrac12$ & mixte \\[1.6ex]
+$\begin{pmatrix}\frac34 & 0\\ 0 & \frac14\end{pmatrix}$ & $1$ & $\dfrac58$ & mixte \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Détails. Pour la deuxième ligne :
+$\dfrac12\begin{pmatrix}1 & -1\\ -1 & 1\end{pmatrix}
+=\dfrac12\big[\ket{0}\bra{0}-\ket{0}\bra{1}-\ket{1}\bra{0}+\ket{1}\bra{1}\big]$,
+qui est bien $\ket{-}\bra{-}$ avec $\ket{-}=\frac{1}{\sqrt2}(\ket{0}-\ket{1})$ ; comme
+$\rho^2=\frac14\begin{pmatrix}2 & -2\\ -2 & 2\end{pmatrix}=\rho$, on a
+$\operatorname{Tr}\rho^2=1$. Pour la troisième : $\rho^2=\frac14\mathrm{Id}$, donc
+$\operatorname{Tr}\rho^2=\frac12$. Pour la quatrième :
+$\operatorname{Tr}\rho^2=\frac{9}{16}+\frac1{16}=\frac58$.
+
+\begin{remarque}[Mélange $\neq$ superposition]
+$\rho_{\text{mél}}=\frac12\ket{0}\bra{0}+\frac12\ket{1}\bra{1}=\mathrm{Id}/2$ (le système
+est $\ket{0}$ ou $\ket{1}$, une fois sur deux) n'est pas l'état pur
+$\ket{+}\bra{+}=\frac12\begin{pmatrix}1 & 1\\ 1 & 1\end{pmatrix}$ (superposition
+cohérente). Les deux donnent $P(0)=P(1)=\frac12$, mais une mesure dans la base
+$\{\ket{+},\ket{-}\}$ les distingue : $\bra{+}\rho_{\text{mél}}\ket{+}=\frac12$, alors que
+$\bra{+}\big(\ket{+}\bra{+}\big)\ket{+}=1$. Ce sont les termes hors diagonale qui font la
+différence.
+\end{remarque}
+
+% ---------------------------------------------------------------------
+\subsection{Théorème de décomposition spectrale}\label{sec:spectral}
+% ---------------------------------------------------------------------
+
+\begin{resultat}{Décomposition spectrale}
+Pour toute matrice de densité $\rho$, il existe une base orthonormée $\{\ket{i}\}$ telle que
+\[
+  \rho=\sum_i\lambda_i\ket{i}\bra{i},
+  \qquad\lambda_i\geq0,\qquad\sum_i\lambda_i=1 .
+\]
+\end{resultat}
+
+C'est la diagonalisation d'une matrice hermitienne : les $\lambda_i$ sont réelles, elles
+sont positives car $\rho$ l'est, et de somme $1$ car $\operatorname{Tr}\rho=1$. Les
+$\ket{i}$ sont les vecteurs propres ; les $\lambda_i$ se lisent donc comme des
+probabilités : tout état est un mélange d'états purs \emph{orthogonaux}. Un état pur n'a
+qu'un seul terme.
+
+\paragraph{Exemple.} Soit
+\[
+  \rho=\begin{pmatrix}\dfrac12 & \dfrac14\\[0.6ex] \dfrac14 & \dfrac12\end{pmatrix}.
+\]
+Ses valeurs propres sont $\frac12+\frac14=\frac34$ et $\frac12-\frac14=\frac14$, de
+vecteurs propres $\ket{\pm}=\frac{1}{\sqrt2}(\ket{0}\pm\ket{1})$, donc
+\[
+  \rho=\frac34\ket{+}\bra{+}+\frac14\ket{-}\bra{-},
+  \qquad \operatorname{Tr}\rho^2=\frac9{16}+\frac1{16}=\frac58<1 :
+\]
+$\rho$ est mixte.
+Si une valeur propre est dégénérée (comme pour $\mathrm{Id}/2$), la base $\{\ket{i}\}$
+n'est pas unique.
+
+% ---------------------------------------------------------------------
+\subsection{Sphère de Bloch}\label{sec:bloch}
+% ---------------------------------------------------------------------
+
+Un état pur $\alpha\ket{0}+\beta\ket{1}$ contient deux complexes, soit quatre réels. La
+normalisation en retire un, la phase globale (inobservable) un autre : il reste
+\emph{deux} paramètres réels, ce qui définit un point sur une sphère.
+
+\begin{definition}{Paramétrisation de Bloch}
+\[
+  \ket{\Psi}=\cos\frac{\theta}{2}\,\ket{0}+\ee^{\ii\varphi}\sin\frac{\theta}{2}\,\ket{1},
+  \qquad \theta\in[0,\pi],\quad\varphi\in[0,2\pi[ .
+\]
+La normalisation est automatique : $\cos^2\frac\theta2+|\ee^{\ii\varphi}|^2\sin^2\frac\theta2=1$
+car $|\ee^{\ii\varphi}|=1$. L'état est représenté par le point de la sphère unité de
+coordonnées
+\[
+  \vec r=(\sin\theta\cos\varphi,\ \sin\theta\sin\varphi,\ \cos\theta).
+\]
+\end{definition}
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[x={(-1.63cm,-0.56cm)}, y={(1.63cm,-0.56cm)}, z={(0cm,2.16cm)}, >=Stealth]
+  % angles de l'état représenté (modifiables)
+  \pgfmathsetmacro{\thb}{55}
+  \pgfmathsetmacro{\phb}{80}
+  \pgfmathsetmacro{\rx}{sin(\thb)*cos(\phb)}
+  \pgfmathsetmacro{\ry}{sin(\thb)*sin(\phb)}
+  \pgfmathsetmacro{\rz}{cos(\thb)}
+
+  % sphère
+  \shade[ball color=insagris!15, opacity=0.55] (0,0,0) circle[radius=2.3cm];
+
+  % grands cercles : partie cachée en pointillés, partie visible en trait plein
+  \begin{scope}[insagris!75, thin]
+    \draw[domain=-45:135, samples=60, variable=\t] plot ({cos(\t)},{sin(\t)},0);
+    \draw[domain=135:315, samples=60, variable=\t, dashed] plot ({cos(\t)},{sin(\t)},0);
+    \draw[domain=-62.7:117.3, samples=60, variable=\t] plot ({cos(\t)},0,{sin(\t)});
+    \draw[domain=117.3:297.3, samples=60, variable=\t, dashed] plot ({cos(\t)},0,{sin(\t)});
+    \draw[domain=-62.7:117.3, samples=60, variable=\t] plot (0,{cos(\t)},{sin(\t)});
+    \draw[domain=117.3:297.3, samples=60, variable=\t, dashed] plot (0,{cos(\t)},{sin(\t)});
+  \end{scope}
+
+  % axes : moitié négative (cachée) en pointillés
+  \draw[insagris, dashed] (0,0,0) -- (-1,0,0);
+  \draw[insagris, dashed] (0,0,0) -- (0,-1,0);
+  \draw[insarouge, dashed] (0,0,0) -- (0,0,-1);
+  \draw[insagris] (-1,0,0) -- (-1.3,0,0);
+  \draw[insagris] (0,-1,0) -- (0,-1.3,0);
+  \draw[insarouge] (0,0,-1) -- (0,0,-1.3);
+  \draw[insagris, -{Stealth[length=2.2mm]}] (0,0,0) -- (1.3,0,0);
+  \draw[insagris, -{Stealth[length=2.2mm]}] (0,0,0) -- (0,1.3,0);
+  \draw[insarouge, -{Stealth[length=2.2mm]}] (0,0,0) -- (0,0,1.3);
+
+  % les six états remarquables
+  \foreach \ax/\ay/\az in {1/0/0, -1/0/0, 0/1/0, 0/-1/0, 0/0/1, 0/0/-1}
+    \fill[insagris!80!black] (\ax,\ay,\az) circle[radius=1.3pt];
+  \node[insarouge, anchor=south] at (0,0,1.33) {$\ket{0}$};
+  \node[insarouge, anchor=north] at (0,0,-1.33) {$\ket{1}$};
+  \node[anchor=east]  at (1.33,0,0)  {$\ket{+}$};
+  \node[anchor=west]  at (-1.33,0,0) {$\ket{-}$};
+  \node[anchor=west]  at (0,1.33,0)  {$\ket{{+}\ii}$};
+  \node[anchor=east]  at (0,-1.33,0) {$\ket{{-}\ii}$};
+
+  % état |Psi> : vecteur, projections, angles
+  \draw[dashed, insarouge!70] (0,0,0) -- (\rx,\ry,0) -- (\rx,\ry,\rz);
+  \draw[very thick, insarouge, -{Stealth[length=3mm]}] (0,0,0) -- (\rx,\ry,\rz);
+  \fill[insarouge] (\rx,\ry,\rz) circle[radius=1.6pt];
+  \node[insarouge, anchor=south] at (\rx,\ry,\rz) {$\ket{\Psi}$};
+  \draw[insarouge, domain=0:\thb, samples=25, variable=\t]
+    plot ({0.32*sin(\t)*cos(\phb)},{0.32*sin(\t)*sin(\phb)},{0.32*cos(\t)});
+  \draw[insarouge, domain=0:\phb, samples=40, variable=\t]
+    plot ({0.4*cos(\t)},{0.4*sin(\t)},0);
+  \node[insarouge, font=\small] at ({0.55*sin(\thb/2)*cos(\phb)},{0.55*sin(\thb/2)*sin(\phb)},{0.55*cos(\thb/2)}) {$\theta$};
+  \node[insarouge, font=\small] at ({0.75*cos(\phb/2)},{0.75*sin(\phb/2)},0) {$\varphi$};
+\end{tikzpicture}
+\caption{Sphère de Bloch. Le pôle nord est $\ket{0}$, le pôle sud $\ket{1}$ (axe $z$, base $Z$) ;
+$\ket{\pm}$ sont sur l'axe $x$ (base $X$) et $\ket{{\pm}\ii}$ sur l'axe $y$ (base $Y$).
+$\theta$ est l'angle avec l'axe $z$, $\varphi$ l'angle de la projection sur le plan
+équatorial avec l'axe $x$.}
+\label{fig:bloch}
+\end{figure}
+
+Les six états remarquables sont ceux des bases $Z$, $X$ et $Y$ (section~\ref{sec:qubit}) :
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{État} & $\theta$ & $\varphi$ & $\vec r$ & \textbf{Base} \\
+\midrule
+$\ket{0}$ & $0$ & --- & $(0,0,1)$ & $Z$ \\
+$\ket{1}$ & $\pi$ & --- & $(0,0,-1)$ & $Z$ \\
+$\ket{+}=\frac{1}{\sqrt2}(\ket{0}+\ket{1})$ & $\frac\pi2$ & $0$ & $(1,0,0)$ & $X$ \\
+$\ket{-}=\frac{1}{\sqrt2}(\ket{0}-\ket{1})$ & $\frac\pi2$ & $\pi$ & $(-1,0,0)$ & $X$ \\
+$\ket{{+}\ii}=\frac{1}{\sqrt2}(\ket{0}+\ii\ket{1})$ & $\frac\pi2$ & $\frac\pi2$ & $(0,1,0)$ & $Y$ \\
+$\ket{{-}\ii}=\frac{1}{\sqrt2}(\ket{0}-\ii\ket{1})$ & $\frac\pi2$ & $-\frac\pi2$ & $(0,-1,0)$ & $Y$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Aux pôles ($\theta=0$ ou $\pi$) l'angle $\varphi$ n'a pas de sens : il ne reste qu'un
+facteur global.
+
+\begin{resultat}{Lecture de la sphère}
+\begin{itemize}[nosep]
+  \item \textbf{Mesure en base $Z$} : $P(0)=\cos^2\frac\theta2=\frac{1+r_z}{2}$ et
+        $P(1)=\sin^2\frac\theta2=\frac{1-r_z}{2}$. L'angle $\varphi$ n'y intervient pas
+        (c'est la phase relative).
+  \item \textbf{États orthogonaux} $\Leftrightarrow$ \textbf{points antipodaux} :
+        $\ket{0}\perp\ket{1}$, $\ket{+}\perp\ket{-}$, $\ket{{+}\ii}\perp\ket{{-}\ii}$.
+        Une base orthonormée est donc un diamètre de la sphère.
+  \item \textbf{Composantes} : $r_x=\langle X\rangle$, $r_y=\langle Y\rangle$,
+        $r_z=\langle Z\rangle$ (moyennes des matrices de Pauli de la
+        section~\ref{sec:op-dirac}).
+\end{itemize}
+\end{resultat}
+
+\paragraph{Boule de Bloch.} Avec $\vec r=(r_x,r_y,r_z)$, la matrice de densité s'écrit
+\[
+  \rho=\frac12\begin{pmatrix}1+r_z & r_x-\ii r_y\\ r_x+\ii r_y & 1-r_z\end{pmatrix},
+  \qquad
+  \operatorname{Tr}\rho^2=\frac{1+|\vec r|^2}{2}.
+\]
+Un état pur ($\operatorname{Tr}\rho^2=1$) vérifie $|\vec r|=1$ : il est \emph{sur} la
+sphère. Un état mixte a $|\vec r|<1$ : il est \emph{à l'intérieur} de la boule, et
+$\mathrm{Id}/2$ en est le centre ($\vec r=\vec0$, $\operatorname{Tr}\rho^2=\frac12$). Les
+exemples de la section~\ref{sec:spectral} donnent $\vec r=(\frac12,0,0)$ pour
+$\frac34\ket{+}\bra{+}+\frac14\ket{-}\bra{-}$ et $\vec r=(0,0,\frac12)$ pour
+$\mathrm{diag}(\frac34,\frac14)$.
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, font=\small]
+  \def\R{2.3}
+  % coupe de la boule de Bloch par le plan xOz
+  \fill[insagris!12] (0,0) circle (\R);
+  \draw[insagris, dotted] (-\R,0) -- (\R,0);
+  \draw[insagris, dotted] (0,-\R) -- (0,\R);
+  \draw[insarouge, very thick] (0,0) circle (\R);
+  % états purs, sur la sphère
+  \foreach \ang/\lab/\pos in {90/{\ket{0}}/above, -90/{\ket{1}}/below, 0/{\ket{+}}/right, 180/{\ket{-}}/left} {
+    \fill[insarouge] (\ang:\R) circle (2.2pt);
+    \node[\pos=3pt, text=insarouge] at (\ang:\R) {$\lab$};
+  }
+  % mélanges de |0> et |1> : l'axe z
+  \draw[insarouge!70, dashed, thick] (0,-\R) -- (0,\R);
+  % états mixtes, à l'intérieur
+  \fill[insagris!80!black] (0,0) circle (2.2pt);
+  \fill[insagris!80!black] (0,{\R/2}) circle (2.2pt);
+  \fill[insagris!80!black] ({\R/2},0) circle (2.2pt);
+  \node[fill=insagris!12, inner sep=1pt, anchor=north east, font=\footnotesize] at (-0.08,-0.08) {$\mathrm{Id}/2$};
+  \draw[insagris] (0,{\R/2}) -- (3.5,1.45);
+  \node[anchor=west, font=\footnotesize, align=left] at (3.5,1.45)
+    {$\mathrm{diag}\big(\frac34,\frac14\big)$\\ $\vec r=(0,0,\frac12)$};
+  \draw[insagris] ({\R/2},0) -- (3.5,-1.25);
+  \node[anchor=west, font=\footnotesize, align=left] at (3.5,-1.25)
+    {$\frac34\ket{+}\bra{+}+\frac14\ket{-}\bra{-}$\\ $\vec r=(\frac12,0,0)$};
+  \node[insarouge, anchor=east, font=\footnotesize, align=right] at (-2.9,1.6) {états purs\\ sur la sphère, $|\vec r|=1$};
+  \node[insagris, anchor=east, font=\footnotesize, align=right] at (-2.9,-1.6) {états mixtes\\ dans la boule, $|\vec r|<1$};
+\end{tikzpicture}
+\caption{Boule de Bloch, vue en coupe dans le plan $xOz$. Les états purs sont sur le cercle, les
+états mixtes à l'intérieur ; $\mathrm{Id}/2$ est au centre. L'axe $z$ (pointillés) porte les
+mélanges $p\ket{0}\bra{0}+(1-p)\ket{1}\bra{1}$, avec $r_z=2p-1$ : le mélange équiprobable de
+$\ket{0}$ et de $\ket{1}$ est le centre, alors que la superposition $\ket{+}$ est sur la sphère.}
+\label{fig:boule}
+\end{figure}
+
+% ---------------------------------------------------------------------
+\subsection{Produit tensoriel}\label{sec:tenseur}
+% ---------------------------------------------------------------------
+
+Chaque qubit vit dans $\mathcal{H}^2=\mathbb{C}^2$. L'espace du système $(A,B)$ est le
+\emph{produit tensoriel}
+\[
+  \mathcal{H}^2\otimes\mathcal{H}^2=\mathcal{H}^4=\mathbb{C}^4 ,
+\]
+de dimension $2\times2=4$. Pour $n$ qubits la dimension est $2^n$ :
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Nombre de qubits $n$ & $1$ & $2$ & $3$ & $10$ & $50$ \\
+\midrule
+Dimension $2^n$ & $2$ & $4$ & $8$ & $1024$ & $\approx1{,}1\times10^{15}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, font=\small]
+  \def\W{11.0}
+  \foreach \n/\labs in {1/{0,1}, 2/{00,01,10,11}, 3/{000,001,010,011,100,101,110,111}} {
+    \pgfmathtruncatemacro{\N}{2^\n}
+    \pgfmathsetmacro{\w}{\W/\N}
+    \pgfmathsetmacro{\y}{-(\n-1)*1.0}
+    \foreach \lab [count=\k from 0] in \labs {
+      \draw[fill=insarouge!10, draw=insarouge] ({\k*\w},\y) rectangle ({(\k+1)*\w},{\y-0.7});
+      \node[font=\footnotesize] at ({(\k+0.5)*\w},{\y-0.35}) {$\ket{\lab}$};
+    }
+    \node[anchor=east] at (-0.2,{\y-0.35}) {$n=\n$};
+    \node[anchor=west] at (\W+0.2,{\y-0.35}) {$2^{\n}=\N$ amplitudes};
+  }
+  \foreach \k in {0,...,15} {
+    \draw[fill=insarouge!10, draw=insarouge] ({\k*\W/16},-3) rectangle ({(\k+1)*\W/16},-3.7);
+  }
+  \node[anchor=east] at (-0.2,-3.35) {$n=4$};
+  \node[anchor=west] at (\W+0.2,-3.35) {$2^4=16$ amplitudes};
+  \node at (\W/2,-4.05) {$\vdots$};
+  \draw[insarouge] (0,-4.3) rectangle (\W,-5.0);
+  \fill[pattern=vertical lines, pattern color=insarouge!60] (0,-4.3) rectangle (\W,-5.0);
+  \node[anchor=east] at (-0.2,-4.65) {$n=10$};
+  \node[anchor=west] at (\W+0.2,-4.65) {$2^{10}=1024$ amplitudes};
+\end{tikzpicture}
+\caption{Chaque qubit supplémentaire double le nombre d'amplitudes : $n$ qubits demandent $2^n$
+nombres complexes. Les états de base sont numérotés par la lecture binaire de leur étiquette
+($\ket{011}$ est en position $3$ à partir de $0$).}
+\label{fig:croissance}
+\end{figure}
+
+\begin{resultat}{Postulat 3 : systèmes composites}
+L'espace d'état d'un système composé de deux systèmes d'espaces $\mathcal{H}_A$ et
+$\mathcal{H}_B$ est le \gls{tenseur} $\mathcal{H}_A\otimes\mathcal{H}_B$, de dimension
+$\dim\mathcal{H}_A\times\dim\mathcal{H}_B$. Si $A$ est dans l'état $\ket{u}$ et $B$ dans l'état
+$\ket{v}$, l'ensemble est dans l'état $\ket{u}\otimes\ket{v}$.
+\end{resultat}
+
+\begin{definition}{Produit tensoriel de deux vecteurs}
+\[
+  \begin{pmatrix}a_1\\ a_2\end{pmatrix}\otimes\begin{pmatrix}b_1\\ b_2\end{pmatrix}
+  =\begin{pmatrix}a_1\begin{pmatrix}b_1\\ b_2\end{pmatrix}\\[2ex]
+                  a_2\begin{pmatrix}b_1\\ b_2\end{pmatrix}\end{pmatrix}
+  =\begin{pmatrix}a_1b_1\\ a_1b_2\\ a_2b_1\\ a_2b_2\end{pmatrix}.
+\]
+Chaque composante du premier vecteur multiplie le second vecteur en entier. On note
+$\ket{ij}_{AB}=\ket{i}_A\otimes\ket{j}_B$ : le premier chiffre est l'état de $A$, le second
+celui de $B$.
+\end{definition}
+
+\subsubsection{Les quatre états de base}
+
+On développe chacun des quatre produits avec $\ket{0}=\begin{pmatrix}1\\ 0\end{pmatrix}$
+et $\ket{1}=\begin{pmatrix}0\\ 1\end{pmatrix}$ :
+\begin{align*}
+  \ket{0}\otimes\ket{0}&=\begin{pmatrix}1\\ 0\end{pmatrix}\otimes\begin{pmatrix}1\\ 0\end{pmatrix}
+    =\begin{pmatrix}1\cdot\begin{pmatrix}1\\ 0\end{pmatrix}\\[1.5ex]0\cdot\begin{pmatrix}1\\ 0\end{pmatrix}\end{pmatrix}
+    =\begin{pmatrix}1\\ 0\\ 0\\ 0\end{pmatrix}=\ket{00},\\[1.5ex]
+  \ket{0}\otimes\ket{1}&=\begin{pmatrix}1\\ 0\end{pmatrix}\otimes\begin{pmatrix}0\\ 1\end{pmatrix}
+    =\begin{pmatrix}1\cdot\begin{pmatrix}0\\ 1\end{pmatrix}\\[1.5ex]0\cdot\begin{pmatrix}0\\ 1\end{pmatrix}\end{pmatrix}
+    =\begin{pmatrix}0\\ 1\\ 0\\ 0\end{pmatrix}=\ket{01},\\[1.5ex]
+  \ket{1}\otimes\ket{0}&=\begin{pmatrix}0\\ 1\end{pmatrix}\otimes\begin{pmatrix}1\\ 0\end{pmatrix}
+    =\begin{pmatrix}0\cdot\begin{pmatrix}1\\ 0\end{pmatrix}\\[1.5ex]1\cdot\begin{pmatrix}1\\ 0\end{pmatrix}\end{pmatrix}
+    =\begin{pmatrix}0\\ 0\\ 1\\ 0\end{pmatrix}=\ket{10},\\[1.5ex]
+  \ket{1}\otimes\ket{1}&=\begin{pmatrix}0\\ 1\end{pmatrix}\otimes\begin{pmatrix}0\\ 1\end{pmatrix}
+    =\begin{pmatrix}0\cdot\begin{pmatrix}0\\ 1\end{pmatrix}\\[1.5ex]1\cdot\begin{pmatrix}0\\ 1\end{pmatrix}\end{pmatrix}
+    =\begin{pmatrix}0\\ 0\\ 0\\ 1\end{pmatrix}=\ket{11}.
+\end{align*}
+Le vecteur $\ket{ij}$ a son $1$ en position $2i+j$ (en comptant à partir de $0$) : c'est
+la lecture de $ij$ en binaire. Les quatre vecteurs forment la base de calcul de
+$\mathcal{H}^4$.
+
+\subsubsection{Produit scalaire et orthonormalité}
+
+\begin{resultat}{Produit scalaire d'un produit tensoriel}
+\[
+  \big(\bra{a}\otimes\bra{b}\big)\big(\ket{c}\otimes\ket{d}\big)=\braket{a}{c}\,\braket{b}{d}.
+\]
+\end{resultat}
+
+\emph{Démonstration.} Les composantes de $\ket{a}\otimes\ket{b}$ sont $a_ib_j$, celles de
+$\ket{c}\otimes\ket{d}$ sont $c_id_j$. Le produit scalaire est
+$\sum_{i,j}(a_ib_j)^*c_id_j=\big(\sum_ia_i^*c_i\big)\big(\sum_jb_j^*d_j\big)=\braket{a}{c}\braket{b}{d}$.
+\hfill$\square$
+
+On en déduit $\braket{ij}{kl}=\braket{i}{k}\braket{j}{l}$. Les seize produits scalaires
+des états de base sont :
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}c|cccc@{}}
+ & $\ket{00}$ & $\ket{01}$ & $\ket{10}$ & $\ket{11}$ \\
+\hline
+$\bra{00}$ & $1\cdot1=1$ & $1\cdot0=0$ & $0\cdot1=0$ & $0\cdot0=0$ \\
+$\bra{01}$ & $1\cdot0=0$ & $1\cdot1=1$ & $0\cdot0=0$ & $0\cdot1=0$ \\
+$\bra{10}$ & $0\cdot1=0$ & $0\cdot0=0$ & $1\cdot1=1$ & $1\cdot0=0$ \\
+$\bra{11}$ & $0\cdot0=0$ & $0\cdot1=0$ & $1\cdot0=0$ & $1\cdot1=1$ \\
+\end{tabular}
+\end{center}
+(chaque case est $\braket{i}{k}\cdot\braket{j}{l}$). On lit $\braket{ij}{kl}=\delta_{ik}\delta_{jl}$ :
+la base est \emph{orthonormée}.
+
+\subsubsection{Produit tensoriel d'états quelconques}
+
+Le produit tensoriel est linéaire en chaque facteur :
+$(\lambda\ket{a}+\mu\ket{a'})\otimes\ket{b}=\lambda\ket{a}\otimes\ket{b}+\mu\ket{a'}\otimes\ket{b}$,
+et de même pour le second facteur. Pour $\alpha\ket{0}+\beta\ket{1}$ et
+$\gamma\ket{0}+\delta\ket{1}$ :
+\begin{align*}
+  \big(\alpha\ket{0}+\beta\ket{1}\big)\otimes\big(\gamma\ket{0}+\delta\ket{1}\big)
+  &=\alpha\ket{0}\otimes\big(\gamma\ket{0}+\delta\ket{1}\big)
+    +\beta\ket{1}\otimes\big(\gamma\ket{0}+\delta\ket{1}\big)\\
+  &=\alpha\gamma\ket{00}+\alpha\delta\ket{01}+\beta\gamma\ket{10}+\beta\delta\ket{11}.
+\end{align*}
+Par les composantes, $\begin{pmatrix}\alpha\\ \beta\end{pmatrix}\otimes\begin{pmatrix}\gamma\\ \delta\end{pmatrix}
+=\begin{pmatrix}\alpha\gamma\\ \alpha\delta\\ \beta\gamma\\ \beta\delta\end{pmatrix}$ : c'est le même
+résultat. La norme est conservée :
+\[
+  |\alpha\gamma|^2+|\alpha\delta|^2+|\beta\gamma|^2+|\beta\delta|^2
+  =\big(|\alpha|^2+|\beta|^2\big)\big(|\gamma|^2+|\delta|^2\big)=1\cdot1=1 .
+\]
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, font=\small]
+  \node[circle, fill=insagris, inner sep=1.7pt] (r) at (0,0) {};
+  \node[font=\footnotesize\bfseries, insagris] at (3.2,2.75) {qubit $A$};
+  \node[font=\footnotesize\bfseries, insagris] at (6.6,2.75) {qubit $B$};
+  \node[font=\footnotesize\bfseries, insagris] at (9.6,2.75) {composante de $\ket{u}\otimes\ket{v}$};
+  \node (a0) at (3.2,1.25) {$\ket{0}_A$};
+  \node (a1) at (3.2,-1.25) {$\ket{1}_A$};
+  \node (b00) at (6.6,1.9) {$\ket{0}_B$};
+  \node (b01) at (6.6,0.6) {$\ket{1}_B$};
+  \node (b10) at (6.6,-0.6) {$\ket{0}_B$};
+  \node (b11) at (6.6,-1.9) {$\ket{1}_B$};
+  \draw[insarouge, thick] (r) -- (a0) node[midway, above left] {$\alpha$};
+  \draw[insarouge, thick] (r) -- (a1) node[midway, below left] {$\beta$};
+  \draw[insarouge, thick] (a0) -- (b00) node[midway, above] {$\gamma$};
+  \draw[insarouge, thick] (a0) -- (b01) node[midway, below] {$\delta$};
+  \draw[insarouge, thick] (a1) -- (b10) node[midway, above] {$\gamma$};
+  \draw[insarouge, thick] (a1) -- (b11) node[midway, below] {$\delta$};
+  \node[anchor=west] at (8.3,1.9) {$\alpha\gamma\;\ket{00}$};
+  \node[anchor=west] at (8.3,0.6) {$\alpha\delta\;\ket{01}$};
+  \node[anchor=west] at (8.3,-0.6) {$\beta\gamma\;\ket{10}$};
+  \node[anchor=west] at (8.3,-1.9) {$\beta\delta\;\ket{11}$};
+  \foreach \y in {1.9,0.6,-0.6,-1.9} \draw[insagris, ->] (7.1,\y) -- (8.2,\y);
+\end{tikzpicture}
+\caption{Produit tensoriel $\big(\alpha\ket{0}+\beta\ket{1}\big)\otimes\big(\gamma\ket{0}+\delta\ket{1}\big)$
+lu comme un arbre : on choisit l'état de $A$ (amplitude $\alpha$ ou $\beta$), puis celui de $B$
+(amplitude $\gamma$ ou $\delta$), et les amplitudes se multiplient le long du chemin. Les quatre
+feuilles sont les composantes du vecteur de $\mathbb{C}^4$.}
+\label{fig:arbre}
+\end{figure}
+
+\paragraph{Exemples.}
+\begin{align*}
+  \ket{+}\otimes\ket{+}&=\tfrac12\big(\ket{0}+\ket{1}\big)\otimes\big(\ket{0}+\ket{1}\big)
+    =\tfrac12\big(\ket{00}+\ket{01}+\ket{10}+\ket{11}\big)
+    =\tfrac12\begin{pmatrix}1\\ 1\\ 1\\ 1\end{pmatrix},\\[1ex]
+  \ket{+}\otimes\ket{-}&=\tfrac12\big(\ket{0}+\ket{1}\big)\otimes\big(\ket{0}-\ket{1}\big)
+    =\tfrac12\big(\ket{00}-\ket{01}+\ket{10}-\ket{11}\big)
+    =\tfrac12\begin{pmatrix}1\\ -1\\ 1\\ -1\end{pmatrix},\\[1ex]
+  \ket{0}\otimes\ket{+}&=\tfrac{1}{\sqrt2}\big(\ket{00}+\ket{01}\big)
+    =\tfrac{1}{\sqrt2}\begin{pmatrix}1\\ 1\\ 0\\ 0\end{pmatrix},\qquad
+  \ket{+}\otimes\ket{0}=\tfrac{1}{\sqrt2}\big(\ket{00}+\ket{10}\big)
+    =\tfrac{1}{\sqrt2}\begin{pmatrix}1\\ 0\\ 1\\ 0\end{pmatrix}.
+\end{align*}
+Les deux derniers vecteurs sont différents : \emph{l'ordre des facteurs compte}, le premier
+est toujours celui de $A$.
+
+\begin{remarque}[Tous les états ne sont pas des produits]
+Un produit $\ket{u}\otimes\ket{v}$ a pour composantes $(\alpha\gamma,\alpha\delta,\beta\gamma,\beta\delta)$,
+qui vérifient $c_{00}c_{11}=c_{01}c_{10}$ (les deux membres valent $\alpha\beta\gamma\delta$). Le vecteur
+$\frac{1}{\sqrt2}(\ket{00}+\ket{11})$ ne vérifie pas cette relation ($\frac12\neq0$) : ce n'est pas un
+produit, mais un état \emph{intriqué} (chapitre~\ref{chap:bell}).
+\end{remarque}
+
+\subsubsection{Produit tensoriel de matrices}
+
+\begin{definition}{Produit tensoriel de deux matrices}
+\[
+  A\otimes B=\begin{pmatrix}A_{11} & A_{12}\\ A_{21} & A_{22}\end{pmatrix}\otimes B
+  =\begin{pmatrix}A_{11}B & A_{12}B\\ A_{21}B & A_{22}B\end{pmatrix}
+  \qquad(\text{matrice }4\times4).
+\]
+\end{definition}
+
+\begin{resultat}{Action sur un produit}
+\[
+  (A\otimes B)\big(\ket{u}\otimes\ket{v}\big)=A\ket{u}\otimes B\ket{v}.
+\]
+\end{resultat}
+
+\emph{Démonstration.} Avec $\ket{u}=(u_1,u_2)^{\mathsf T}$, le vecteur $\ket{u}\otimes\ket{v}$ a
+pour blocs $u_k\ket{v}$ ($k=1,2$). Le bloc de lignes $i$ de $(A\otimes B)(\ket{u}\otimes\ket{v})$ est
+donc
+\[
+  \sum_kA_{ik}B\,\big(u_k\ket{v}\big)=\Big(\sum_kA_{ik}u_k\Big)B\ket{v}=(A\ket{u})_i\,B\ket{v},
+\]
+qui est le bloc $i$ de $A\ket{u}\otimes B\ket{v}$. \hfill$\square$
+
+\clearpage
+% ---------------------------------------------------------------------
+\subsection{Récapitulatif du chapitre}\label{sec:recap3}
 % ---------------------------------------------------------------------
 
 \begin{center}
-\renewcommand{\arraystretch}{1.7}
-\begin{tabular}{@{}ll@{}}
+\adjustbox{max width=\linewidth}{%
+\begin{tikzpicture}[>=Stealth, font=\footnotesize,
+    boite/.style={draw=insarouge, fill=insarouge!6, rounded corners=2pt, thick,
+                  minimum width=3.55cm, minimum height=1.5cm, align=center, inner sep=3pt},
+    lien/.style={->, very thick, insagris},
+    etiq/.style={font=\scriptsize\itshape, text=insagris, inner sep=2pt}]
+  \node[boite] (ope) at (0,0)
+    {\textbf{Opérateurs}\\ $A^\dagger=A$, \ $U^\dagger U=\mathrm{Id}$\\ {\scriptsize\S\,\ref{sec:op-dirac}}};
+  \node[boite] (rho) at (4.3,0)
+    {\textbf{Matrice de densité}\\ $\rho=\ket{\Psi}\bra{\Psi}$\\ {\scriptsize\S\,\ref{sec:rho}}};
+  \node[boite] (pur) at (8.6,0)
+    {\textbf{Pur ou mixte}\\ $\operatorname{Tr}\rho^2$, \ $\rho=\sum_i\lambda_i\ket{i}\bra{i}$\\
+     {\scriptsize\S\,\ref{sec:pur-mixte}, \ref{sec:spectral}}};
+  \node[boite] (blo) at (12.9,0)
+    {\textbf{Sphère de Bloch}\\ $\vec r=(\langle X\rangle,\langle Y\rangle,\langle Z\rangle)$\\
+     {\scriptsize\S\,\ref{sec:bloch}}};
+  \node[boite, minimum width=7.6cm] (ten) at (1.9,-2.6)
+    {\textbf{Produit tensoriel}\\ $\mathcal{H}_A\otimes\mathcal{H}_B$, \ $\dim=2^n$,
+     \ $(A\otimes B)(\ket{u}\otimes\ket{v})=A\ket{u}\otimes B\ket{v}$\\ {\scriptsize\S\,\ref{sec:tenseur}}};
+  \node[draw=insagris, fill=insagris!8, rounded corners=2pt, thick, minimum width=5.2cm, minimum height=1.5cm,
+        align=center] (suite) at (10.5,-2.6)
+    {\textbf{Chapitres~\ref{chap:portes} et~\ref{chap:bell}}\\ portes multi-qubits, intrication};
+  \draw[lien] (ope) -- (rho);
+  \draw[lien] (rho) -- (pur);
+  \draw[lien] (pur) -- (blo);
+  \draw[lien] (ope) -- (ope |- ten.north) node[etiq, midway, right=1pt] {$A\otimes B$};
+  \draw[lien] (ten) -- (suite);
+\end{tikzpicture}}
+\end{center}
+
+\begin{aretenir}
+\begin{itemize}
+  \item Un opérateur est une matrice. Il est \emph{hermitien} ($A^\dagger=A$) s'il représente une
+        grandeur mesurable : ses valeurs propres sont réelles, et $\langle A\rangle=\bra{\Psi}A\ket{\Psi}$.
+        Il est \emph{unitaire} ($U^\dagger U=\mathrm{Id}$) s'il conserve la norme : c'est une porte.
+  \item La matrice de densité $\rho=\ket{\Psi}\bra{\Psi}$ est hermitienne, positive et de trace $1$.
+        Sa diagonale donne les probabilités (populations), ses termes hors diagonale la phase relative
+        (cohérences). Valeur moyenne : $\langle A\rangle=\operatorname{Tr}(\rho A)$.
+  \item Un état est \emph{pur} si $\operatorname{Tr}\rho^2=1$, \emph{mixte} si $\operatorname{Tr}\rho^2<1$.
+        Un mélange statistique n'est pas une superposition : $\mathrm{Id}/2\neq\ket{+}\bra{+}$.
+  \item Sur la sphère de Bloch, un état pur est un point de coordonnées
+        $\vec r=(\langle X\rangle,\langle Y\rangle,\langle Z\rangle)$ ; deux états orthogonaux sont
+        antipodaux ; un état mixte est dans la boule, et $\mathrm{Id}/2$ en est le centre.
+  \item $n$ qubits vivent dans $\mathcal{H}^{\otimes n}$, de dimension $2^n$. Le produit
+        $\ket{u}\otimes\ket{v}$ multiplie les amplitudes, et
+        $(A\otimes B)(\ket{u}\otimes\ket{v})=A\ket{u}\otimes B\ket{v}$. Tous les états de
+        $\mathcal{H}^4$ ne sont pas des produits.
+\end{itemize}
+\end{aretenir}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.45}
+\begin{tabular}{@{}l l r@{}}
 \toprule
-\textbf{Notion} & \textbf{Formule} \\
+\textbf{Notion} & \textbf{Formule} & \textbf{§} \\
 \midrule
-Superposition & $\Psi=\displaystyle\sum_i c_i\Psi_i$, \quad $c_i\in\mathbb{C}$ \\
-Orthonormalité & $\displaystyle\int\Psi_i^*\Psi_j\,\dd x=\delta_{ij}$ \\
-Normalisation & $\displaystyle\sum_i|c_i|^2=1$ \\
-Probabilité d'une énergie & $P(E_i)=|c_i|^2$ \\
-Énergie moyenne & $\langle E\rangle=\displaystyle\sum_iE_i|c_i|^2$ \\
-Incertitude & $\sigma_E=\sqrt{\langle E^2\rangle-\langle E\rangle^2}$, \quad
-              $\langle E^2\rangle=\displaystyle\sum_iE_i^2|c_i|^2$ \\
-Qubit & $\ket{\Psi}=\alpha\ket{0}+\beta\ket{1}$, \quad $|\alpha|^2+|\beta|^2=1$ \\
-Mesure dans la base $Z$ & $P(0)=|\alpha|^2$, \quad $P(1)=|\beta|^2$ \\
-Projecteurs & $\hat P_i=\ket{i}\bra{i}$, \quad $\hat P_i^{\,2}=\hat P_i$, \quad $\hat P_0+\hat P_1=\mathrm{Id}$ \\
-Probabilité de mesure & $P(i)=\bra{\Psi}\hat P_i\ket{\Psi}=|\braket{i}{\Psi}|^2$ \\
+Hermitien, unitaire & $A^\dagger=A$ ; \quad $U^\dagger U=UU^\dagger=\mathrm{Id}$ & \ref{sec:op-dirac} \\
+Valeur moyenne & $\langle A\rangle=\bra{\Psi}A\ket{\Psi}=\operatorname{Tr}(\rho A)$
+  & \ref{sec:op-dirac}, \ref{sec:rho} \\
+Matrice de densité & $\rho=\ket{\Psi}\bra{\Psi}=\left(\begin{smallmatrix}|\alpha|^2 & \alpha\beta^*\\ \alpha^*\beta & |\beta|^2\end{smallmatrix}\right)$
+  & \ref{sec:rho} \\
+Propriétés de $\rho$ & $\operatorname{Tr}\rho=1$, \quad $\rho^\dagger=\rho$, \quad $\rho\geq0$ & \ref{sec:rho} \\
+Pureté & $\operatorname{Tr}\rho^2=\sum_i\lambda_i^2\leq1$, égalité si et seulement si $\rho$ pur
+  & \ref{sec:pur-mixte} \\
+Décomposition spectrale & $\rho=\sum_i\lambda_i\ket{i}\bra{i}$, \quad $\lambda_i\geq0$, \quad $\sum_i\lambda_i=1$
+  & \ref{sec:spectral} \\
+Paramétrisation de Bloch & $\ket{\Psi}=\cos\frac\theta2\ket{0}+\ee^{\ii\varphi}\sin\frac\theta2\ket{1}$
+  & \ref{sec:bloch} \\
+Boule de Bloch & $\operatorname{Tr}\rho^2=\frac{1+|\vec r|^2}{2}$ & \ref{sec:bloch} \\
+Produit tensoriel & $(a_1,a_2)^{\mathsf T}\otimes(b_1,b_2)^{\mathsf T}
+  =(a_1b_1,\,a_1b_2,\,a_2b_1,\,a_2b_2)^{\mathsf T}$ & \ref{sec:tenseur} \\
+Règle d'action & $(A\otimes B)(\ket{u}\otimes\ket{v})=A\ket{u}\otimes B\ket{v}$ & \ref{sec:tenseur} \\
 \bottomrule
 \end{tabular}
 \end{center}
+
+\begin{savoirfaire}
+\begin{itemize}
+  \item Écrire un opérateur avec des ket-bra, vérifier qu'il est hermitien ou unitaire, calculer
+        $\langle A\rangle$ et les coordonnées de Bloch d'un état (exercice~\ref{ex:blochpur}).
+  \item Écrire la matrice de densité d'un état pur ou d'un mélange, calculer $\operatorname{Tr}\rho^2$
+        et placer l'état dans la boule de Bloch (exercice~\ref{ex:melange}).
+  \item Calculer un produit tensoriel de vecteurs ou de matrices et l'action de $A\otimes B$
+        (exercice~\ref{ex:tensmat}).
+\end{itemize}
+\end{savoirfaire}

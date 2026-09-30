@@ -1,508 +1,1237 @@
 % =====================================================================
-%  Chapitre 6 : systèmes multi-qubits et intrication
+%  Chapitre 6 : Exemples et exercices corrigés
 %  Fichier importé par main.tex avec \include{chapitre6}.
-%  Comme chapitre4.tex et chapitre5.tex, il ouvre une NOUVELLE SECTION
-%  (numéro 4). Pour le rattacher à la section précédente, remplacer
-%  \section par \subsection et chaque \subsection par \subsubsection.
-%  Pas de préambule : environnements (definition, resultat, remarque),
-%  macros (\ii, \ee, \dd, \ket, \bra, \braket) et couleurs (insarouge,
-%  insagris) sont définis dans main.tex.
+%  Il ne contient ni préambule ni \begin{document} : les environnements
+%  (definition, resultat, remarque, aretenir, savoirfaire, exercice, correction),
+%  les macros (\ii, \ee, \dd, \pd, \pdd, \Hop, \ket, \bra, \braket), les symboles
+%  de circuits (ctl, cible, croix, mesure, porte) et les couleurs (insarouge,
+%  insagris) sont définis dans main.tex. Un chapitre = une \section.
 % =====================================================================
 
-% Macros de Dirac (déjà définies dans main.tex récent ; ce bloc évite l'erreur
+% Macros de Dirac (déjà définies dans main.tex ; ce bloc évite l'erreur
 % « Undefined control sequence \ket » si main.tex est une ancienne version).
 \providecommand{\ket}[1]{|#1\rangle}
 \providecommand{\bra}[1]{\langle #1|}
 \providecommand{\braket}[2]{\langle #1|#2\rangle}
 
 % =====================================================================
-\section{Systèmes multi-qubits et intrication}\label{sec:multi}
+\section{Exemples et exercices corrigés}\label{chap:exercices}
 % =====================================================================
 
-Un ordinateur quantique utilise plusieurs qubits. Cette section décrit l'espace des états
-de deux qubits (le produit tensoriel), la mesure, la distinction entre états séparables
-et états intriqués, puis les opérateurs qui agissent sur deux qubits. Tous les calculs
-sont détaillés ; les qubits sont notés $A$ et $B$.
-
-% ---------------------------------------------------------------------
-\subsection{L'espace de deux qubits}\label{sec:tenseur}
-% ---------------------------------------------------------------------
-
-Chaque qubit vit dans $\mathcal{H}^2=\mathbb{C}^2$. L'espace du système $(A,B)$ est le
-\emph{produit tensoriel}
-\[
-  \mathcal{H}^2\otimes\mathcal{H}^2=\mathcal{H}^4=\mathbb{C}^4 ,
-\]
-de dimension $2\times2=4$. Pour $n$ qubits la dimension est $2^n$ :
+Ce chapitre rassemble dix-huit exercices, rangés dans l'ordre du cours, avec leur correction
+complète. Les calculs sont détaillés : on peut chercher l'exercice seul, puis comparer avec la
+correction, ou suivre directement la solution comme un exemple traité. Les notations sont celles des
+chapitres précédents ($\ket{ab}=\ket{a}_A\otimes\ket{b}_B$, CNOT de contrôle $B$ et de cible $A$).
 
 \begin{center}
-\renewcommand{\arraystretch}{1.3}
-\begin{tabular}{@{}lccccc@{}}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}l l l@{}}
 \toprule
-Nombre de qubits $n$ & $1$ & $2$ & $3$ & $10$ & $50$ \\
+\textbf{Chapitre} & \textbf{Exercices} & \textbf{Notions travaillées} \\
 \midrule
-Dimension $2^n$ & $2$ & $4$ & $8$ & $1024$ & $\approx1{,}1\times10^{15}$ \\
+\ref{chap:histoire} Histoire et mécanique quantique & \ref{ex:photoelec}--\ref{ex:superpuits}
+  & photon, puits infini, superposition d'énergies \\
+\ref{chap:dirac} Notation de Dirac et espace de Hilbert & \ref{ex:orthogo}--\ref{ex:baseXY}
+  & orthogonalisation, mesure dans trois bases \\
+\ref{chap:operateurs} Opérateurs, densité, sphère de Bloch & \ref{ex:blochpur}--\ref{ex:tensmat}
+  & sphère de Bloch, pureté, produit tensoriel \\
+\ref{chap:portes} Portes quantiques & \ref{ex:conj}--\ref{ex:toffoli}
+  & conjugaison par $H$, phases, CNOT, Toffoli \\
+\ref{chap:bell} Intrication et états de Bell & \ref{ex:separable3}--\ref{ex:telenum}
+  & critère de séparabilité, Bell, entropies, protocoles \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\begin{definition}{Produit tensoriel de deux vecteurs}
-\[
-  \begin{pmatrix}a_1\\ a_2\end{pmatrix}\otimes\begin{pmatrix}b_1\\ b_2\end{pmatrix}
-  =\begin{pmatrix}a_1\begin{pmatrix}b_1\\ b_2\end{pmatrix}\\[2ex]
-                  a_2\begin{pmatrix}b_1\\ b_2\end{pmatrix}\end{pmatrix}
-  =\begin{pmatrix}a_1b_1\\ a_1b_2\\ a_2b_1\\ a_2b_2\end{pmatrix}.
-\]
-Chaque composante du premier vecteur multiplie le second vecteur en entier. On note
-$\ket{ij}_{AB}=\ket{i}_A\otimes\ket{j}_B$ : le premier chiffre est l'état de $A$, le second
-celui de $B$.
-\end{definition}
-
-\subsubsection{Les quatre états de base}
-
-On développe chacun des quatre produits avec $\ket{0}=\begin{pmatrix}1\\ 0\end{pmatrix}$
-et $\ket{1}=\begin{pmatrix}0\\ 1\end{pmatrix}$ :
-\begin{align*}
-  \ket{0}\otimes\ket{0}&=\begin{pmatrix}1\\ 0\end{pmatrix}\otimes\begin{pmatrix}1\\ 0\end{pmatrix}
-    =\begin{pmatrix}1\cdot\begin{pmatrix}1\\ 0\end{pmatrix}\\[1.5ex]0\cdot\begin{pmatrix}1\\ 0\end{pmatrix}\end{pmatrix}
-    =\begin{pmatrix}1\\ 0\\ 0\\ 0\end{pmatrix}=\ket{00},\\[1.5ex]
-  \ket{0}\otimes\ket{1}&=\begin{pmatrix}1\\ 0\end{pmatrix}\otimes\begin{pmatrix}0\\ 1\end{pmatrix}
-    =\begin{pmatrix}1\cdot\begin{pmatrix}0\\ 1\end{pmatrix}\\[1.5ex]0\cdot\begin{pmatrix}0\\ 1\end{pmatrix}\end{pmatrix}
-    =\begin{pmatrix}0\\ 1\\ 0\\ 0\end{pmatrix}=\ket{01},\\[1.5ex]
-  \ket{1}\otimes\ket{0}&=\begin{pmatrix}0\\ 1\end{pmatrix}\otimes\begin{pmatrix}1\\ 0\end{pmatrix}
-    =\begin{pmatrix}0\cdot\begin{pmatrix}1\\ 0\end{pmatrix}\\[1.5ex]1\cdot\begin{pmatrix}1\\ 0\end{pmatrix}\end{pmatrix}
-    =\begin{pmatrix}0\\ 0\\ 1\\ 0\end{pmatrix}=\ket{10},\\[1.5ex]
-  \ket{1}\otimes\ket{1}&=\begin{pmatrix}0\\ 1\end{pmatrix}\otimes\begin{pmatrix}0\\ 1\end{pmatrix}
-    =\begin{pmatrix}0\cdot\begin{pmatrix}0\\ 1\end{pmatrix}\\[1.5ex]1\cdot\begin{pmatrix}0\\ 1\end{pmatrix}\end{pmatrix}
-    =\begin{pmatrix}0\\ 0\\ 0\\ 1\end{pmatrix}=\ket{11}.
-\end{align*}
-Le vecteur $\ket{ij}$ a son $1$ en position $2i+j$ (en comptant à partir de $0$) : c'est
-la lecture de $ij$ en binaire. Les quatre vecteurs forment la base de calcul de
-$\mathcal{H}^4$.
-
-\subsubsection{Produit scalaire et orthonormalité}
-
-\begin{resultat}{Produit scalaire d'un produit tensoriel}
-\[
-  \big(\bra{a}\otimes\bra{b}\big)\big(\ket{c}\otimes\ket{d}\big)=\braket{a}{c}\,\braket{b}{d}.
-\]
-\end{resultat}
-
-\emph{Démonstration.} Les composantes de $\ket{a}\otimes\ket{b}$ sont $a_ib_j$, celles de
-$\ket{c}\otimes\ket{d}$ sont $c_id_j$. Le produit scalaire est
-$\sum_{i,j}(a_ib_j)^*c_id_j=\big(\sum_ia_i^*c_i\big)\big(\sum_jb_j^*d_j\big)=\braket{a}{c}\braket{b}{d}$.
-\hfill$\square$
-
-On en déduit $\braket{ij}{kl}=\braket{i}{k}\braket{j}{l}$. Les seize produits scalaires
-des états de base sont :
-\begin{center}
-\renewcommand{\arraystretch}{1.3}
-\begin{tabular}{@{}c|cccc@{}}
- & $\ket{00}$ & $\ket{01}$ & $\ket{10}$ & $\ket{11}$ \\
-\hline
-$\bra{00}$ & $1\cdot1=1$ & $1\cdot0=0$ & $0\cdot1=0$ & $0\cdot0=0$ \\
-$\bra{01}$ & $1\cdot0=0$ & $1\cdot1=1$ & $0\cdot0=0$ & $0\cdot1=0$ \\
-$\bra{10}$ & $0\cdot1=0$ & $0\cdot0=0$ & $1\cdot1=1$ & $1\cdot0=0$ \\
-$\bra{11}$ & $0\cdot0=0$ & $0\cdot1=0$ & $1\cdot0=0$ & $1\cdot1=1$ \\
-\end{tabular}
-\end{center}
-(chaque case est $\braket{i}{k}\cdot\braket{j}{l}$). On lit $\braket{ij}{kl}=\delta_{ik}\delta_{jl}$ :
-la base est \emph{orthonormée}.
-
-\subsubsection{Produit tensoriel d'états quelconques}
-
-Le produit tensoriel est linéaire en chaque facteur :
-$(\lambda\ket{a}+\mu\ket{a'})\otimes\ket{b}=\lambda\ket{a}\otimes\ket{b}+\mu\ket{a'}\otimes\ket{b}$,
-et de même pour le second facteur. Pour $\alpha\ket{0}+\beta\ket{1}$ et
-$\gamma\ket{0}+\delta\ket{1}$ :
-\begin{align*}
-  \big(\alpha\ket{0}+\beta\ket{1}\big)\otimes\big(\gamma\ket{0}+\delta\ket{1}\big)
-  &=\alpha\ket{0}\otimes\big(\gamma\ket{0}+\delta\ket{1}\big)
-    +\beta\ket{1}\otimes\big(\gamma\ket{0}+\delta\ket{1}\big)\\
-  &=\alpha\gamma\ket{00}+\alpha\delta\ket{01}+\beta\gamma\ket{10}+\beta\delta\ket{11}.
-\end{align*}
-Par les composantes, $\begin{pmatrix}\alpha\\ \beta\end{pmatrix}\otimes\begin{pmatrix}\gamma\\ \delta\end{pmatrix}
-=\begin{pmatrix}\alpha\gamma\\ \alpha\delta\\ \beta\gamma\\ \beta\delta\end{pmatrix}$ : c'est le même
-résultat. La norme est conservée :
-\[
-  |\alpha\gamma|^2+|\alpha\delta|^2+|\beta\gamma|^2+|\beta\delta|^2
-  =\big(|\alpha|^2+|\beta|^2\big)\big(|\gamma|^2+|\delta|^2\big)=1\cdot1=1 .
-\]
-
-\paragraph{Exemples.}
-\begin{align*}
-  \ket{+}\otimes\ket{+}&=\tfrac12\big(\ket{0}+\ket{1}\big)\otimes\big(\ket{0}+\ket{1}\big)
-    =\tfrac12\big(\ket{00}+\ket{01}+\ket{10}+\ket{11}\big)
-    =\tfrac12\begin{pmatrix}1\\ 1\\ 1\\ 1\end{pmatrix},\\[1ex]
-  \ket{+}\otimes\ket{-}&=\tfrac12\big(\ket{0}+\ket{1}\big)\otimes\big(\ket{0}-\ket{1}\big)
-    =\tfrac12\big(\ket{00}-\ket{01}+\ket{10}-\ket{11}\big)
-    =\tfrac12\begin{pmatrix}1\\ -1\\ 1\\ -1\end{pmatrix},\\[1ex]
-  \ket{0}\otimes\ket{+}&=\tfrac{1}{\sqrt2}\big(\ket{00}+\ket{01}\big)
-    =\tfrac{1}{\sqrt2}\begin{pmatrix}1\\ 1\\ 0\\ 0\end{pmatrix},\qquad
-  \ket{+}\otimes\ket{0}=\tfrac{1}{\sqrt2}\big(\ket{00}+\ket{10}\big)
-    =\tfrac{1}{\sqrt2}\begin{pmatrix}1\\ 0\\ 1\\ 0\end{pmatrix}.
-\end{align*}
-Les deux derniers vecteurs sont différents : \emph{l'ordre des facteurs compte}, le premier
-est toujours celui de $A$.
-
 % ---------------------------------------------------------------------
-\subsection{États à deux qubits et mesure}\label{sec:mesure2}
+\subsection{Histoire et mécanique quantique}\label{sec:ex-histoire}
 % ---------------------------------------------------------------------
 
-Un état quelconque de $\mathcal{H}^4$ se décompose sur la base de calcul :
+Exercices d'application du chapitre~\ref{chap:histoire}.
+
+\begin{exercice}{Effet photo-électrique et longueur d'onde de de Broglie}\label{ex:photoelec}
+Une lumière de longueur d'onde $\lambda=400\ \mathrm{nm}$ éclaire un métal dont le travail
+d'extraction est $W=2{,}3\ \mathrm{eV}$. Données : $h=6{,}63\times10^{-34}\ \mathrm{J\,s}$,
+$c=3{,}00\times10^{8}\ \mathrm{m\,s^{-1}}$, $1\ \mathrm{eV}=1{,}60\times10^{-19}\ \mathrm{J}$,
+$m_e=9{,}11\times10^{-31}\ \mathrm{kg}$.
+\begin{enumerate}[label=\arabic*.,nosep]
+  \item Calculer la fréquence $f$ et l'énergie $E=hf$ d'un photon, en joules puis en électron-volts.
+  \item Y a-t-il émission d'électrons ? Si oui, calculer leur énergie cinétique maximale et leur
+        vitesse.
+  \item Déterminer la fréquence seuil $f_0$ et la longueur d'onde seuil $\lambda_0$.
+  \item Calculer la longueur d'onde de de Broglie d'un électron émis.
+  \item Que se passe-t-il avec une lumière de longueur d'onde $700\ \mathrm{nm}$, même très intense ?
+\end{enumerate}
+\end{exercice}
+\begin{correction}
+\paragraph{1. Photon.} La fréquence est $f=c/\lambda$ et l'énergie $E=hf$ :
 \[
-  \ket{\Psi}=c_{00}\ket{00}+c_{01}\ket{01}+c_{10}\ket{10}+c_{11}\ket{11}
-  =\begin{pmatrix}c_{00}\\ c_{01}\\ c_{10}\\ c_{11}\end{pmatrix},
-  \qquad \sum_{i,j}|c_{ij}|^2=1 .
+  f=\frac{3{,}00\times10^{8}}{400\times10^{-9}}=7{,}50\times10^{14}\ \mathrm{Hz},
+  \qquad
+  E=hf=6{,}63\times10^{-34}\times7{,}50\times10^{14}=4{,}97\times10^{-19}\ \mathrm{J}.
 \]
+En électron-volts, $E=\dfrac{4{,}97\times10^{-19}}{1{,}60\times10^{-19}}=3{,}11\ \mathrm{eV}$.
 
-\begin{resultat}{Mesure des deux qubits dans la base de calcul}
+\paragraph{2. Émission et vitesse.} Le travail d'extraction vaut
+$W=2{,}3\times1{,}60\times10^{-19}=3{,}68\times10^{-19}\ \mathrm{J}$. Comme $E=3{,}11\ \mathrm{eV}>W=2{,}3\ \mathrm{eV}$,
+il y a émission. L'énergie cinétique maximale est $E_c=hf-W$ :
 \[
-  P(ij)=|\braket{ij}{\Psi}|^2=|c_{ij}|^2 .
+  E_c=4{,}97\times10^{-19}-3{,}68\times10^{-19}=1{,}29\times10^{-19}\ \mathrm{J}=0{,}81\ \mathrm{eV}.
 \]
-Pour un seul qubit : $P(A{=}0)=P(00)+P(01)$, $P(A{=}1)=P(10)+P(11)$,
-$P(B{=}0)=P(00)+P(10)$, $P(B{=}1)=P(01)+P(11)$.
-\end{resultat}
-
-En effet $\braket{ij}{\Psi}=\sum_{k,l}c_{kl}\braket{ij}{kl}=\sum_{k,l}c_{kl}\delta_{ik}\delta_{jl}=c_{ij}$.
-
-\paragraph{Exemple 1.} $\ket{\Psi}=\frac{1}{\sqrt2}\ket{00}+\frac{1}{\sqrt2}\ket{01}
-=\big(\tfrac{1}{\sqrt2},\tfrac{1}{\sqrt2},0,0\big)^{\mathsf T}$. Il est normalisé :
-$\frac12+\frac12+0+0=1$. Les probabilités jointes sont
-$P(00)=P(01)=\frac12$ et $P(10)=P(11)=0$. Pour chaque qubit :
+Avec $E_c=\tfrac12m_ev^2$,
 \[
-  P(A{=}0)=\tfrac12+\tfrac12=1,\quad P(A{=}1)=0+0=0,\quad
-  P(B{=}0)=\tfrac12+0=\tfrac12,\quad P(B{=}1)=\tfrac12+0=\tfrac12 .
+  v=\sqrt{\frac{2E_c}{m_e}}=\sqrt{\frac{2\times1{,}29\times10^{-19}}{9{,}11\times10^{-31}}}
+  =\sqrt{2{,}83\times10^{11}}\approx5{,}3\times10^{5}\ \mathrm{m\,s^{-1}},
 \]
-$A$ donne toujours $0$ ; $B$ donne $0$ ou $1$ au hasard.
+soit $0{,}2\,\%$ de la vitesse de la lumière : le calcul non relativiste est justifié.
 
-\paragraph{Exemple 2 (mesure de $A$ seul).} Soit
-$\ket{\Psi}=\frac12\ket{00}+\frac12\ket{01}+\frac{1}{\sqrt2}\ket{11}$. Normalisation :
-$\frac14+\frac14+0+\frac12=1$. Probabilités jointes : $P(00)=\frac14$, $P(01)=\frac14$,
-$P(10)=0$, $P(11)=\frac12$. Donc
+\paragraph{3. Seuil.} À la limite, $hf_0=W$ :
 \[
-  P(A{=}0)=\tfrac14+\tfrac14=\tfrac12,\quad P(A{=}1)=0+\tfrac12=\tfrac12,\quad
-  P(B{=}0)=\tfrac14+0=\tfrac14,\quad P(B{=}1)=\tfrac14+\tfrac12=\tfrac34 .
+  f_0=\frac{W}{h}=\frac{3{,}68\times10^{-19}}{6{,}63\times10^{-34}}=5{,}55\times10^{14}\ \mathrm{Hz},
+  \qquad
+  \lambda_0=\frac{c}{f_0}=\frac{3{,}00\times10^{8}}{5{,}55\times10^{14}}=5{,}40\times10^{-7}\ \mathrm{m}=540\ \mathrm{nm}.
 \]
+Il y a émission si $f>f_0$, c'est-à-dire si $\lambda<\lambda_0=540\ \mathrm{nm}$.
 
-\begin{remarque}[Effondrement après la mesure de $A$]
-Si $A$ donne le résultat $a$, on ne garde que les termes de $\ket{\Psi}$ dont le premier
-chiffre vaut $a$, puis on renormalise :
+\paragraph{4. Longueur d'onde de de Broglie.} La quantité de mouvement est
+$p=m_ev=\sqrt{2m_eE_c}=4{,}85\times10^{-25}\ \mathrm{kg\,m\,s^{-1}}$, donc
 \[
-  \ket{\Psi}\ \to\ \frac{c_{a0}\ket{a0}+c_{a1}\ket{a1}}{\sqrt{|c_{a0}|^2+|c_{a1}|^2}},
-  \qquad\text{probabilité }|c_{a0}|^2+|c_{a1}|^2 .
+  \lambda_{\mathrm{dB}}=\frac{h}{p}=\frac{6{,}63\times10^{-34}}{4{,}85\times10^{-25}}
+  =1{,}37\times10^{-9}\ \mathrm{m}\approx1{,}4\ \mathrm{nm}.
 \]
-\end{remarque}
+C'est dix fois la taille d'un atome : l'électron émis a un comportement ondulatoire mesurable.
 
-Pour l'exemple 2 :
+\paragraph{5. Lumière rouge.} À $700\ \mathrm{nm}$,
+$E=\dfrac{hc}{\lambda}=\dfrac{6{,}63\times10^{-34}\times3{,}00\times10^{8}}{700\times10^{-9}}
+=2{,}84\times10^{-19}\ \mathrm{J}=1{,}78\ \mathrm{eV}<W$ (et $700\ \mathrm{nm}>\lambda_0$). Aucun électron n'est
+émis, quelle que soit l'intensité : un électron reçoit l'énergie d'\emph{un seul} photon, et
+augmenter l'intensité ne fait qu'augmenter le \emph{nombre} de photons, pas l'énergie de chacun. Une
+onde classique prédirait l'inverse (émission retardée mais certaine pour une intensité suffisante),
+ce qui contredit l'expérience.
+\end{correction}
+
+\begin{exercice}{Puits infini : probabilité de présence et position moyenne}\label{ex:probapuits}
+Une particule est dans l'état stationnaire $\Psi_n(x)=\sqrt{\dfrac2a}\,\sin\dfrac{n\pi x}{a}$ du
+puits infini $[0,a]$.
+\begin{enumerate}[label=\arabic*.,nosep]
+  \item Vérifier que $\Psi_n$ est normalisée.
+  \item Calculer la probabilité de trouver la particule dans $\big[\tfrac a2,\tfrac{3a}4\big]$ pour
+        $n=1$ puis $n=2$, et comparer avec la valeur classique (densité uniforme).
+  \item Calculer $\langle x\rangle$ pour $n=1$ et $n=2$.
+\end{enumerate}
+\end{exercice}
+\begin{correction}
+\paragraph{1. Normalisation.} Avec $\sin^2u=\frac{1-\cos2u}{2}$,
+\[
+  \int_0^a|\Psi_n|^2\dd x=\frac2a\int_0^a\sin^2\frac{n\pi x}{a}\dd x
+  =\frac1a\int_0^a\Big(1-\cos\frac{2n\pi x}{a}\Big)\dd x
+  =\frac1a\Big[x-\frac{a}{2n\pi}\sin\frac{2n\pi x}{a}\Big]_0^a=\frac1a\,(a-0)=1,
+\]
+car $\sin(2n\pi)=\sin0=0$.
+
+\paragraph{2. Probabilité dans $[a/2,\,3a/4]$.} La même primitive donne
+\[
+  P_n=\frac1a\Big[x-\frac{a}{2n\pi}\sin\frac{2n\pi x}{a}\Big]_{a/2}^{3a/4}
+  =\frac1a\Big(\frac{3a}4-\frac a2\Big)-\frac{1}{2n\pi}\Big[\sin\frac{3n\pi}{2}-\sin n\pi\Big]
+  =\frac14-\frac{1}{2n\pi}\Big[\sin\frac{3n\pi}{2}-\sin n\pi\Big].
+\]
 \begin{itemize}[nosep]
-  \item $A=0$ (probabilité $\frac12$) : on garde $\frac12\ket{00}+\frac12\ket{01}$, de norme
-        au carré $\frac12$ ; renormalisé, $\frac{1}{\sqrt2}\big(\ket{00}+\ket{01}\big)
-        =\ket{0}\otimes\ket{+}$. Ensuite $B$ vaut $0$ ou $1$ avec la probabilité $\frac12$.
-  \item $A=1$ (probabilité $\frac12$) : on garde $\frac{1}{\sqrt2}\ket{11}$, de norme au carré
-        $\frac12$ ; renormalisé, $\ket{11}=\ket{1}\otimes\ket{1}$. Ensuite $B$ vaut $1$
-        avec certitude.
+  \item $n=1$ : $\sin\frac{3\pi}{2}=-1$ et $\sin\pi=0$, donc
+        $P_1=\tfrac14+\tfrac{1}{2\pi}\approx0{,}25+0{,}159=0{,}409$.
+  \item $n=2$ : $\sin3\pi=0$ et $\sin2\pi=0$, donc $P_2=\tfrac14$.
 \end{itemize}
-Contrôle : $P(B{=}0)=\frac12\cdot\frac12+\frac12\cdot0=\frac14$, comme calculé plus haut.
-Ici la mesure de $A$ \emph{modifie} l'état de $B$ ($\ket{+}$ ou $\ket{1}$) : c'est la
-signature d'un état intriqué (section suivante).
-
-% ---------------------------------------------------------------------
-\subsection{États séparables et états intriqués}\label{sec:separable}
-% ---------------------------------------------------------------------
-
-\begin{definition}{Séparable ou intriqué}
-Un état $\ket{\Psi}_{AB}$ est \emph{séparable} s'il s'écrit comme un produit
-$\ket{\Psi}_{AB}=\ket{\Psi}_A\otimes\ket{\Psi}_B$. Sinon il est \emph{intriqué} : on ne
-peut pas attribuer d'état propre à chaque qubit.
-\end{definition}
-
-\paragraph{Exemple séparable (exemple 1 ci-dessus).} Par linéarité du produit tensoriel :
-\begin{align*}
-  \ket{\Psi}&=\tfrac{1}{\sqrt2}\ket{00}_{AB}+\tfrac{1}{\sqrt2}\ket{01}_{AB}
-    =\tfrac{1}{\sqrt2}\Big(\ket{0}_A\otimes\ket{0}_B+\ket{0}_A\otimes\ket{1}_B\Big)\\
-  &=\ket{0}_A\otimes\Big(\tfrac{1}{\sqrt2}\big(\ket{0}+\ket{1}\big)\Big)_B
-    =\ket{0}_A\otimes\ket{+}_B ,
-\end{align*}
-donc $\ket{\Psi}_A=\ket{0}$ et $\ket{\Psi}_B=\ket{+}$. Contrôle par les composantes :
-$\begin{pmatrix}1\\ 0\end{pmatrix}\otimes\tfrac{1}{\sqrt2}\begin{pmatrix}1\\ 1\end{pmatrix}
-=\tfrac{1}{\sqrt2}\begin{pmatrix}1\cdot1\\ 1\cdot1\\ 0\cdot1\\ 0\cdot1\end{pmatrix}
-=\tfrac{1}{\sqrt2}\begin{pmatrix}1\\ 1\\ 0\\ 0\end{pmatrix}$.
-
-\subsubsection{Un critère de séparabilité}
-
-Un produit quelconque a pour coefficients $c_{00}=ac$, $c_{01}=ad$, $c_{10}=bc$,
-$c_{11}=bd$ (formule de la section~\ref{sec:tenseur}, avec $a,b$ pour $A$ et $c,d$ pour $B$), donc
-\[
-  c_{00}c_{11}=(ac)(bd)=abcd=(ad)(bc)=c_{01}c_{10}.
-\]
-
-\begin{resultat}{Test de séparabilité (deux qubits)}
-$\ket{\Psi}=\sum c_{ij}\ket{ij}$ est séparable si et seulement si
-\[
-  D=c_{00}c_{11}-c_{01}c_{10}=0 .
-\]
-\end{resultat}
-
-\emph{Démonstration.} ($\Rightarrow$) Calcul ci-dessus. ($\Leftarrow$) On regroupe les
-termes selon l'état de $A$ :
-\[
-  \ket{\Psi}=\ket{0}\otimes\big(c_{00}\ket{0}+c_{01}\ket{1}\big)+\ket{1}\otimes\big(c_{10}\ket{0}+c_{11}\ket{1}\big).
-\]
-Si $D=0$, les lignes $(c_{00},c_{01})$ et $(c_{10},c_{11})$ sont proportionnelles. Si
-$(c_{00},c_{01})\neq(0,0)$, il existe $\lambda$ avec $(c_{10},c_{11})=\lambda(c_{00},c_{01})$
-et $\ket{\Psi}=\big(\ket{0}+\lambda\ket{1}\big)\otimes\big(c_{00}\ket{0}+c_{01}\ket{1}\big)$.
-Si $(c_{00},c_{01})=(0,0)$, alors $\ket{\Psi}=\ket{1}\otimes\big(c_{10}\ket{0}+c_{11}\ket{1}\big)$.
-Dans les deux cas $\ket{\Psi}$ est un produit ; on renormalise chaque facteur.
-\hfill$\square$
-
-\subsubsection{Application à plusieurs états}
+Pour une particule classique, la densité est uniforme et la probabilité vaut $\frac{3a/4-a/2}{a}=\frac14$.
+Le cas $n=2$ tombe exactement sur cette valeur, par compensation (figure~\ref{fig:ex-puits}), alors que
+le cas $n=1$ est plus probable ($0{,}41$), car la densité est maximale au centre du puits.
 
 \begin{center}
-\renewcommand{\arraystretch}{1.5}
-\begin{tabular}{@{}lccl@{}}
+\begin{minipage}{\linewidth}\centering
+\adjustbox{max width=\linewidth}{%
+\begin{tikzpicture}[>=Stealth, font=\footnotesize, x=5.6cm, y=1.1cm]
+  \foreach \n/\xs in {1/0cm, 2/7.1cm} {
+    \begin{scope}[xshift=\xs]
+      % intervalle grisé sous la courbe
+      \fill[insarouge!22] (0.5,0) -- plot[domain=0.5:0.75, samples=30]
+        (\x, {2*(sin(\n*\x*180))^2}) -- (0.75,0) -- cycle;
+      % densité classique
+      \draw[insagris, dashed] (0,1) -- (1,1);
+      % axes
+      \draw[->] (-0.03,0) -- (1.08,0) node[right] {$x$};
+      \draw[->] (0,-0.03) -- (0,2.35) node[above] {$a\,|\Psi_n|^2$};
+      \draw[very thick, insarouge, domain=0:1, samples=90] plot (\x, {2*(sin(\n*\x*180))^2});
+      \foreach \tx/\lb in {0/0, 0.5/{a/2}, 0.75/{3a/4}, 1/a}
+        \draw (\tx,0.04) -- (\tx,-0.04) node[below] {$\lb$};
+      \node[insagris, anchor=west, font=\footnotesize] at (1.0,1) {$1/a$};
+      \node[above, font=\small\bfseries] at (0.5,2.45) {$n=\n$};
+    \end{scope}
+  }
+  \node[insarouge, font=\footnotesize, anchor=north] at (0.5,-0.55) {$P_1=\frac14+\frac1{2\pi}\approx0{,}41$};
+  \node[insarouge, font=\footnotesize, anchor=north] at (1.77,-0.55) {$P_2=\frac14$};
+\end{tikzpicture}}
+\captionof{figure}{Densités de probabilité $|\Psi_1|^2$ et $|\Psi_2|^2$ (en unités de $1/a$). L'aire
+grisée est la probabilité de présence dans $[a/2,3a/4]$ ; le trait pointillé est la densité
+classique uniforme.}\label{fig:ex-puits}
+\end{minipage}
+\end{center}
+
+\paragraph{3. Position moyenne.}
+\[
+  \langle x\rangle=\int_0^ax\,|\Psi_n|^2\dd x=\frac1a\int_0^ax\Big(1-\cos\frac{2n\pi x}{a}\Big)\dd x
+  =\frac1a\Big[\frac{a^2}{2}-I_n\Big],
+  \qquad I_n=\int_0^ax\cos\frac{2n\pi x}{a}\,\dd x .
+\]
+Par parties, avec $k=2n\pi/a$ :
+$I_n=\Big[\dfrac{x\sin kx}{k}\Big]_0^a-\displaystyle\int_0^a\frac{\sin kx}{k}\dd x
+=\dfrac{a\sin2n\pi}{k}+\dfrac{\cos2n\pi-1}{k^2}=0$. Donc $\langle x\rangle=\dfrac a2$ pour $n=1$, $n=2$
+et en fait pour tout $n$ : la densité $|\Psi_n|^2$ est symétrique par rapport au centre du puits.
+\end{correction}
+
+\begin{exercice}{Superposition de deux états du puits}\label{ex:superpuits}
+Une particule du puits infini est dans l'état $\Psi=A\,(\Psi_1+2\Psi_2)$, où $\Psi_1$ et $\Psi_2$ sont
+les deux états stationnaires normalisés d'énergies $E_1$ et $E_2=4E_1$.
+\begin{enumerate}[label=\arabic*.,nosep]
+  \item Déterminer $A>0$.
+  \item Quelles sont les probabilités de mesurer $E_1$ et $E_2$ ?
+  \item Calculer $\langle E\rangle$, $\langle E^2\rangle$ et l'écart-type $\sigma_E$ en fonction de $E_1$.
+  \item Que devient l'état après une mesure qui donne $E_2$ ?
+\end{enumerate}
+\end{exercice}
+\begin{correction}
+\paragraph{1. Normalisation.} $\Psi_1$ et $\Psi_2$ sont orthonormés ($\braket{\Psi_1}{\Psi_2}=0$),
+donc les termes croisés disparaissent :
+\[
+  \braket{\Psi}{\Psi}=A^2\big(\braket{\Psi_1}{\Psi_1}+4\braket{\Psi_2}{\Psi_2}\big)=5A^2=1
+  \ \Longrightarrow\ A=\frac{1}{\sqrt5}.
+\]
+En notation de Dirac, $\ket{\Psi}=\frac{1}{\sqrt5}\ket{E_1}+\frac{2}{\sqrt5}\ket{E_2}$ : c'est le
+vecteur $(1,2)/\sqrt5$ des chapitres précédents.
+
+\paragraph{2. Probabilités.} $P(E_1)=|c_1|^2=\frac15$ et $P(E_2)=|c_2|^2=\frac45$, de somme $1$.
+
+\paragraph{3. Moments de l'énergie.}
+\begin{align*}
+  \langle E\rangle&=\tfrac15E_1+\tfrac45\,(4E_1)=\tfrac{1+16}{5}E_1=\tfrac{17}{5}E_1=3{,}4\,E_1,\\
+  \langle E^2\rangle&=\tfrac15E_1^2+\tfrac45\,(4E_1)^2=\tfrac{1+64}{5}E_1^2=13\,E_1^2,\\
+  \sigma_E^2&=\langle E^2\rangle-\langle E\rangle^2=13E_1^2-\tfrac{289}{25}E_1^2=\tfrac{36}{25}E_1^2,
+  \qquad\sigma_E=\tfrac65E_1=1{,}2\,E_1 .
+\end{align*}
+La moyenne est comprise entre $E_1$ et $4E_1$, plus proche de $E_2$ qui est le plus probable.
+
+\paragraph{4. Après la mesure.} L'état s'effondre sur $\Psi_2$ (à une phase près). Une seconde mesure
+de l'énergie redonne $E_2$ avec la probabilité $1$, et $\sigma_E=0$ : un état propre de $\Hop$ a une
+énergie parfaitement définie.
+\end{correction}
+
+% ---------------------------------------------------------------------
+\subsection{Notation de Dirac et espace de Hilbert}\label{sec:ex-dirac}
+% ---------------------------------------------------------------------
+
+Exercices d'application du chapitre~\ref{chap:dirac}.
+
+\begin{exercice}{Norme, orthogonalité et changement de base}\label{ex:orthogo}
+Soit $\ket{u}=(1-\ii)\ket{0}+2\ket{1}$.
+\begin{enumerate}[label=\arabic*.,nosep]
+  \item Calculer $\braket{u}{u}$ et normaliser $\ket{u}$ en $\ket{\hat u}$.
+  \item Déterminer $x\in\mathbb{C}$ tel que $\ket{v}=\ket{0}+x\ket{1}$ soit orthogonal à $\ket{u}$, puis
+        normaliser $\ket{v}$ en $\ket{\hat v}$.
+  \item Vérifier que $\big(\ket{\hat u},\ket{\hat v}\big)$ est une base orthonormée de $\mathbb{C}^2$.
+  \item Décomposer $\ket{0}$ sur cette base avec les produits scalaires, et vérifier que les deux
+        probabilités correspondantes ont pour somme $1$.
+\end{enumerate}
+\end{exercice}
+\begin{correction}
+\paragraph{1. Norme.} Le bra s'obtient en transposant et en conjuguant les amplitudes :
+$\bra{u}=\overline{(1-\ii)}\,\bra{0}+2\bra{1}=(1+\ii)\bra{0}+2\bra{1}$. Donc
+\[
+  \braket{u}{u}=(1+\ii)(1-\ii)+2\cdot2=\big(1-\ii^2\big)+4=2+4=6,
+  \qquad
+  \ket{\hat u}=\frac{\ket{u}}{\sqrt6}=\frac{(1-\ii)\ket{0}+2\ket{1}}{\sqrt6}.
+\]
+(On retrouve $|1-\ii|^2+|2|^2=2+4=6$.)
+
+\paragraph{2. Vecteur orthogonal.} La condition $\braket{u}{v}=0$ s'écrit
+\[
+  \braket{u}{v}=\big((1+\ii)\bra{0}+2\bra{1}\big)\big(\ket{0}+x\ket{1}\big)=(1+\ii)+2x=0
+  \ \Longrightarrow\ x=-\frac{1+\ii}{2}.
+\]
+Alors $\ket{v}=\ket{0}-\frac{1+\ii}{2}\ket{1}$ et
+$\braket{v}{v}=1+\big|\tfrac{1+\ii}{2}\big|^2=1+\tfrac24=\tfrac32$, donc
+\[
+  \ket{\hat v}=\sqrt{\tfrac23}\Big(\ket{0}-\tfrac{1+\ii}{2}\ket{1}\Big)
+  =\frac{2\ket{0}-(1+\ii)\ket{1}}{\sqrt6},
+  \qquad\text{car }\sqrt{\tfrac23}=\tfrac{2}{\sqrt6}.
+\]
+
+\paragraph{3. Base orthonormée.} $\braket{\hat u}{\hat u}=\braket{\hat v}{\hat v}=1$ par construction, et
+\[
+  \braket{\hat u}{\hat v}=\frac{(1+\ii)\cdot2+2\cdot\big(-(1+\ii)\big)}{6}=0 .
+\]
+Deux vecteurs orthogonaux et normés, non nuls, de $\mathbb{C}^2$ (de dimension $2$) forment une
+base orthonormée.
+
+\paragraph{4. Décomposition de $\ket{0}$.} Les coefficients sont $\braket{\hat u}{0}$ et
+$\braket{\hat v}{0}$ :
+\[
+  \braket{\hat u}{0}=\frac{1+\ii}{\sqrt6},\qquad
+  \braket{\hat v}{0}=\frac{2}{\sqrt6},
+  \qquad\text{donc}\qquad
+  \ket{0}=\frac{1+\ii}{\sqrt6}\,\ket{\hat u}+\frac{2}{\sqrt6}\,\ket{\hat v}.
+\]
+Vérification en composantes :
+$\frac{1+\ii}{\sqrt6}\cdot\frac{(1-\ii,\,2)}{\sqrt6}+\frac{2}{\sqrt6}\cdot\frac{(2,\,-(1+\ii))}{\sqrt6}
+=\frac{\big((1+\ii)(1-\ii)+4,\ 2(1+\ii)-2(1+\ii)\big)}{6}=\frac{(6,0)}{6}=(1,0)$. Les probabilités de
+mesure dans cette base sont
+$\frac{|1+\ii|^2}{6}=\frac13$ et $\frac{4}{6}=\frac23$, de somme $1$.
+\end{correction}
+
+\begin{exercice}{Mesure dans les bases $Z$, $X$ et $Y$}\label{ex:baseXY}
+On considère $\ket{\Psi}=\frac{1}{\sqrt5}\big(\ket{0}+2\ket{1}\big)$ et
+$\ket{\Psi'}=\frac{1}{\sqrt5}\big(\ket{0}+2\ii\ket{1}\big)$. Pour chacun, calculer les probabilités
+de mesure dans les bases $Z$ ($\ket{0},\ket{1}$), $X$ ($\ket{\pm}=\frac{\ket{0}\pm\ket{1}}{\sqrt2}$)
+et $Y$ ($\ket{\pm\ii}=\frac{\ket{0}\pm\ii\ket{1}}{\sqrt2}$). Comparer.
+\end{exercice}
+\begin{correction}
+La probabilité du résultat associé à $\ket{e}$ est $|\braket{e}{\Psi}|^2$ (postulat de la mesure),
+avec $\bra{e}$ le conjugué de $\ket{e}$.
+
+\paragraph{État $\ket{\Psi}=\frac{1}{\sqrt5}(1,\,2)$.}
+\begin{align*}
+  Z&:\ |\braket{0}{\Psi}|^2=\tfrac15,\quad |\braket{1}{\Psi}|^2=\tfrac45,\\
+  X&:\ \braket{\pm}{\Psi}=\tfrac{1}{\sqrt2}\tfrac{1}{\sqrt5}(1\pm2)
+     \ \Rightarrow\ \big|\tfrac{3}{\sqrt{10}}\big|^2=\tfrac{9}{10},\quad\big|\tfrac{-1}{\sqrt{10}}\big|^2=\tfrac{1}{10},\\
+  Y&:\ \braket{\pm\ii}{\Psi}=\tfrac{1}{\sqrt{10}}\big(1\mp2\ii\big)
+     \ \Rightarrow\ \tfrac{|1-2\ii|^2}{10}=\tfrac12,\quad\tfrac{|1+2\ii|^2}{10}=\tfrac12 .
+\end{align*}
+Pour $\bra{\pm\ii}=\frac{1}{\sqrt2}(\bra{0}\mp\ii\bra{1})$, d'où le signe $1\mp2\ii$.
+
+\paragraph{État $\ket{\Psi'}=\frac{1}{\sqrt5}(1,\,2\ii)$.}
+\begin{align*}
+  Z&:\ \tfrac15,\ \tfrac{|2\ii|^2}{5}=\tfrac45,\\
+  X&:\ \braket{\pm}{\Psi'}=\tfrac{1\pm2\ii}{\sqrt{10}}
+     \ \Rightarrow\ \tfrac{|1+2\ii|^2}{10}=\tfrac12,\quad\tfrac{|1-2\ii|^2}{10}=\tfrac12,\\
+  Y&:\ \braket{\pm\ii}{\Psi'}=\tfrac{1}{\sqrt{10}}\big(1\mp\ii\cdot2\ii\big)=\tfrac{1\pm2}{\sqrt{10}}
+     \ \Rightarrow\ \tfrac{9}{10},\quad\tfrac{1}{10}.
+\end{align*}
+
+\paragraph{Bilan.}
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}c c c@{}}
 \toprule
-\textbf{État} & $(c_{00},c_{01},c_{10},c_{11})$ & $D$ & \textbf{Nature} \\
+Base & $\ket{\Psi}=\frac{1}{\sqrt5}(1,2)$ & $\ket{\Psi'}=\frac{1}{\sqrt5}(1,2\ii)$ \\
 \midrule
-$\ket{00}$ & $(1,0,0,0)$ & $1\cdot0-0\cdot0=0$ & séparable \\
-$\ket{+}\otimes\ket{+}$ & $\frac12(1,1,1,1)$ & $\frac14-\frac14=0$ & séparable \\
-$\ket{+}\otimes\ket{-}$ & $\frac12(1,-1,1,-1)$ & $-\frac14-(-\frac14)=0$ & séparable \\
-$\frac{1}{\sqrt2}(\ket{00}+\ket{01})$ & $\frac{1}{\sqrt2}(1,1,0,0)$ & $0-\frac12\cdot0=0$ & séparable \\
-$\ket{\Phi^+}=\frac{1}{\sqrt2}(\ket{00}+\ket{11})$ & $\frac{1}{\sqrt2}(1,0,0,1)$ & $\frac12-0=\frac12$ & intriqué \\
-$\ket{\Phi^-}=\frac{1}{\sqrt2}(\ket{00}-\ket{11})$ & $\frac{1}{\sqrt2}(1,0,0,-1)$ & $-\frac12-0=-\frac12$ & intriqué \\
-$\ket{\Psi^+}=\frac{1}{\sqrt2}(\ket{01}+\ket{10})$ & $\frac{1}{\sqrt2}(0,1,1,0)$ & $0-\frac12=-\frac12$ & intriqué \\
-$\ket{\Psi^-}=\frac{1}{\sqrt2}(\ket{01}-\ket{10})$ & $\frac{1}{\sqrt2}(0,1,-1,0)$ & $0-(-\frac12)=\frac12$ & intriqué \\
-$\frac12\ket{00}+\frac12\ket{01}+\frac{1}{\sqrt2}\ket{11}$ & $(\frac12,\frac12,0,\frac{1}{\sqrt2})$ & $\frac{1}{2\sqrt2}-0$ & intriqué \\
+$Z$ : $(\ket{0},\ket{1})$ & $\frac15,\ \frac45$ & $\frac15,\ \frac45$ \\
+$X$ : $(\ket{+},\ket{-})$ & $\frac9{10},\ \frac1{10}$ & $\frac12,\ \frac12$ \\
+$Y$ : $(\ket{+\ii},\ket{-\ii})$ & $\frac12,\ \frac12$ & $\frac9{10},\ \frac1{10}$ \\
 \bottomrule
 \end{tabular}
 \end{center}
-
-Les quatre états de Bell $\ket{\Phi^\pm}$, $\ket{\Psi^\pm}$ sont \emph{orthonormés} :
-chacun est de norme $\frac12+\frac12=1$ ; $\ket{\Phi^\pm}$ n'ont des composantes que sur
-$\ket{00}$ et $\ket{11}$, $\ket{\Psi^\pm}$ que sur $\ket{01}$ et $\ket{10}$, donc
-$\braket{\Phi^\pm}{\Psi^\pm}=0$, et
-$\braket{\Phi^+}{\Phi^-}=\frac12(1-1)=0$, $\braket{\Psi^+}{\Psi^-}=\frac12(1-1)=0$.
-Ils forment une base de $\mathcal{H}^4$ constituée uniquement d'états intriqués.
-
-\paragraph{Preuve directe que $\ket{\Phi^+}$ est intriqué.} Supposons
-$\ket{\Phi^+}=(a\ket{0}+b\ket{1})\otimes(c\ket{0}+d\ket{1})$. En identifiant les
-composantes : $ac=\frac{1}{\sqrt2}$, $ad=0$, $bc=0$, $bd=\frac{1}{\sqrt2}$. La condition
-$ad=0$ impose $a=0$ (impossible car $ac\neq0$) ou $d=0$ (impossible car $bd\neq0$).
-Contradiction : aucun produit ne convient.
-
-\paragraph{Corrélations.} Pour un produit $\ket{\Psi}_A\otimes\ket{\Psi}_B$ avec
-$\ket{\Psi}_A=a_0\ket{0}+a_1\ket{1}$ et $\ket{\Psi}_B=b_0\ket{0}+b_1\ket{1}$, on a
-$P(ij)=|a_ib_j|^2=|a_i|^2|b_j|^2=P(A{=}i)\,P(B{=}j)$ : les deux qubits sont
-\emph{indépendants}. Vérification avec $\ket{+}\otimes\ket{+}$ : $P(00)=\frac14=\frac12\cdot\frac12$.
-Pour $\ket{\Phi^+}$ : $P(00)=P(11)=\frac12$ et $P(01)=P(10)=0$, donc
-$P(A{=}0)=P(B{=}0)=\frac12$, mais
-\[
-  P(00)=\tfrac12\neq\tfrac12\cdot\tfrac12=P(A{=}0)\,P(B{=}0) .
-\]
-Les deux qubits donnent toujours le même résultat, aléatoire : ils sont corrélés.
-
-\paragraph{État d'un qubit pris seul.} On prend la matrice de densité
-$\rho=\ket{\Psi}\bra{\Psi}$ ($4\times4$, lignes et colonnes ordonnées $00,01,10,11$) et on
-trace sur $B$ : $(\rho_A)_{ij}=\rho_{(i0),(j0)}+\rho_{(i1),(j1)}$.
-
-\emph{État de Bell $\ket{\Phi^+}$.}
-\[
-  \rho=\frac12\begin{pmatrix}1 & 0 & 0 & 1\\ 0 & 0 & 0 & 0\\ 0 & 0 & 0 & 0\\ 1 & 0 & 0 & 1\end{pmatrix},
-  \qquad
-  \begin{aligned}
-    (\rho_A)_{00}&=\rho_{00,00}+\rho_{01,01}=\tfrac12+0=\tfrac12,\\
-    (\rho_A)_{01}&=\rho_{00,10}+\rho_{01,11}=0+0=0,\\
-    (\rho_A)_{11}&=\rho_{10,10}+\rho_{11,11}=0+\tfrac12=\tfrac12 .
-  \end{aligned}
-\]
-Donc $\rho_A=\frac12\mathrm{Id}$ : état \emph{mixte} ($\operatorname{Tr}\rho_A^2=\frac12$), au centre
-de la boule de Bloch (section~\ref{sec:bloch}).
-
-\emph{État séparable $\ket{0}\otimes\ket{+}$.}
-\[
-  \rho=\frac12\begin{pmatrix}1 & 1 & 0 & 0\\ 1 & 1 & 0 & 0\\ 0 & 0 & 0 & 0\\ 0 & 0 & 0 & 0\end{pmatrix},
-  \qquad
-  \begin{aligned}
-    (\rho_A)_{00}&=\rho_{00,00}+\rho_{01,01}=\tfrac12+\tfrac12=1,\\
-    (\rho_A)_{01}&=\rho_{00,10}+\rho_{01,11}=0+0=0,\\
-    (\rho_A)_{11}&=\rho_{10,10}+\rho_{11,11}=0+0=0 .
-  \end{aligned}
-\]
-Donc $\rho_A=\ket{0}\bra{0}$ : état \emph{pur}, celui du facteur $\ket{\Psi}_A$.
-
-Un qubit d'un état séparable garde son propre état pur ; un qubit d'un état de Bell est
-complètement aléatoire alors que le couple est parfaitement défini.
+Les deux états ont les mêmes probabilités dans la base $Z$ : ils ne diffèrent que par la phase
+relative ($1$ contre $\ii$) entre les deux amplitudes, que la base $Z$ ne voit pas. Les bases $X$ et
+$Y$ la révèlent. Un état est donc déterminé par ses statistiques dans \emph{trois} bases, ce que
+résume la sphère de Bloch (exercice~\ref{ex:blochpur}).
+\end{correction}
 
 % ---------------------------------------------------------------------
-\subsection{Opérateurs sur deux qubits}\label{sec:op2}
+\subsection{Opérateurs, matrice de densité et sphère de Bloch}\label{sec:ex-operateurs}
 % ---------------------------------------------------------------------
 
-\begin{definition}{Produit tensoriel de deux matrices}
+Exercices d'application du chapitre~\ref{chap:operateurs}.
+
+\begin{exercice}{Matrice de densité d'un état pur et sphère de Bloch}\label{ex:blochpur}
+On reprend $\ket{\Psi}=\frac{1}{\sqrt5}\big(\ket{0}+2\ket{1}\big)$ et
+$\ket{\Psi'}=\frac{1}{\sqrt5}\big(\ket{0}+2\ii\ket{1}\big)$ de l'exercice~\ref{ex:baseXY}.
+\begin{enumerate}[label=\arabic*.,nosep]
+  \item Écrire $\rho=\ket{\Psi}\bra{\Psi}$ et vérifier $\operatorname{Tr}\rho=1$, $\rho^\dagger=\rho$ et
+        $\operatorname{Tr}\rho^2=1$.
+  \item Calculer $\langle\sigma_x\rangle$, $\langle\sigma_y\rangle$, $\langle\sigma_z\rangle$ avec
+        $\operatorname{Tr}(\rho\,\sigma)$. En déduire le vecteur de Bloch $\vec r$ et les angles $\theta$
+        et $\varphi$ de $\ket{\Psi}$.
+  \item Mêmes questions pour $\ket{\Psi'}$.
+  \item Placer les deux états sur la sphère de Bloch.
+\end{enumerate}
+\end{exercice}
+\begin{correction}
+\paragraph{1. Matrice de densité de $\ket{\Psi}$.} Colonne fois ligne (amplitudes réelles, donc
+$\bra{\Psi}=\frac{1}{\sqrt5}(1,\ 2)$) :
 \[
-  A\otimes B=\begin{pmatrix}A_{11} & A_{12}\\ A_{21} & A_{22}\end{pmatrix}\otimes B
-  =\begin{pmatrix}A_{11}B & A_{12}B\\ A_{21}B & A_{22}B\end{pmatrix}
-  \qquad(\text{matrice }4\times4).
+  \rho=\frac15\begin{pmatrix}1\\2\end{pmatrix}\begin{pmatrix}1&2\end{pmatrix}
+  =\frac15\begin{pmatrix}1&2\\2&4\end{pmatrix}
+  =\begin{pmatrix}\frac15&\frac25\\[0.4ex]\frac25&\frac45\end{pmatrix}.
 \]
-\end{definition}
-
-\begin{resultat}{Action sur un produit}
+On a $\operatorname{Tr}\rho=\frac15+\frac45=1$, et $\rho$ est réelle symétrique donc hermitienne. Enfin
 \[
-  (A\otimes B)\big(\ket{u}\otimes\ket{v}\big)=A\ket{u}\otimes B\ket{v}.
+  \rho^2=\frac1{25}\begin{pmatrix}1&2\\2&4\end{pmatrix}\begin{pmatrix}1&2\\2&4\end{pmatrix}
+  =\frac1{25}\begin{pmatrix}5&10\\10&20\end{pmatrix}=\rho,
+  \qquad\text{donc}\qquad\operatorname{Tr}\rho^2=\operatorname{Tr}\rho=1:
 \]
-\end{resultat}
+l'état est pur.
 
-\emph{Démonstration.} Avec $\ket{u}=(u_1,u_2)^{\mathsf T}$, le vecteur $\ket{u}\otimes\ket{v}$ a
-pour blocs $u_k\ket{v}$ ($k=1,2$). Le bloc de lignes $i$ de $(A\otimes B)(\ket{u}\otimes\ket{v})$ est
-donc
-\[
-  \sum_kA_{ik}B\,\big(u_k\ket{v}\big)=\Big(\sum_kA_{ik}u_k\Big)B\ket{v}=(A\ket{u})_i\,B\ket{v},
-\]
-qui est le bloc $i$ de $A\ket{u}\otimes B\ket{v}$. \hfill$\square$
-
-\subsubsection{Portes agissant sur un seul des deux qubits}
-
-On note $I=\mathrm{Id}$ ($2\times2$). $X\otimes I$ agit sur $A$, $I\otimes X$ agit sur $B$ :
+\paragraph{2. Valeurs moyennes et vecteur de Bloch.} Avec $X=\begin{pmatrix}0&1\\1&0\end{pmatrix}$,
+$Y=\begin{pmatrix}0&-\ii\\\ii&0\end{pmatrix}$, $Z=\begin{pmatrix}1&0\\0&-1\end{pmatrix}$ :
 \begin{align*}
-  I\otimes X&=\begin{pmatrix}1\cdot X & 0\cdot X\\ 0\cdot X & 1\cdot X\end{pmatrix}
-    =\begin{pmatrix}0 & 1 & 0 & 0\\ 1 & 0 & 0 & 0\\ 0 & 0 & 0 & 1\\ 0 & 0 & 1 & 0\end{pmatrix},\\[1ex]
-  X\otimes I&=\begin{pmatrix}0\cdot I & 1\cdot I\\ 1\cdot I & 0\cdot I\end{pmatrix}
-    =\begin{pmatrix}0 & 0 & 1 & 0\\ 0 & 0 & 0 & 1\\ 1 & 0 & 0 & 0\\ 0 & 1 & 0 & 0\end{pmatrix}.
+  \rho X&=\frac15\begin{pmatrix}2&1\\4&2\end{pmatrix}, &\langle\sigma_x\rangle&=\tfrac{2+2}{5}=\tfrac45,\\[0.8ex]
+  \rho Y&=\frac15\begin{pmatrix}2\ii&-\ii\\4\ii&-2\ii\end{pmatrix}, &\langle\sigma_y\rangle&=\tfrac{2\ii-2\ii}{5}=0,\\[0.8ex]
+  \rho Z&=\frac15\begin{pmatrix}1&-2\\2&-4\end{pmatrix}, &\langle\sigma_z\rangle&=\tfrac{1-4}{5}=-\tfrac35 .
 \end{align*}
-Sur $\ket{00}=(1,0,0,0)^{\mathsf T}$ (première colonne de la matrice) :
-$(I\otimes X)\ket{00}=(0,1,0,0)^{\mathsf T}=\ket{01}$ et
-$(X\otimes I)\ket{00}=(0,0,1,0)^{\mathsf T}=\ket{10}$. Avec la règle :
-$(I\otimes X)\ket{00}=I\ket{0}\otimes X\ket{0}=\ket{0}\otimes\ket{1}=\ket{01}$.
+Donc $\vec r=\big(\tfrac45,\,0,\,-\tfrac35\big)$, de norme $\sqrt{\frac{16}{25}+\frac{9}{25}}=1$ : le point est
+sur la sphère, comme il se doit pour un état pur. Les angles :
+$\cos\theta=r_z=-\frac35$, soit $\theta=\arccos\!\big(-\tfrac35\big)\approx126{,}9^\circ$, et
+$(\cos\varphi,\sin\varphi)=(r_x,r_y)/\sin\theta=(1,0)$, soit $\varphi=0$. Contrôle avec les amplitudes :
+$\cos^2\frac\theta2=\frac{1+\cos\theta}{2}=\frac15$ et $\sin^2\frac\theta2=\frac45$, donc
+$\ket{\Psi}=\frac{1}{\sqrt5}\ket{0}+\frac{2}{\sqrt5}\ket{1}$ avec une phase relative nulle.
 
-Pour la porte de Hadamard, avec $H=\frac{1}{\sqrt2}\begin{pmatrix}1 & 1\\ 1 & -1\end{pmatrix}$ :
+\paragraph{3. État $\ket{\Psi'}$.} Ici $\bra{\Psi'}=\frac{1}{\sqrt5}(1,\ -2\ii)$ (conjugaison), donc
 \[
-  H\otimes I=\frac{1}{\sqrt2}\begin{pmatrix}1\cdot I & 1\cdot I\\ 1\cdot I & -1\cdot I\end{pmatrix}
-  =\frac{1}{\sqrt2}\begin{pmatrix}1 & 0 & 1 & 0\\ 0 & 1 & 0 & 1\\ 1 & 0 & -1 & 0\\ 0 & 1 & 0 & -1\end{pmatrix}.
+  \rho'=\frac15\begin{pmatrix}1\\2\ii\end{pmatrix}\begin{pmatrix}1&-2\ii\end{pmatrix}
+  =\frac15\begin{pmatrix}1&-2\ii\\2\ii&4\end{pmatrix}.
 \]
-Ses colonnes donnent l'image des quatre états de base :
-\begin{align*}
-  (H\otimes I)\ket{00}&=\tfrac{1}{\sqrt2}(1,0,1,0)^{\mathsf T}=\ket{+}\otimes\ket{0},&
-  (H\otimes I)\ket{01}&=\tfrac{1}{\sqrt2}(0,1,0,1)^{\mathsf T}=\ket{+}\otimes\ket{1},\\
-  (H\otimes I)\ket{10}&=\tfrac{1}{\sqrt2}(1,0,-1,0)^{\mathsf T}=\ket{-}\otimes\ket{0},&
-  (H\otimes I)\ket{11}&=\tfrac{1}{\sqrt2}(0,1,0,-1)^{\mathsf T}=\ket{-}\otimes\ket{1}.
-\end{align*}
-
-\subsubsection{Hadamard sur les deux qubits}
-
+$\operatorname{Tr}\rho'=1$, $\rho'^\dagger=\rho'$ (le coefficient $\rho'_{10}=\frac{2\ii}5$ est le
+conjugué de $\rho'_{01}=-\frac{2\ii}5$), et $\operatorname{Tr}\rho'^2=\sum_{jk}|\rho'_{jk}|^2=\frac{1+4+4+16}{25}=1$ :
+pur. Les valeurs moyennes :
 \[
-  H\otimes H=\frac12\begin{pmatrix}1\cdot H' & 1\cdot H'\\ 1\cdot H' & -1\cdot H'\end{pmatrix},
-  \quad H'=\begin{pmatrix}1 & 1\\ 1 & -1\end{pmatrix},
+  \langle\sigma_x\rangle=\operatorname{Tr}(\rho'X)=\rho'_{01}+\rho'_{10}=0,\qquad
+  \langle\sigma_z\rangle=\rho'_{00}-\rho'_{11}=-\tfrac35,
+\]
+\[
+  \rho'Y=\frac15\begin{pmatrix}2&-\ii\\4\ii&2\end{pmatrix},\qquad
+  \langle\sigma_y\rangle=\operatorname{Tr}(\rho'Y)=\tfrac{2+2}{5}=\tfrac45 .
+\]
+Donc $\vec r'=\big(0,\,\tfrac45,\,-\tfrac35\big)$, même $\theta\approx126{,}9^\circ$ que
+$\ket{\Psi}$ et $\varphi=\frac\pi2$ : on retrouve $\ket{\Psi'}=\frac{1}{\sqrt5}\ket{0}+\ee^{\ii\pi/2}\frac{2}{\sqrt5}\ket{1}$.
+(Contrôle avec $\rho=\frac12(\mathrm{Id}+\vec r\cdot\vec\sigma)$ : le coefficient hors diagonale est
+$\frac{r_x-\ii r_y}{2}=-\frac{2\ii}{5}$.)
+
+\paragraph{4. Sur la sphère.} Les deux états ont la même cote $z=-\frac35$ : ils sont sur le même
+parallèle (rayon $\sin\theta=\frac45$), à des azimuts $\varphi=0$ et $\varphi=\frac\pi2$
+(figure~\ref{fig:ex-bloch}). Ils donnent les mêmes probabilités dans la base $Z$ et diffèrent par
+leurs coordonnées $x$ et $y$, comme à l'exercice~\ref{ex:baseXY}.
+
+\begin{center}
+\begin{minipage}{\linewidth}\centering
+\adjustbox{max width=\linewidth}{%
+\begin{tikzpicture}[x={(-1.63cm,-0.56cm)}, y={(1.63cm,-0.56cm)}, z={(0cm,2.16cm)}, >=Stealth]
+  \shade[ball color=insagris!15, opacity=0.55] (0,0,0) circle[radius=2.3cm];
+  % grands cercles
+  \begin{scope}[insagris!75, thin]
+    \draw[domain=-45:135, samples=60, variable=\t] plot ({cos(\t)},{sin(\t)},0);
+    \draw[domain=135:315, samples=60, variable=\t, dashed] plot ({cos(\t)},{sin(\t)},0);
+    \draw[domain=-62.7:117.3, samples=60, variable=\t] plot ({cos(\t)},0,{sin(\t)});
+    \draw[domain=117.3:297.3, samples=60, variable=\t, dashed] plot ({cos(\t)},0,{sin(\t)});
+    \draw[domain=-62.7:117.3, samples=60, variable=\t] plot (0,{cos(\t)},{sin(\t)});
+    \draw[domain=117.3:297.3, samples=60, variable=\t, dashed] plot (0,{cos(\t)},{sin(\t)});
+  \end{scope}
+  % parallèle z = -3/5 (rayon 4/5)
+  \draw[insarouge!60, thick, domain=-29:119, samples=60, variable=\t]
+    plot ({0.8*cos(\t)},{0.8*sin(\t)},-0.6);
+  \draw[insarouge!60, thick, dashed, domain=119:331, samples=80, variable=\t]
+    plot ({0.8*cos(\t)},{0.8*sin(\t)},-0.6);
+  % axes
+  \draw[insagris, dashed] (0,0,0) -- (-1,0,0);
+  \draw[insagris, dashed] (0,0,0) -- (0,-1,0);
+  \draw[insarouge, dashed] (0,0,0) -- (0,0,-1);
+  \draw[insagris] (-1,0,0) -- (-1.3,0,0);
+  \draw[insagris] (0,-1,0) -- (0,-1.3,0);
+  \draw[insarouge] (0,0,-1) -- (0,0,-1.3);
+  \draw[insagris, -{Stealth[length=2.2mm]}] (0,0,0) -- (1.3,0,0);
+  \draw[insagris, -{Stealth[length=2.2mm]}] (0,0,0) -- (0,1.3,0);
+  \draw[insarouge, -{Stealth[length=2.2mm]}] (0,0,0) -- (0,0,1.3);
+  \foreach \ax/\ay/\az in {1/0/0, -1/0/0, 0/1/0, 0/-1/0, 0/0/1, 0/0/-1}
+    \fill[insagris!80!black] (\ax,\ay,\az) circle[radius=1.3pt];
+  \node[insarouge, anchor=south] at (0,0,1.33) {$\ket{0}$};
+  \node[insarouge, anchor=north] at (0,0,-1.33) {$\ket{1}$};
+  \node[anchor=east]  at (1.33,0,0)  {$\ket{+}$};
+  \node[anchor=west]  at (-1.33,0,0) {$\ket{-}$};
+  \node[anchor=west]  at (0,1.33,0)  {$\ket{{+}\ii}$};
+  \node[anchor=east]  at (0,-1.33,0) {$\ket{{-}\ii}$};
+  % |Psi> = (4/5, 0, -3/5)
+  \draw[dashed, insarouge!70] (0.8,0,0) -- (0.8,0,-0.6);
+  \draw[very thick, insarouge, -{Stealth[length=3mm]}] (0,0,0) -- (0.8,0,-0.6);
+  \fill[insarouge] (0.8,0,-0.6) circle[radius=1.6pt];
+  \node[insarouge, anchor=east] at (0.8,0,-0.6) {$\ket{\Psi}$};
+  % |Psi'> = (0, 4/5, -3/5)
+  \draw[dashed, insagris!80!black] (0,0.8,0) -- (0,0.8,-0.6);
+  \draw[very thick, insagris!80!black, -{Stealth[length=3mm]}] (0,0,0) -- (0,0.8,-0.6);
+  \fill[insagris!80!black] (0,0.8,-0.6) circle[radius=1.6pt];
+  \node[insagris!80!black, anchor=west] at (0,0.8,-0.6) {$\ket{\Psi'}$};
+  % angle theta (plan xOz) et azimut de |Psi'|
+  \draw[insarouge, domain=0:126.87, samples=30, variable=\t]
+    plot ({0.32*sin(\t)},0,{0.32*cos(\t)});
+  \node[insarouge, font=\small] at ({0.55*sin(63.4)},0,{0.55*cos(63.4)}) {$\theta$};
+  \draw[insagris!80!black, domain=0:90, samples=30, variable=\t]
+    plot ({0.4*cos(\t)},{0.4*sin(\t)},0);
+  \node[insagris!80!black, font=\small] at ({0.62*cos(45)},{0.62*sin(45)},0) {$\varphi'$};
+\end{tikzpicture}}
+\captionof{figure}{Les états $\ket{\Psi}$ (rouge, $\vec r=(\frac45,0,-\frac35)$) et $\ket{\Psi'}$ (gris,
+$\vec r'=(0,\frac45,-\frac35)$) sur la sphère de Bloch. Même angle polaire $\theta\approx126{,}9^\circ$ :
+ils sont sur le parallèle $z=-\frac35$ (en rouge clair), à $90^\circ$ d'azimut l'un de l'autre.}
+\label{fig:ex-bloch}
+\end{minipage}
+\end{center}
+\end{correction}
+
+\begin{exercice}{Un état pur : $\ket{+}$}\label{ex:purplus}
+Soit $\ket{\psi}=\frac{1}{\sqrt2}\ket{0}+\frac{1}{\sqrt2}\ket{1}$.
+\begin{enumerate}[label=\alph*),nosep]
+  \item Calculer la matrice de densité $\rho$.
+  \item Calculer la pureté du système.
+  \item Calculer $\langle\sigma_x\rangle$, $\langle\sigma_y\rangle$ et $\langle\sigma_z\rangle$.
+  \item Écrire $\ket{\psi}$ dans la base $X$.
+\end{enumerate}
+\end{exercice}
+\begin{correction}
+\paragraph{a) Matrice de densité.} $\rho=\ket{\psi}\bra{\psi}$ est le produit d'un vecteur colonne
+par un vecteur ligne (les amplitudes sont réelles) :
+\[
+  \rho=\begin{pmatrix}\frac{1}{\sqrt2}\\[0.4ex]\frac{1}{\sqrt2}\end{pmatrix}
+       \begin{pmatrix}\frac{1}{\sqrt2}&\frac{1}{\sqrt2}\end{pmatrix}
+  =\begin{pmatrix}\frac12&\frac12\\[0.4ex]\frac12&\frac12\end{pmatrix}.
+\]
+
+\paragraph{b) Pureté.}
+\[
+  \rho^2=\begin{pmatrix}\frac12&\frac12\\[0.4ex]\frac12&\frac12\end{pmatrix}
+         \begin{pmatrix}\frac12&\frac12\\[0.4ex]\frac12&\frac12\end{pmatrix}
+  =\begin{pmatrix}\frac14+\frac14&\frac14+\frac14\\[0.4ex]\frac14+\frac14&\frac14+\frac14\end{pmatrix}
+  =\rho,
+\]
+donc $\operatorname{Tr}\rho^2=\operatorname{Tr}\rho=\frac12+\frac12=1$ : le système est \emph{pur}.
+
+\paragraph{c) Valeurs moyennes.} On utilise $\langle\sigma\rangle=\operatorname{Tr}(\rho\,\sigma)$ :
+\begin{align*}
+  \rho X&=\begin{pmatrix}\frac12&\frac12\\[0.4ex]\frac12&\frac12\end{pmatrix}
+     \begin{pmatrix}0&1\\1&0\end{pmatrix}
+     =\begin{pmatrix}\frac12&\frac12\\[0.4ex]\frac12&\frac12\end{pmatrix},
+     &\langle\sigma_x\rangle&=\tfrac12+\tfrac12=1,\\[1.5ex]
+  \rho Z&=\begin{pmatrix}\frac12&\frac12\\[0.4ex]\frac12&\frac12\end{pmatrix}
+     \begin{pmatrix}1&0\\0&-1\end{pmatrix}
+     =\begin{pmatrix}\frac12&-\frac12\\[0.4ex]\frac12&-\frac12\end{pmatrix},
+     &\langle\sigma_z\rangle&=\tfrac12-\tfrac12=0,\\[1.5ex]
+  \rho Y&=\begin{pmatrix}\frac12&\frac12\\[0.4ex]\frac12&\frac12\end{pmatrix}
+     \begin{pmatrix}0&-\ii\\\ii&0\end{pmatrix}
+     =\begin{pmatrix}\frac{\ii}2&-\frac{\ii}2\\[0.4ex]\frac{\ii}2&-\frac{\ii}2\end{pmatrix},
+     &\langle\sigma_y\rangle&=\tfrac{\ii}2-\tfrac{\ii}2=0 .
+\end{align*}
+On retrouve $\langle\sigma_z\rangle$ par les probabilités : $\sigma_z$ vaut $+1$ pour $\ket{0}$ et
+$-1$ pour $\ket{1}$, avec $|\braket{0}{\psi}|^2=|\braket{1}{\psi}|^2=\frac12$, donc
+$\langle\sigma_z\rangle=\frac12(+1)+\frac12(-1)=0$.
+
+\paragraph{d) Écriture dans la base $X$.} La base $\{\ket{+},\ket{-}\}$ est orthonormée, donc
+$\ket{\psi}=\ket{+}\braket{+}{\psi}+\ket{-}\braket{-}{\psi}$ avec
+\[
+  \braket{+}{\psi}=\tfrac{1}{\sqrt2}\Big(\tfrac{1}{\sqrt2}+\tfrac{1}{\sqrt2}\Big)=1,
   \qquad
-  H\otimes H=\frac12\begin{pmatrix}1 & 1 & 1 & 1\\ 1 & -1 & 1 & -1\\ 1 & 1 & -1 & -1\\ 1 & -1 & -1 & 1\end{pmatrix}.
+  \braket{-}{\psi}=\tfrac{1}{\sqrt2}\Big(\tfrac{1}{\sqrt2}-\tfrac{1}{\sqrt2}\Big)=0 .
 \]
-La première colonne donne $(H\otimes H)\ket{00}=\frac12(1,1,1,1)^{\mathsf T}=\ket{+}\otimes\ket{+}$
-(cohérent avec $H\ket{0}\otimes H\ket{0}$) : les quatre résultats $00,01,10,11$ sont
-équiprobables, chacun avec la probabilité $\frac14$. Sur $n$ qubits, $H^{\otimes n}\ket{0\ldots0}$
-donne une superposition uniforme de $2^n$ états.
+Donc $\ket{\psi}=\ket{+}$ : dans la base $X$, l'état n'a qu'une composante, et une mesure de
+$\sigma_x$ donne $+1$ avec certitude. Le vecteur de Bloch est $(1,0,0)$, de norme $1$ : l'état est
+sur la sphère, en accord avec $\operatorname{Tr}\rho^2=\frac{1+1}{2}=1$.
+\end{correction}
 
-\subsubsection{La porte CNOT et les états de Bell}
-
-\begin{definition}{Porte CNOT (NOT contrôlé)}
-Le qubit $A$ est le \emph{contrôle}, $B$ la \emph{cible} : $B$ est inversé si $A=1$.
+\begin{exercice}{Un mélange statistique : la source de Bob}\label{ex:melange}
+Bob prépare un qubit dans l'état $\ket{0}$ avec la probabilité $\frac34$ et dans l'état $\ket{1}$ avec
+la probabilité $\frac14$, sans que l'on sache lequel des deux a été préparé.
+\begin{enumerate}[label=\arabic*.,nosep]
+  \item Écrire la matrice de densité $\rho$ de ce qubit et calculer $\operatorname{Tr}\rho^2$ :
+        l'état est-il pur ?
+  \item Calculer $\langle\sigma_z\rangle$, $\langle\sigma_x\rangle$, le vecteur de Bloch et l'entropie
+        $S(\rho)$.
+  \item Comparer avec l'état pur $\ket{\psi'}=\frac{\sqrt3}{2}\ket{0}+\frac12\ket{1}$, qui a les mêmes
+        probabilités dans la base $Z$.
+  \item Dresser un tableau comparatif avec l'état $\ket{+}$ et un qubit d'une paire de Bell.
+\end{enumerate}
+\end{exercice}
+\begin{correction}
+\paragraph{1. Matrice de densité.} Pour un mélange, $\rho=\sum_ip_i\ket{\psi_i}\bra{\psi_i}$ :
 \[
-  \mathrm{CNOT}=\ket{0}\bra{0}\otimes I+\ket{1}\bra{1}\otimes X
-  =\begin{pmatrix}I & 0\\ 0 & X\end{pmatrix}
-  =\begin{pmatrix}1 & 0 & 0 & 0\\ 0 & 1 & 0 & 0\\ 0 & 0 & 0 & 1\\ 0 & 0 & 1 & 0\end{pmatrix}.
+  \rho=\tfrac34\ket{0}\bra{0}+\tfrac14\ket{1}\bra{1}
+  =\begin{pmatrix}\frac34&0\\0&\frac14\end{pmatrix},
+  \qquad
+  \rho^2=\begin{pmatrix}\frac9{16}&0\\0&\frac1{16}\end{pmatrix},
+  \qquad
+  \operatorname{Tr}\rho^2=\frac{9+1}{16}=\frac58<1 .
 \]
-\end{definition}
+Comme $\operatorname{Tr}\rho^2<1$, l'état est \emph{mélangé} : aucun ket $\ket{\psi}$ ne le décrit.
 
-Sa matrice échange les composantes $10$ et $11$ :
-$\mathrm{CNOT}\ket{00}=\ket{00}$, $\mathrm{CNOT}\ket{01}=\ket{01}$,
-$\mathrm{CNOT}\ket{10}=\ket{11}$, $\mathrm{CNOT}\ket{11}=\ket{10}$, soit
-$\ket{i,j}\to\ket{i,i\oplus j}$ (addition modulo $2$).
-
-On applique $H\otimes I$ puis $\mathrm{CNOT}$ à $\ket{00}$ (figure~\ref{fig:bell}) :
+\paragraph{2. Moyennes, Bloch et entropie.}
+$\langle\sigma_z\rangle=\operatorname{Tr}(\rho Z)=\frac34-\frac14=\frac12$ (c'est la moyenne pondérée
+$\frac34(+1)+\frac14(-1)$) et $\langle\sigma_x\rangle=\operatorname{Tr}(\rho X)=0$ car $\rho$ est
+diagonale ; de même $\langle\sigma_y\rangle=0$. Le vecteur de Bloch est $\vec r=(0,0,\frac12)$ : à
+l'intérieur de la boule, sur l'axe $z$, et on retrouve $\operatorname{Tr}\rho^2=\frac{1+|\vec r|^2}{2}
+=\frac{1+1/4}{2}=\frac58$. Les valeurs propres sont $\frac34$ et $\frac14$, donc
 \[
-  \ket{00}\ \xrightarrow{\ H\otimes I\ }\ \tfrac{1}{\sqrt2}\begin{pmatrix}1\\ 0\\ 1\\ 0\end{pmatrix}
-  =\tfrac{1}{\sqrt2}\big(\ket{00}+\ket{10}\big)
-  \ \xrightarrow{\ \mathrm{CNOT}\ }\ \tfrac{1}{\sqrt2}\begin{pmatrix}1\\ 0\\ 0\\ 1\end{pmatrix}
-  =\tfrac{1}{\sqrt2}\big(\ket{00}+\ket{11}\big)=\ket{\Phi^+}.
+  S(\rho)=-\tfrac34\log_2\tfrac34-\tfrac14\log_2\tfrac14
+  =\tfrac34\,(2-\log_23)+\tfrac14\cdot2=2-\tfrac34\log_23\approx0{,}811\ \text{bit}.
 \]
 
-\begin{figure}[!ht]
-\centering
-\begin{tikzpicture}[>=Stealth, font=\small]
-  % fils : B en haut (dernier chiffre du ket), A en bas (premier chiffre)
-  \draw (0,1) -- (8.6,1);
-  \draw (0,0) -- (8.6,0);
-  \node[anchor=east] at (0,1) {$\ket{0}_B$};
-  \node[anchor=east] at (0,0) {$\ket{0}_A$};
-  % Hadamard sur A
-  \node[draw=insarouge, fill=insarouge!8, minimum size=7mm, thick] at (2.2,0) {$H$};
-  % CNOT : contrôle sur A (bas), cible sur B (haut)
-  \draw[insarouge, thick] (5.4,0) -- (5.4,1.3);
-  \fill[insarouge] (5.4,0) circle (2.6pt);
-  \draw[insarouge, thick, fill=white] (5.4,1) circle (0.3);
-  \draw[insarouge, thick] (5.1,1) -- (5.7,1);
-  \draw[insarouge, thick] (5.4,0.7) -- (5.4,1.3);
-  % accolade de sortie
-  \draw[insagris, thick] (8.75,1.2) -- (8.9,1.2) -- (8.9,-0.2) -- (8.75,-0.2);
-  \node[anchor=west] at (8.9,0.5) {$\ket{\Phi^+}_{AB}$};
-  % états intermédiaires
-  \foreach \x in {0.6,3.8,7.2}
-    \draw[dashed, insagris!70] (\x,1.35) -- (\x,-0.95);
-  \node[anchor=north, font=\footnotesize] at (0.6,-0.95) {$\ket{00}$};
-  \node[anchor=north, font=\footnotesize] at (3.8,-0.95) {$\tfrac{1}{\sqrt2}(\ket{00}+\ket{10})$};
-  \node[anchor=north, font=\footnotesize] at (7.2,-0.95) {$\tfrac{1}{\sqrt2}(\ket{00}+\ket{11})$};
-\end{tikzpicture}
-\caption{Circuit qui produit l'état de Bell $\ket{\Phi^+}$ : une porte de Hadamard sur $A$,
-puis un CNOT ($A$ contrôle, $B$ cible). Les états intermédiaires sont indiqués sous les
-traits pointillés. Convention : les fils sont dessinés dans l'ordre inverse de l'écriture
-du ket $\ket{ij}_{AB}$, si bien que le premier chiffre (celui de $A$) est sur le fil du bas.}
-\label{fig:bell}
-\end{figure}
+\paragraph{3. Mélange contre superposition.} L'état pur $\ket{\psi'}$ donne
+$P(0)=\frac34$ et $P(1)=\frac14$ en base $Z$, comme le mélange. Pourtant
+\[
+  \rho'=\begin{pmatrix}\frac34&\frac{\sqrt3}{4}\\[0.4ex]\frac{\sqrt3}{4}&\frac14\end{pmatrix},
+  \qquad
+  \operatorname{Tr}\rho'^2=\frac9{16}+\frac1{16}+2\cdot\frac3{16}=1,
+  \qquad
+  \langle\sigma_x\rangle=2\cdot\frac{\sqrt3}{4}=\frac{\sqrt3}{2}\approx0{,}87 .
+\]
+La différence est dans les termes hors diagonale (les cohérences). En base $X$, la probabilité de
+$\ket{+}$ est $\frac{1+\langle\sigma_x\rangle}{2}$, soit $\frac{1+\sqrt3/2}{2}\approx0{,}93$ pour
+l'état pur et seulement $\frac12$ pour le mélange. Une superposition n'est donc pas un tirage au
+hasard entre $\ket{0}$ et $\ket{1}$ : pour un état pur, il existe une mesure à résultat certain, pas
+pour le mélange de Bob.
 
-Les quatre états de base d'entrée donnent les quatre états de Bell :
+\paragraph{4. Bilan.}
 \begin{center}
 \renewcommand{\arraystretch}{1.6}
-\begin{tabular}{@{}cccc@{}}
+\begin{tabular}{@{}lcccc@{}}
 \toprule
-Entrée & après $H\otimes I$ & après CNOT & Sortie \\
+\textbf{Système} & $\rho$ & $\operatorname{Tr}\rho^2$ & $|\vec r|$ & $S(\rho)$ \\
 \midrule
-$\ket{00}$ & $\frac{1}{\sqrt2}(\ket{00}+\ket{10})$ & $\frac{1}{\sqrt2}(\ket{00}+\ket{11})$ & $\ket{\Phi^+}$ \\
-$\ket{01}$ & $\frac{1}{\sqrt2}(\ket{01}+\ket{11})$ & $\frac{1}{\sqrt2}(\ket{01}+\ket{10})$ & $\ket{\Psi^+}$ \\
-$\ket{10}$ & $\frac{1}{\sqrt2}(\ket{00}-\ket{10})$ & $\frac{1}{\sqrt2}(\ket{00}-\ket{11})$ & $\ket{\Phi^-}$ \\
-$\ket{11}$ & $\frac{1}{\sqrt2}(\ket{01}-\ket{11})$ & $\frac{1}{\sqrt2}(\ket{01}-\ket{10})$ & $\ket{\Psi^-}$ \\
+$\ket{+}$ (exercice~\ref{ex:purplus})
+  & $\frac12\left(\begin{smallmatrix}1&1\\1&1\end{smallmatrix}\right)$ & $1$ & $1$ & $0$ \\
+Qubit d'une paire de Bell & $\frac12\mathrm{Id}$ & $\frac12$ & $0$ & $1$ bit \\
+Source de Bob
+  & $\left(\begin{smallmatrix}3/4&0\\0&1/4\end{smallmatrix}\right)$ & $\frac58$ & $\frac12$ & $\approx0{,}811$ bit \\
 \bottomrule
 \end{tabular}
 \end{center}
-Sous forme matricielle, le produit $\mathrm{CNOT}\cdot(H\otimes I)$ échange les lignes $3$ et $4$ de
-$H\otimes I$ :
+Plus la pureté diminue, plus le point de Bloch se rapproche du centre et plus l'entropie augmente.
+\end{correction}
+
+\begin{exercice}{Produit tensoriel d'opérateurs}\label{ex:tensmat}
+Soient $X$ et $Z$ les matrices de Pauli.
+\begin{enumerate}[label=\arabic*.,nosep]
+  \item Écrire les matrices $4\times4$ de $X\otimes Z$ et de $Z\otimes X$.
+  \item Calculer $(X\otimes Z)\big(\ket{0}\otimes\ket{+}\big)$ de deux façons : avec la matrice et avec
+        la règle $(A\otimes B)(\ket{u}\otimes\ket{v})=A\ket{u}\otimes B\ket{v}$.
+  \item Montrer que $X\otimes Z$ est hermitienne et que son carré vaut $\mathrm{Id}$.
+  \item Les opérateurs $X\otimes Z$ et $Z\otimes X$ commutent-ils ? Et $X$ et $Z$ ?
+\end{enumerate}
+\end{exercice}
+\begin{correction}
+\paragraph{1. Matrices.} On remplace chaque coefficient de la première matrice par ce coefficient
+multiplié par la seconde :
 \[
-  \mathrm{CNOT}\,(H\otimes I)=\frac{1}{\sqrt2}\begin{pmatrix}1 & 0 & 1 & 0\\ 0 & 1 & 0 & 1\\ 0 & 1 & 0 & -1\\ 1 & 0 & -1 & 0\end{pmatrix},
+  X\otimes Z=\begin{pmatrix}0\cdot Z&1\cdot Z\\1\cdot Z&0\cdot Z\end{pmatrix}
+  =\begin{pmatrix}0&0&1&0\\0&0&0&-1\\1&0&0&0\\0&-1&0&0\end{pmatrix},
+  \qquad
+  Z\otimes X=\begin{pmatrix}1\cdot X&0\cdot X\\0\cdot X&-1\cdot X\end{pmatrix}
+  =\begin{pmatrix}0&1&0&0\\1&0&0&0\\0&0&0&-1\\0&0&-1&0\end{pmatrix}.
 \]
-et ses quatre colonnes sont $\ket{\Phi^+}$, $\ket{\Psi^+}$, $\ket{\Phi^-}$, $\ket{\Psi^-}$.
 
-\begin{remarque}[Porte intriquante]
-Les états d'entrée $\ket{ij}$ sont séparables ($D=0$) ; les sorties sont intriquées
-($D=\pm\frac12$). Aucune porte agissant séparément sur $A$ et sur $B$ ($U_A\otimes U_B$)
-ne peut créer de l'intrication à partir d'un produit, puisque
-$(U_A\otimes U_B)(\ket{u}\otimes\ket{v})=U_A\ket{u}\otimes U_B\ket{v}$ reste un produit.
-Une porte à deux qubits comme le CNOT est indispensable.
-\end{remarque}
+\paragraph{2. Action sur $\ket{0}\otimes\ket{+}$.} Ce vecteur est
+$\frac{1}{\sqrt2}(1,1,0,0)^{\mathsf T}$. Avec la matrice :
+\[
+  (X\otimes Z)\,\frac{1}{\sqrt2}\begin{pmatrix}1\\1\\0\\0\end{pmatrix}
+  =\frac{1}{\sqrt2}\begin{pmatrix}0\\0\\1\\-1\end{pmatrix}
+  =\ket{1}\otimes\frac{\ket{0}-\ket{1}}{\sqrt2}=\ket{1}\otimes\ket{-}.
+\]
+Avec la règle : $X\ket{0}=\ket{1}$ et $Z\ket{+}=\frac{1}{\sqrt2}(\ket{0}-\ket{1})=\ket{-}$, donc
+$(X\otimes Z)(\ket{0}\otimes\ket{+})=\ket{1}\otimes\ket{-}$, le même résultat.
+
+\paragraph{3. Hermitienne, de carré $\mathrm{Id}$.} Comme $(A\otimes B)^\dagger=A^\dagger\otimes B^\dagger$,
+$(X\otimes Z)^\dagger=X\otimes Z$ car $X$ et $Z$ sont hermitiennes (la matrice ci-dessus est d'ailleurs
+réelle symétrique). Comme $(A\otimes B)(C\otimes D)=AC\otimes BD$,
+\[
+  (X\otimes Z)^2=X^2\otimes Z^2=\mathrm{Id}\otimes\mathrm{Id}=\mathrm{Id}_4 .
+\]
+Cette matrice est donc à la fois hermitienne et unitaire.
+
+\paragraph{4. Commutation.} On sait $XZ=-ZX$ : $X$ et $Z$ \emph{ne commutent pas}. Mais
+\[
+  (X\otimes Z)(Z\otimes X)=XZ\otimes ZX=(-ZX)\otimes(-XZ)=ZX\otimes XZ=(Z\otimes X)(X\otimes Z),
+\]
+donc $X\otimes Z$ et $Z\otimes X$ \emph{commutent} : les deux signes $-1$ se compensent. Deux
+observables qui commutent ont une base propre commune : c'est le cas de $Z\otimes Z$ et $X\otimes X$, dont
+les états de Bell sont les états propres communs (section~\ref{sec:bell}).
+\end{correction}
 
 % ---------------------------------------------------------------------
-\subsection{Récapitulatif du chapitre}
+\subsection{Portes quantiques}\label{sec:ex-portes}
 % ---------------------------------------------------------------------
+
+Exercices d'application du chapitre~\ref{chap:portes}.
+
+\begin{exercice}{Conjugaison par la porte de Hadamard}\label{ex:conj}
+\begin{enumerate}[label=\arabic*.,nosep]
+  \item Calculer $HXH$, $HYH$ et $HZH$ avec $H=\frac{1}{\sqrt2}\begin{pmatrix}1&1\\1&-1\end{pmatrix}$.
+  \item Interpréter ce résultat sur la sphère de Bloch.
+  \item Calculer $HSH$ avec $S=\mathrm{diag}(1,\ii)$ et vérifier que $(HSH)^2=X$ : $HSH$ est une
+        «~racine carrée de $X$~».
+\end{enumerate}
+\end{exercice}
+\begin{correction}
+\paragraph{1. Calcul.} Multiplier $X$ à gauche échange les lignes, à droite échange les colonnes.
+\begin{align*}
+  XH&=\tfrac{1}{\sqrt2}\begin{pmatrix}1&-1\\1&1\end{pmatrix},
+  &HXH&=\tfrac12\begin{pmatrix}1&1\\1&-1\end{pmatrix}\begin{pmatrix}1&-1\\1&1\end{pmatrix}
+        =\tfrac12\begin{pmatrix}2&0\\0&-2\end{pmatrix}=Z,\\[0.8ex]
+  ZH&=\tfrac{1}{\sqrt2}\begin{pmatrix}1&1\\-1&1\end{pmatrix},
+  &HZH&=\tfrac12\begin{pmatrix}1&1\\1&-1\end{pmatrix}\begin{pmatrix}1&1\\-1&1\end{pmatrix}
+        =\tfrac12\begin{pmatrix}0&2\\2&0\end{pmatrix}=X,\\[0.8ex]
+  YH&=\tfrac{1}{\sqrt2}\begin{pmatrix}-\ii&\ii\\\ii&\ii\end{pmatrix},
+  &HYH&=\tfrac12\begin{pmatrix}1&1\\1&-1\end{pmatrix}\begin{pmatrix}-\ii&\ii\\\ii&\ii\end{pmatrix}
+        =\tfrac12\begin{pmatrix}0&2\ii\\-2\ii&0\end{pmatrix}=-Y .
+\end{align*}
+Donc $HXH=Z$, $HZH=X$ et $HYH=-Y$.
+
+\paragraph{2. Interprétation.} $H$ échange les axes $x$ et $z$ de la sphère de Bloch et retourne
+l'axe $y$ ($Y\to-Y$) : c'est la rotation d'angle $\pi$ autour de l'axe $(x+z)/\sqrt2$, déjà vue à la
+section~\ref{sec:portes-bloch}. Conséquence pratique : une porte $Z$ encadrée de deux portes $H$
+agit comme une porte $X$, et inversement ; $H$ permet de passer de la base $Z$ à la base $X$.
+
+\paragraph{3. Racine de $X$.} Avec $S\,H=\frac{1}{\sqrt2}\begin{pmatrix}1&1\\\ii&-\ii\end{pmatrix}$,
+\[
+  HSH=\tfrac12\begin{pmatrix}1&1\\1&-1\end{pmatrix}\begin{pmatrix}1&1\\\ii&-\ii\end{pmatrix}
+  =\frac12\begin{pmatrix}1+\ii&1-\ii\\1-\ii&1+\ii\end{pmatrix}.
+\]
+Son carré :
+\[
+  (HSH)^2=\frac14\begin{pmatrix}(1+\ii)^2+(1-\ii)^2&2(1+\ii)(1-\ii)\\2(1+\ii)(1-\ii)&(1-\ii)^2+(1+\ii)^2\end{pmatrix}
+  =\frac14\begin{pmatrix}2\ii-2\ii&4\\4&2\ii-2\ii\end{pmatrix}=X,
+\]
+puisque $(1\pm\ii)^2=\pm2\ii$ et $(1+\ii)(1-\ii)=2$. On retrouve aussi ce résultat sans calcul :
+$(HSH)^2=HS\,(H H)\,SH=HS^2H=HZH=X$. Appliquée deux fois, cette porte inverse un qubit, d'où son nom de
+«~$\sqrt{X}$~».
+\end{correction}
+
+\begin{exercice}{Portes de phase}\label{ex:phases}
+\begin{enumerate}[label=\arabic*.,nosep]
+  \item Montrer que $S^2=Z$, $T^2=S$ et, plus généralement, $P_\theta P_{\theta'}=P_{\theta+\theta'}$.
+  \item Calculer $ST$. Quel est l'état $ST\ket{+}$ ? Donner ses coordonnées de Bloch.
+  \item Par quelle suite de portes obtient-on $\ket{-\ii}=\frac{1}{\sqrt2}(\ket{0}-\ii\ket{1})$ à partir
+        de $\ket{0}$ ?
+\end{enumerate}
+\end{exercice}
+\begin{correction}
+\paragraph{1. Composition des phases.} $P_\theta=\mathrm{diag}(1,\ee^{\ii\theta})$ est diagonale, donc
+\[
+  P_\theta P_{\theta'}=\mathrm{diag}\big(1,\ \ee^{\ii\theta}\ee^{\ii\theta'}\big)=\mathrm{diag}\big(1,\ \ee^{\ii(\theta+\theta')}\big)
+  =P_{\theta+\theta'} .
+\]
+Avec $S=P_{\pi/2}$, $T=P_{\pi/4}$ et $Z=P_\pi$ : $S^2=P_\pi=\mathrm{diag}(1,-1)=Z$ et
+$T^2=P_{\pi/2}=S$. Ainsi $T$ est une racine de $S$, elle-même racine de $Z$ ; en effet
+$\ee^{\ii\pi/2}=\ii$ et $\ii^2=-1$.
+
+\paragraph{2. $ST$ et son action sur $\ket{+}$.} $ST=P_{\pi/2+\pi/4}=P_{3\pi/4}
+=\mathrm{diag}\big(1,\ee^{3\ii\pi/4}\big)$, avec $\ee^{3\ii\pi/4}=\frac{-1+\ii}{\sqrt2}$. Donc
+\[
+  ST\ket{+}=\frac{1}{\sqrt2}\big(\ket{0}+\ee^{3\ii\pi/4}\ket{1}\big).
+\]
+Les deux amplitudes ont le même module : $\theta=\frac\pi2$ (équateur), avec la phase relative
+$\varphi=\frac{3\pi}{4}$. Le vecteur de Bloch est
+$\vec r=\big(\cos\tfrac{3\pi}4,\ \sin\tfrac{3\pi}4,\ 0\big)=\big(-\tfrac{\sqrt2}{2},\ \tfrac{\sqrt2}{2},\ 0\big)
+\approx(-0{,}71,\ 0{,}71,\ 0)$ : c'est $\ket{+}$ tourné de $135^\circ$ autour de $z$.
+
+\paragraph{3. Préparer $\ket{-\ii}$.} On part de $H\ket{0}=\ket{+}=\frac{1}{\sqrt2}(1,1)$, puis on applique
+$S^\dagger=\mathrm{diag}(1,-\ii)$ (rotation de $-\frac\pi2$ autour de $z$) :
+\[
+  S^\dagger H\ket{0}=\frac{1}{\sqrt2}\begin{pmatrix}1\\-\ii\end{pmatrix}=\ket{-\ii}.
+\]
+Le circuit est $\ket{0}\xrightarrow{\,H\,}\xrightarrow{\,S^\dagger\,}\ket{-\ii}$. Avec $S$ à la place de
+$S^\dagger$, on obtiendrait $\ket{+\ii}$.
+\end{correction}
+
+\begin{exercice}{Rebond de phase du CNOT}\label{ex:kickback}
+Avec la convention du cours (CNOT de contrôle $B$ et de cible $A$, $\mathrm{CNOT}\ket{a,b}=\ket{a\oplus b,b}$),
+calculer
+\[
+  \text{(a)}\ \mathrm{CNOT}\big(\ket{-}_A\otimes\ket{+}_B\big),
+  \qquad
+  \text{(b)}\ \mathrm{CNOT}\big(\ket{+}_A\otimes\ket{-}_B\big).
+\]
+Expliquer le résultat avec les valeurs propres de $X$.
+\end{exercice}
+\begin{correction}
+Avec $\ket{ab}=\ket{a}_A\otimes\ket{b}_B$ et $\mathrm{CNOT}$ : $\ket{00}\to\ket{00}$, $\ket{01}\to\ket{11}$,
+$\ket{10}\to\ket{10}$, $\ket{11}\to\ket{01}$ (la cible $A$ est inversée si $B=1$).
+
+\paragraph{(a)} On développe $\ket{-}_A\otimes\ket{+}_B=\frac12\big(\ket{00}+\ket{01}-\ket{10}-\ket{11}\big)$ puis
+\[
+  \mathrm{CNOT}\ \tfrac12\big(\ket{00}+\ket{01}-\ket{10}-\ket{11}\big)
+  =\tfrac12\big(\ket{00}+\ket{11}-\ket{10}-\ket{01}\big)
+  =\tfrac12\big(\ket{0}-\ket{1}\big)\otimes\big(\ket{0}-\ket{1}\big)=\ket{-}_A\otimes\ket{-}_B .
+\]
+Le contrôle est passé de $\ket{+}$ à $\ket{-}$ alors que la cible n'a pas changé.
+
+\paragraph{(b)} $\ket{+}_A\otimes\ket{-}_B=\frac12\big(\ket{00}-\ket{01}+\ket{10}-\ket{11}\big)$ devient
+\[
+  \tfrac12\big(\ket{00}-\ket{11}+\ket{10}-\ket{01}\big)=\tfrac12\big(\ket{00}-\ket{01}+\ket{10}-\ket{11}\big)
+  =\ket{+}_A\otimes\ket{-}_B :
+\]
+rien ne change.
 
 \begin{center}
-\renewcommand{\arraystretch}{1.4}
-\begin{tabular}{@{}ll@{}}
+\begin{minipage}{\linewidth}\centering
+\adjustbox{max width=\linewidth}{%
+\begin{tikzpicture}[>=Stealth, font=\small]
+  \begin{scope}
+    \draw (0,1) -- (3.2,1);
+    \draw (0,0) -- (3.2,0);
+    \draw[insarouge, thick] (1.6,1) -- (1.6,0);
+    \pic at (1.6,1) {ctl};
+    \pic at (1.6,0) {cible};
+    \node[anchor=east] at (0,1) {$\ket{+}_B$};
+    \node[anchor=east] at (0,0) {$\ket{-}_A$};
+    \node[anchor=west, insarouge] at (3.2,1) {$\ket{-}_B$};
+    \node[anchor=west] at (3.2,0) {$\ket{-}_A$};
+    \node[above, font=\small\bfseries] at (1.6,1.45) {(a)};
+  \end{scope}
+  \begin{scope}[xshift=8.4cm]
+    \draw (0,1) -- (3.2,1);
+    \draw (0,0) -- (3.2,0);
+    \draw[insarouge, thick] (1.6,1) -- (1.6,0);
+    \pic at (1.6,1) {ctl};
+    \pic at (1.6,0) {cible};
+    \node[anchor=east] at (0,1) {$\ket{-}_B$};
+    \node[anchor=east] at (0,0) {$\ket{+}_A$};
+    \node[anchor=west] at (3.2,1) {$\ket{-}_B$};
+    \node[anchor=west] at (3.2,0) {$\ket{+}_A$};
+    \node[above, font=\small\bfseries] at (1.6,1.45) {(b)};
+  \end{scope}
+\end{tikzpicture}}
+\captionof{figure}{Le CNOT (contrôle $B$ en haut, cible $A$ en bas) sur des états de la base $X$.
+(a)~La cible dans $\ket{-}$ renvoie une phase $-1$ au contrôle, qui passe de $\ket{+}$ à $\ket{-}$.
+(b)~La cible dans $\ket{+}$ ne change rien.}\label{fig:ex-kickback}
+\end{minipage}
+\end{center}
+
+\paragraph{Explication.} Comme $\mathrm{CNOT}=I\otimes\ket{0}\bra{0}+X\otimes\ket{1}\bra{1}$, si la cible
+est un état propre de $X$, $X\ket{x_\lambda}=\lambda\ket{x_\lambda}$ avec $\lambda=\pm1$, alors pour un contrôle
+quelconque $\beta_0\ket{0}+\beta_1\ket{1}$ :
+\[
+  \mathrm{CNOT}\Big(\ket{x_\lambda}\otimes\big(\beta_0\ket{0}+\beta_1\ket{1}\big)\Big)
+  =\ket{x_\lambda}\otimes\big(\beta_0\ket{0}+\lambda\,\beta_1\ket{1}\big).
+\]
+La valeur propre $\lambda$ «~rebondit~» sur le contrôle sous forme d'une phase : pour
+$\lambda=-1$ ($\ket{-}$) c'est la porte $Z$, et $Z\ket{+}=\ket{-}$ ; pour $\lambda=+1$ ($\ket{+}$), rien.
+Dans la base $X$, c'est donc la cible qui agit sur le contrôle : les rôles sont échangés. Ce
+\emph{rebond de phase} est à la base de nombreux algorithmes (Deutsch--Jozsa, estimation de phase).
+\end{correction}
+
+\begin{exercice}{Porte de Toffoli et calcul réversible}\label{ex:toffoli}
+La porte de Toffoli (CCNOT) agit sur trois qubits par
+$\mathrm{CCNOT}\ket{x,y,z}=\ket{x,\,y,\,z\oplus xy}$ : les deux premiers qubits contrôlent, le
+troisième est la cible.
+\begin{enumerate}[label=\arabic*.,nosep]
+  \item Écrire sa matrice $8\times8$ dans la base $\ket{000},\dots,\ket{111}$ et donner l'image de
+        $\ket{110}$, $\ket{111}$, $\ket{101}$ et $\ket{011}$.
+  \item Montrer que CCNOT est unitaire et que $\mathrm{CCNOT}^2=\mathrm{Id}$.
+  \item Quelle fonction de $x$ et $y$ la troisième sortie donne-t-elle pour $z=0$ ? pour $z=1$ ?
+  \item Comment obtenir une copie de $x$ ? un NON ?
+\end{enumerate}
+\end{exercice}
+\begin{correction}
+\paragraph{1. Matrice.} La cible $z$ n'est inversée que si $x=y=1$ : CCNOT échange $\ket{110}$ et
+$\ket{111}$ et laisse les six autres états de base inchangés. Dans l'ordre binaire, c'est la matrice
+diagonale par blocs
+\[
+  \mathrm{CCNOT}=\begin{pmatrix}I_6&0\\0&X\end{pmatrix},
+\]
+où $I_6$ est l'identité $6\times6$ et $X$ agit sur $(\ket{110},\ket{111})$. Par exemple
+\[
+  \ket{110}\to\ket{1,1,0\oplus1}=\ket{111},\qquad \ket{111}\to\ket{1,1,1\oplus1}=\ket{110},
+\]
+\[
+  \ket{101}\to\ket{1,0,1\oplus0}=\ket{101},\qquad \ket{011}\to\ket{0,1,1\oplus0}=\ket{011}.
+\]
+
+\paragraph{2. Unitaire et involutive.} C'est une matrice de permutation (elle échange deux vecteurs de
+base) : réelle et orthogonale, donc unitaire, et symétrique, donc égale à son adjointe. Par blocs,
+$\mathrm{CCNOT}^2=\mathrm{diag}(I_6,X^2)=\mathrm{Id}$ ; en termes de bits, $z\oplus xy\oplus xy=z$.
+
+\paragraph{3. Fonctions calculées.} La troisième sortie est $z\oplus xy$ :
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}cc|cc@{}}
 \toprule
-\textbf{Notion} & \textbf{Formule} \\
+$x$ & $y$ & $z=0$ : $\;xy$ (ET) & $z=1$ : $\;1\oplus xy$ (NON-ET) \\
 \midrule
-Espace de deux qubits & $\mathcal{H}^2\otimes\mathcal{H}^2=\mathcal{H}^4$, \quad dimension $2^n$ pour $n$ qubits \\
-Produit de vecteurs & $(a_1,a_2)^{\mathsf T}\otimes(b_1,b_2)^{\mathsf T}=(a_1b_1,a_1b_2,a_2b_1,a_2b_2)^{\mathsf T}$ \\
-Base de calcul & $\ket{ij}_{AB}=\ket{i}_A\otimes\ket{j}_B$, \quad $\braket{ij}{kl}=\delta_{ik}\delta_{jl}$ \\
-État général & $\ket{\Psi}=\sum c_{ij}\ket{ij}$, \quad $\sum|c_{ij}|^2=1$, \quad $P(ij)=|c_{ij}|^2$ \\
-Séparable & $\ket{\Psi}_A\otimes\ket{\Psi}_B$ \quad $\Leftrightarrow$ \quad $c_{00}c_{11}-c_{01}c_{10}=0$ \\
-Intriqué & non séparable, \quad par exemple $\ket{\Phi^+}=\frac{1}{\sqrt2}(\ket{00}+\ket{11})$ \\
-Matrices & $A\otimes B=(A_{ij}B)$, \quad $(A\otimes B)(\ket{u}\otimes\ket{v})=A\ket{u}\otimes B\ket{v}$ \\
-CNOT & $\ket{i,j}\to\ket{i,i\oplus j}$, \quad $\mathrm{CNOT}\,(H\otimes I)\ket{00}=\ket{\Phi^+}$ \\
+$0$ & $0$ & $0$ & $1$ \\
+$0$ & $1$ & $0$ & $1$ \\
+$1$ & $0$ & $0$ & $1$ \\
+$1$ & $1$ & $1$ & $0$ \\
 \bottomrule
 \end{tabular}
 \end{center}
+Avec $z=1$, on calcule le NON-ET, qui suffit à construire toutes les fonctions booléennes : tout
+calcul classique peut être fait avec des portes réversibles, donc par un ordinateur quantique.
+
+\paragraph{4. Copie et NON.} Pour $y=1$ et $z=0$ : $\ket{x,1,0}\to\ket{x,1,0\oplus x}=\ket{x,1,x}$ : la
+valeur de $x$ est copiée sur le troisième bit. Pour $x=y=1$ : $\ket{1,1,z}\to\ket{1,1,\neg z}$ : la porte
+se réduit à un NON sur $z$. Attention : la copie ne vaut que pour $x\in\{0,1\}$. Pour
+$\ket{x}=\alpha\ket{0}+\beta\ket{1}$, la linéarité donne $\alpha\ket{0,1,0}+\beta\ket{1,1,1}$, un état
+intriqué, et non $\ket{x}\otimes\ket{1}\otimes\ket{x}$ : c'est le théorème de non-clonage
+(section~\ref{sec:teleportation}).
+\end{correction}
+
+% ---------------------------------------------------------------------
+\subsection{Intrication et états de Bell}\label{sec:ex-bell}
+% ---------------------------------------------------------------------
+
+Exercices d'application du chapitre~\ref{chap:bell}.
+
+\begin{exercice}{Un état à trois termes est-il intriqué ?}\label{ex:separable3}
+Soit $\ket{\Psi}=\frac{1}{\sqrt3}\big(\ket{00}+\ket{01}+\ket{10}\big)$, avec
+$\ket{ab}=\ket{a}_A\otimes\ket{b}_B$.
+\begin{enumerate}[label=\arabic*.,nosep]
+  \item Donner les probabilités des quatre résultats d'une mesure de $A$ et $B$ en base de calcul.
+  \item On mesure seulement $A$ : probabilités de $0$ et $1$, et état de $B$ après chaque résultat.
+  \item L'état est-il séparable ? Utiliser le critère $D=c_{00}c_{11}-c_{01}c_{10}$, puis une preuve directe.
+  \item Calculer $\rho_A$, sa pureté et son vecteur de Bloch.
+\end{enumerate}
+\end{exercice}
+\begin{correction}
+\paragraph{1. Probabilités.} Les amplitudes sont $c_{00}=c_{01}=c_{10}=\frac{1}{\sqrt3}$ et $c_{11}=0$, donc
+$P(00)=P(01)=P(10)=\frac13$ et $P(11)=0$ (somme $1$).
+
+\paragraph{2. Mesure de $A$ seul.} On regroupe les termes selon le résultat de $A$ :
+$\ket{\Psi}=\frac{1}{\sqrt3}\big[\ket{0}_A\big(\ket{0}+\ket{1}\big)_B+\ket{1}_A\ket{0}_B\big]$. Donc
+\begin{itemize}[nosep]
+  \item $A=0$ avec la probabilité $\frac13+\frac13=\frac23$ ; l'état de $B$ devient
+        $\frac{1}{\sqrt2}(\ket{0}+\ket{1})=\ket{+}$ (après normalisation) ;
+  \item $A=1$ avec la probabilité $\frac13$ ; l'état de $B$ devient $\ket{0}$.
+\end{itemize}
+L'état de $B$ \emph{dépend} du résultat obtenu sur $A$ ($\ket{+}$ ou $\ket{0}$) : c'est la marque d'une
+corrélation qui n'existerait pas pour un état produit.
+
+\paragraph{3. Séparabilité.} Le critère donne
+\[
+  D=c_{00}c_{11}-c_{01}c_{10}=\tfrac{1}{\sqrt3}\cdot0-\tfrac{1}{\sqrt3}\cdot\tfrac{1}{\sqrt3}=-\tfrac13\neq0,
+\]
+donc l'état est \emph{intriqué}. Preuve directe : un produit
+$(a_0\ket{0}+a_1\ket{1})\otimes(b_0\ket{0}+b_1\ket{1})$ a pour coefficients $c_{11}=a_1b_1$,
+$c_{01}=a_0b_1$ et $c_{10}=a_1b_0$. Or $c_{11}=0$ impose $a_1=0$ ou $b_1=0$, ce qui annule $c_{10}$ ou
+$c_{01}$, alors que ces deux coefficients valent $\frac{1}{\sqrt3}\neq0$ : contradiction.
+
+\paragraph{4. Qubit $A$.} Avec la matrice des amplitudes $C=\frac{1}{\sqrt3}\begin{pmatrix}1&1\\1&0\end{pmatrix}$
+(lignes indexées par $A$, colonnes par $B$), $\rho_A=CC^\dagger$ :
+\[
+  \rho_A=\frac13\begin{pmatrix}1&1\\1&0\end{pmatrix}\begin{pmatrix}1&1\\1&0\end{pmatrix}
+  =\frac13\begin{pmatrix}2&1\\1&1\end{pmatrix}.
+\]
+Sa trace vaut $\frac{2+1}{3}=1$ et
+$\operatorname{Tr}\rho_A^2=\frac19\big(4+1+1+1\big)=\frac79<1$ : le qubit $A$ seul est mélangé, alors que
+$\ket{\Psi}$ est pur. On retrouve $1-2|D|^2=1-\frac29=\frac79$. Le vecteur de Bloch est
+\[
+  \vec r=\big(2\operatorname{Re}\rho_{01},\ -2\operatorname{Im}\rho_{01},\ \rho_{00}-\rho_{11}\big)
+  =\big(\tfrac23,\ 0,\ \tfrac13\big),
+  \qquad |\vec r|^2=\tfrac49+\tfrac19=\tfrac59<1,
+\]
+et $\frac{1+|\vec r|^2}{2}=\frac79$ : le point est à l'intérieur de la boule, à la distance
+$\frac{\sqrt5}{3}\approx0{,}75$ du centre.
+\end{correction}
+
+\begin{exercice}{États de Bell dans d'autres bases}\label{ex:bellX}
+\begin{enumerate}[label=\arabic*.,nosep]
+  \item Écrire $\ket{\Phi^+}$ et $\ket{\Psi^-}$ dans la base $\ket{\pm}\otimes\ket{\pm}$. Que donne une
+        mesure de $X$ sur chacun des deux qubits ?
+  \item Soit $U=\begin{pmatrix}a&b\\c&d\end{pmatrix}$ une matrice unitaire. Montrer que
+        $(U\otimes U)\ket{\Psi^-}=(ad-bc)\ket{\Psi^-}$. Que dire des mesures de $\ket{\Psi^-}$ dans une
+        même base quelconque ?
+  \item Écrire $\ket{\Phi^+}$ dans la base $Y$, $\ket{\pm\ii}\otimes\ket{\pm\ii}$. Conclure sur les
+        corrélations de $\ket{\Phi^+}$ dans les bases $Z$, $X$ et $Y$.
+\end{enumerate}
+\end{exercice}
+\begin{correction}
+\paragraph{1. Base $X$.} Avec $\ket{\pm}=\frac{1}{\sqrt2}(\ket{0}\pm\ket{1})$ :
+\[
+  \ket{++}+\ket{--}=\tfrac12\big[(\ket{0}+\ket{1})(\ket{0}+\ket{1})+(\ket{0}-\ket{1})(\ket{0}-\ket{1})\big]
+  =\tfrac12\big[2\ket{00}+2\ket{11}\big]=\ket{00}+\ket{11},
+\]
+\[
+  \ket{-+}-\ket{+-}=\tfrac12\big[(\ket{0}-\ket{1})(\ket{0}+\ket{1})-(\ket{0}+\ket{1})(\ket{0}-\ket{1})\big]
+  =\tfrac12\big[2\ket{01}-2\ket{10}\big]=\ket{01}-\ket{10}.
+\]
+Donc
+\[
+  \ket{\Phi^+}=\frac{\ket{++}+\ket{--}}{\sqrt2},\qquad\ket{\Psi^-}=\frac{\ket{-+}-\ket{+-}}{\sqrt2}.
+\]
+Pour $\ket{\Phi^+}$, les deux résultats de $X$ sont toujours \emph{égaux} ($++$ ou $--$, chacun avec la
+probabilité $\frac12$) ; pour $\ket{\Psi^-}$, toujours \emph{opposés}. La corrélation parfaite n'est
+donc pas propre à la base $Z$.
+
+\paragraph{2. Invariance du singulet.} On a $\ket{\Psi^-}=\frac{1}{\sqrt2}(\ket{01}-\ket{10})$ et
+$U\ket{0}=a\ket{0}+c\ket{1}$, $U\ket{1}=b\ket{0}+d\ket{1}$. Alors
+\begin{align*}
+  (U\otimes U)\big(\ket{01}-\ket{10}\big)
+  &=(a\ket{0}+c\ket{1})(b\ket{0}+d\ket{1})-(b\ket{0}+d\ket{1})(a\ket{0}+c\ket{1})\\
+  &=\big(ab\ket{00}+ad\ket{01}+cb\ket{10}+cd\ket{11}\big)-\big(ba\ket{00}+bc\ket{01}+da\ket{10}+dc\ket{11}\big)\\
+  &=(ad-bc)\ket{01}+(cb-da)\ket{10}=(ad-bc)\big(\ket{01}-\ket{10}\big).
+\end{align*}
+Donc $(U\otimes U)\ket{\Psi^-}=\det(U)\,\ket{\Psi^-}$, avec $|\det U|=1$ pour une matrice unitaire : c'est le
+même état à une phase près. Mesurer les deux qubits dans la base orthonormée $(U\ket{0},U\ket{1})$
+revient à appliquer $U^\dagger$ (aussi unitaire) aux deux, puis à mesurer en base $Z$ ; l'état est inchangé
+à une phase près, donc les probabilités sont celles de la base $Z$ : $\frac12$ pour $01$ et pour $10$,
+$0$ pour $00$ et $11$. Les résultats sont \emph{opposés dans toute base}, la même pour les deux qubits.
+
+\paragraph{3. Base $Y$.} Avec $\ket{\pm\ii}=\frac{1}{\sqrt2}(\ket{0}\pm\ii\ket{1})$ :
+\begin{align*}
+  \ket{{+}\ii,{-}\ii}+\ket{{-}\ii,{+}\ii}
+  &=\tfrac12\big[(\ket{0}+\ii\ket{1})(\ket{0}-\ii\ket{1})+(\ket{0}-\ii\ket{1})(\ket{0}+\ii\ket{1})\big]\\
+  &=\tfrac12\big[(\ket{00}-\ii\ket{01}+\ii\ket{10}+\ket{11})+(\ket{00}+\ii\ket{01}-\ii\ket{10}+\ket{11})\big]\\
+  &=\ket{00}+\ket{11},
+\end{align*}
+donc $\ket{\Phi^+}=\dfrac{\ket{{+}\ii,{-}\ii}+\ket{{-}\ii,{+}\ii}}{\sqrt2}$. Pour $\ket{\Phi^+}$ les
+résultats sont \emph{égaux} en base $Z$ et en base $X$, et \emph{opposés} en base $Y$. Cela
+correspond aux valeurs propres des produits de Pauli (section~\ref{sec:bell}) : $+1$ pour $Z\otimes Z$ et
+$X\otimes X$, $-1$ pour $Y\otimes Y$.
+\end{correction}
+
+\begin{exercice}{Codage superdense}\label{ex:superdense}
+Alice et Bob partagent la paire $\ket{\Phi^+}_{AB}=\frac{1}{\sqrt2}(\ket{00}+\ket{11})$ ; Alice détient le
+qubit $B$ et Bob le qubit $A$. Alice veut transmettre deux bits $m_1m_2$ à Bob en ne lui envoyant
+qu'\emph{un seul} qubit, $B$.
+\begin{enumerate}[label=\arabic*.,nosep]
+  \item Alice applique à $B$ l'une des portes $I$, $Z$, $X$, $XZ$. Quel état de Bell obtient-on dans
+        chaque cas ? En déduire la porte à associer à chaque message.
+  \item Bob reçoit $B$, applique $G^\dagger=(I\otimes H)\cdot\mathrm{CNOT}$ (inverse du générateur de Bell
+        de la section~\ref{sec:circuit-bell}), puis mesure en base de calcul. Calculer l'état après
+        chaque étape pour les quatre messages.
+  \item Quel est l'intérêt du protocole ?
+\end{enumerate}
+\end{exercice}
+\begin{correction}
+\paragraph{1. Les quatre états de Bell.} Pour une porte $M$ sur $B$,
+$(I\otimes M)\ket{\Phi^+}=\frac{1}{\sqrt2}\big(\ket{0}\otimes M\ket{0}+\ket{1}\otimes M\ket{1}\big)$ :
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}c c c l@{}}
+\toprule
+Message $m_1m_2$ & Porte $M$ & $M\ket{0},\ M\ket{1}$ & État obtenu \\
+\midrule
+$00$ & $I$ & $\ket{0},\ \ket{1}$ & $\frac{1}{\sqrt2}(\ket{00}+\ket{11})=\ket{\Phi^+}$ \\
+$01$ & $Z$ & $\ket{0},\ -\ket{1}$ & $\frac{1}{\sqrt2}(\ket{00}-\ket{11})=\ket{\Phi^-}$ \\
+$10$ & $X$ & $\ket{1},\ \ket{0}$ & $\frac{1}{\sqrt2}(\ket{01}+\ket{10})=\ket{\Psi^+}$ \\
+$11$ & $XZ$ & $\ket{1},\ -\ket{0}$ & $\frac{1}{\sqrt2}(\ket{01}-\ket{10})=\ket{\Psi^-}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+Pour $XZ$ : $XZ\ket{0}=X\ket{0}=\ket{1}$ et $XZ\ket{1}=X(-\ket{1})=-\ket{0}$. Alice applique donc
+$X^{m_1}Z^{m_2}$ à $B$ : $X$ si $m_1=1$, $Z$ si $m_2=1$ (d'abord $Z$, puis $X$), puis elle envoie $B$.
+
+\paragraph{2. Décodage.} Le CNOT a pour contrôle $B$ et pour cible $A$ : $\ket{a,b}\to\ket{a\oplus b,b}$. Puis
+$H$ agit sur $B$ (deuxième facteur) avec $H\ket{+}=\ket{0}$ et $H\ket{-}=\ket{1}$.
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}c c c c c@{}}
+\toprule
+$m_1m_2$ & État reçu & Après CNOT & Après $I\otimes H$ & Mesure \\
+\midrule
+$00$ & $\ket{\Phi^+}$ & $\frac{1}{\sqrt2}(\ket{00}+\ket{01})=\ket{0}\ket{+}$ & $\ket{0}\ket{0}=\ket{00}$ & $00$ \\
+$01$ & $\ket{\Phi^-}$ & $\frac{1}{\sqrt2}(\ket{00}-\ket{01})=\ket{0}\ket{-}$ & $\ket{0}\ket{1}=\ket{01}$ & $01$ \\
+$10$ & $\ket{\Psi^+}$ & $\frac{1}{\sqrt2}(\ket{11}+\ket{10})=\ket{1}\ket{+}$ & $\ket{1}\ket{0}=\ket{10}$ & $10$ \\
+$11$ & $\ket{\Psi^-}$ & $\frac{1}{\sqrt2}(\ket{11}-\ket{10})=-\ket{1}\ket{-}$ & $-\ket{1}\ket{1}=-\ket{11}$ & $11$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+Par exemple, $\ket{\Psi^-}=\frac{1}{\sqrt2}(\ket{01}-\ket{10})$ : le CNOT envoie $\ket{01}$ sur $\ket{11}$ et
+laisse $\ket{10}$, d'où $\frac{1}{\sqrt2}(\ket{11}-\ket{10})=-\ket{1}\otimes\ket{-}$. Le signe global
+$-1$ n'est pas observable. Dans les quatre cas Bob lit \emph{exactement} $m_1$ (qubit $A$) et $m_2$
+(qubit $B$), avec certitude : $G^\dagger$ transforme les quatre états de Bell, orthonormés, en les
+quatre états de la base de calcul, c'est la mesure de Bell.
+
+\begin{center}
+\begin{minipage}{\linewidth}\centering
+\adjustbox{max width=\linewidth}{%
+\begin{tikzpicture}[>=Stealth, font=\small]
+  % fils
+  \draw (0,1) -- (7.1,1);
+  \draw (0,0) -- (7.1,0);
+  \node[anchor=south west, text=insagris, font=\footnotesize] at (0.05,1.02) {$B$};
+  \node[anchor=south west, text=insagris, font=\footnotesize] at (0.05,0.02) {$A$};
+  % paire de Bell partagée
+  \draw[insagris, thick] (-0.1,1.3) -- (-0.25,1.3) -- (-0.25,-0.3) -- (-0.1,-0.3);
+  \node[anchor=east] at (-0.35,0.5) {$\ket{\Phi^+}_{AB}$};
+  % Alice
+  \node[porte] at (1.9,1) {$X^{m_1}Z^{m_2}$};
+  % envoi de B
+  \draw[dashed, insagris] (3.3,1.85) -- (3.3,-1.15);
+  \node[anchor=south east, font=\footnotesize, text=insagris] at (3.2,1.5) {Alice};
+  \node[anchor=south west, font=\footnotesize, text=insagris] at (3.4,1.5) {Bob};
+  \node[anchor=north, font=\footnotesize] at (3.3,-1.2) {envoi du qubit $B$};
+  % décodage : CNOT (contrôle B, cible A), H sur B, mesures
+  \draw[insarouge, thick] (4.3,1) -- (4.3,0);
+  \pic at (4.3,1) {ctl};
+  \pic at (4.3,0) {cible};
+  \node[porte] at (5.6,1) {$H$};
+  \pic at (6.7,1) {mesure};
+  \pic at (6.7,0) {mesure};
+  \draw[double, double distance=1.2pt, insagris] (7.0,1) -- (8.0,1) node[right, black] {$m_2$};
+  \draw[double, double distance=1.2pt, insagris] (7.0,0) -- (8.0,0) node[right, black] {$m_1$};
+  \draw[decorate, decoration={brace, amplitude=4pt, mirror}, insarouge]
+    (3.95,-0.45) -- (6.05,-0.45);
+  \node[anchor=north, font=\footnotesize, text=insarouge] at (5.0,-0.6) {$G^\dagger$ (décodage)};
+\end{tikzpicture}}
+\captionof{figure}{Codage superdense. La paire $\ket{\Phi^+}$ est partagée à l'avance ; Alice applique
+$X^{m_1}Z^{m_2}$ à $B$ et l'envoie à Bob, qui applique $G^\dagger=(I\otimes H)\,\mathrm{CNOT}$ et
+mesure : il lit $m_1m_2$ (le fil du haut est le dernier chiffre).}\label{fig:ex-superdense}
+\end{minipage}
+\end{center}
+
+\paragraph{3. Intérêt.} Deux bits classiques sont transmis par un seul qubit envoyé. Un qubit seul ne peut
+pas porter plus d'un bit d'information classique (borne de Holevo) : c'est la paire intriquée,
+partagée avant le message, qui double la capacité du canal. C'est l'envers de la téléportation
+(exercice~\ref{ex:telenum}) : celle-ci utilise une paire et deux bits classiques pour transmettre un
+qubit, le codage superdense utilise une paire et un qubit pour transmettre deux bits.
+\end{correction}
+
+\begin{exercice}{Entropies classiques et quantiques}\label{ex:entropies}
+\begin{enumerate}[label=\arabic*.,nosep]
+  \item Deux bits classiques $A$ et $B$ ont la loi conjointe
+        $p(00)=\frac12$, $p(01)=\frac14$, $p(10)=0$, $p(11)=\frac14$. Calculer les lois marginales, les
+        entropies $H(A)$, $H(B)$, $H(A,B)$, l'information mutuelle $I(A;B)=H(A)+H(B)-H(A,B)$ et les
+        entropies conditionnelles $H(A|B)=H(A,B)-H(B)$ et $H(B|A)$.
+  \item Pour $\ket{\psi_\theta}=\cos\theta\ket{00}+\sin\theta\ket{11}$ ($0\le\theta\le\frac\pi2$), calculer
+        $\rho_A$, l'entropie de von Neumann $S(\rho_A)$, la quantité $D$ et $\operatorname{Tr}\rho_A^2$.
+        Tracer $S(\rho_A)$ en fonction de $\theta$.
+  \item Pour $\theta=\frac\pi6$, calculer $I=S(A)+S(B)-S(A,B)$ et $S(A|B)=S(A,B)-S(B)$. Comparer avec la
+        loi classique de la question~1, qui a la même marginale sur $A$.
+\end{enumerate}
+\end{exercice}
+\begin{correction}
+\paragraph{1. Loi classique.} Les marginales sont
+$p_A(0)=p(00)+p(01)=\frac34$, $p_A(1)=p(10)+p(11)=\frac14$ et
+$p_B(0)=p(00)+p(10)=\frac12$, $p_B(1)=p(01)+p(11)=\frac12$. Avec $0\log_20=0$ :
+\begin{align*}
+  H(A)&=-\tfrac34\log_2\tfrac34-\tfrac14\log_2\tfrac14=\tfrac34\,(2-\log_23)+\tfrac12
+       =2-\tfrac34\log_23\approx0{,}811\ \text{bit},\\
+  H(B)&=1\ \text{bit},\\
+  H(A,B)&=-\tfrac12\log_2\tfrac12-2\cdot\tfrac14\log_2\tfrac14=\tfrac12+1=\tfrac32\ \text{bit}.
+\end{align*}
+Donc
+\[
+  I(A;B)=\big(2-\tfrac34\log_23\big)+1-\tfrac32=\tfrac32-\tfrac34\log_23\approx0{,}311\ \text{bit},
+\]
+\[
+  H(A|B)=H(A,B)-H(B)=\tfrac32-1=\tfrac12,\qquad
+  H(B|A)=H(A,B)-H(A)=\tfrac34\log_23-\tfrac12\approx0{,}689 .
+\]
+Contrôle de $H(A|B)$ : si $B=0$, $A$ vaut $0$ avec certitude (entropie $0$) ; si $B=1$, $A$ vaut $0$ ou $1$
+avec la probabilité $\frac12$ (entropie $1$). Donc $H(A|B)=\frac12\cdot0+\frac12\cdot1=\frac12$.
+
+\paragraph{2. Famille d'états.} La matrice des amplitudes est $C=\mathrm{diag}(\cos\theta,\sin\theta)$, donc
+\[
+  \rho_A=CC^\dagger=\begin{pmatrix}\cos^2\theta&0\\0&\sin^2\theta\end{pmatrix},
+  \qquad
+  S(\rho_A)=-\cos^2\theta\log_2\cos^2\theta-\sin^2\theta\log_2\sin^2\theta=h\big(\cos^2\theta\big),
+\]
+où $h(p)=-p\log_2p-(1-p)\log_2(1-p)$ est l'entropie binaire. De plus
+$D=c_{00}c_{11}-c_{01}c_{10}=\sin\theta\cos\theta$ et
+$\operatorname{Tr}\rho_A^2=\cos^4\theta+\sin^4\theta=1-2\sin^2\theta\cos^2\theta=1-2D^2$.
+Pour $\theta=0$ (état produit $\ket{00}$), $S=0$ ; pour $\theta=\frac\pi4$ (état de Bell $\ket{\Phi^+}$),
+$S=1$ bit, le maximum ; la courbe est symétrique par rapport à $\frac\pi4$ (figure~\ref{fig:ex-entropie}).
+
+\begin{center}
+\begin{minipage}{\linewidth}\centering
+\adjustbox{max width=\linewidth}{%
+\begin{tikzpicture}[>=Stealth, font=\footnotesize, x=0.11cm, y=2.8cm]
+  \draw[insagris, dashed] (0,1) -- (90,1);
+  \draw[->] (-2,0) -- (96,0) node[right] {$\theta$};
+  \draw[->] (0,-0.02) -- (0,1.2) node[above] {$S(\rho_A)$ (bit)};
+  \foreach \ang/\lab in {30/{\pi/6}, 45/{\pi/4}, 60/{\pi/3}, 90/{\pi/2}}
+    \draw (\ang,0.012) -- (\ang,-0.012) node[below] {$\lab$};
+  \node[below] at (0,-0.012) {$0$};
+  \foreach \v/\vl in {0.5/{0{,}5}, 1/1}
+    \draw (0.8,\v) -- (-0.8,\v) node[left] {$\vl$};
+  \draw[very thick, insarouge, domain=0.4:89.6, samples=120, variable=\t]
+    plot (\t, {-(cos(\t))^2*ln((cos(\t))^2)/ln(2)-(sin(\t))^2*ln((sin(\t))^2)/ln(2)});
+  % points particuliers
+  \draw[dotted, insarouge] (30,0) -- (30,0.8113) -- (0,0.8113);
+  \draw[dotted, insarouge] (45,0) -- (45,1);
+  \fill[insarouge] (30,0.8113) circle[radius=1.8pt];
+  \fill[insarouge] (45,1) circle[radius=1.8pt];
+  \node[insarouge, anchor=east] at (27,0.86) {$\theta=\frac\pi6$ : $S\approx0{,}811$};
+  \node[insarouge, anchor=south] at (45,1.02) {$\theta=\frac\pi4$ : état de Bell, $S=1$};
+\end{tikzpicture}}
+\captionof{figure}{Entropie d'intrication $S(\rho_A)=h(\cos^2\theta)$ de $\cos\theta\ket{00}+\sin\theta\ket{11}$.
+Nulle pour un état produit ($\theta=0$ ou $\frac\pi2$), maximale ($1$ bit) pour l'état de Bell
+($\theta=\frac\pi4$).}\label{fig:ex-entropie}
+\end{minipage}
+\end{center}
+
+Valeurs particulières : pour $\theta=\frac\pi6$, $\cos^2\theta=\frac34$, donc $S(\rho_A)=h(\frac34)\approx0{,}811$,
+$D=\frac{\sqrt3}{2}\cdot\frac12=\frac{\sqrt3}{4}$ et
+$\operatorname{Tr}\rho_A^2=1-2\cdot\frac{3}{16}=\frac58$ (contrôle : $\frac9{16}+\frac1{16}$) ; pour $\theta=\frac\pi4$,
+$D=\frac12$ et $\operatorname{Tr}\rho_A^2=\frac12$.
+
+\paragraph{3. Information mutuelle quantique.} L'état du couple est pur, donc $S(A,B)=0$, et
+$S(A)=S(B)=h$ (les deux qubits ont les mêmes coefficients de Schmidt). Pour $\theta=\frac\pi6$ :
+\[
+  I=S(A)+S(B)-S(A,B)=2h\approx1{,}62\ \text{bit},\qquad
+  S(A|B)=S(A,B)-S(B)=-h\approx-0{,}811\ \text{bit}.
+\]
+La loi classique de la question~1 a la même marginale $(\frac34,\frac14)$ sur $A$, donc la même
+entropie $H(A)\approx0{,}811$, mais seulement $I\approx0{,}31$ bit, et toujours $H(A|B)\ge0$ :
+classiquement $I=H(A)-H(A|B)\le H(A)\approx0{,}811$ bit. L'état intriqué dépasse cette borne
+($I=2H(A)\approx1{,}62$ bit) et son entropie conditionnelle est \emph{négative}, ce qui n'a aucun
+équivalent classique : les corrélations quantiques sont plus fortes que les corrélations classiques
+(figure~\ref{fig:entropies} du chapitre~\ref{chap:bell}).
+\end{correction}
+
+\begin{exercice}{Téléportation d'un état numérique}\label{ex:telenum}
+Alice veut téléporter $\ket{\varphi}=\frac{1}{\sqrt5}\big(\ket{0}+2\ii\ket{1}\big)$ avec le protocole de la
+section~\ref{sec:teleportation} : paire $\ket{\Phi^+}_{BA}$ partagée, CNOT de $Q$ vers $A$, porte $H$ sur
+$Q$, mesure de $(A,Q)$, corrections de Bob.
+\begin{enumerate}[label=\arabic*.,nosep]
+  \item Pour chaque résultat $(a,q)$, donner la probabilité et l'état de Bob avant correction.
+  \item Donner la correction de Bob dans chaque cas et vérifier le cas $(1,1)$ avec les matrices.
+  \item Écrire les quatre projecteurs $\ket{\phi_{aq}}\bra{\phi_{aq}}$ et calculer $\rho_B$ avant que
+        Bob ne reçoive les bits. Que sait-il alors ?
+\end{enumerate}
+\end{exercice}
+\begin{correction}
+\paragraph{1. États de Bob.} Ici $\alpha=\frac{1}{\sqrt5}$ et $\beta=\frac{2\ii}{\sqrt5}$. D'après la
+section~\ref{sec:teleportation}, l'état de Bob après le résultat $(a,q)$ est $\alpha\ket{0}+\beta\ket{1}$,
+$\alpha\ket{0}-\beta\ket{1}$, $\beta\ket{0}+\alpha\ket{1}$ ou $-\beta\ket{0}+\alpha\ket{1}$, et chaque
+résultat a la probabilité $\frac14(|\alpha|^2+|\beta|^2)=\frac14(\frac15+\frac45)=\frac14$ :
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}c c c c c@{}}
+\toprule
+$(a,q)$ & Probabilité & État de Bob & Correction & État final \\
+\midrule
+$(0,0)$ & $\frac14$ & $\frac{1}{\sqrt5}(1,\ 2\ii)$ & aucune & $\frac{1}{\sqrt5}(1,\ 2\ii)$ \\
+$(0,1)$ & $\frac14$ & $\frac{1}{\sqrt5}(1,\ -2\ii)$ & $Z$ & $\frac{1}{\sqrt5}(1,\ 2\ii)$ \\
+$(1,0)$ & $\frac14$ & $\frac{1}{\sqrt5}(2\ii,\ 1)$ & $X$ & $\frac{1}{\sqrt5}(1,\ 2\ii)$ \\
+$(1,1)$ & $\frac14$ & $\frac{1}{\sqrt5}(-2\ii,\ 1)$ & $X$ puis $Z$ & $\frac{1}{\sqrt5}(1,\ 2\ii)$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+Les quatre résultats sont équiprobables, et leurs probabilités ne dépendent pas de $\ket{\varphi}$ :
+les deux bits envoyés ne révèlent rien sur l'état téléporté.
+
+\paragraph{2. Corrections.} Avec $X\ket{0}=\ket{1}$, $X\ket{1}=\ket{0}$, $Z\ket{1}=-\ket{1}$ :
+\begin{align*}
+  (0,1):\ & Z\tfrac{1}{\sqrt5}(1,\ -2\ii)^{\mathsf T}=\tfrac{1}{\sqrt5}(1,\ +2\ii)^{\mathsf T},\\
+  (1,0):\ & X\tfrac{1}{\sqrt5}(2\ii,\ 1)^{\mathsf T}=\tfrac{1}{\sqrt5}(1,\ 2\ii)^{\mathsf T},\\
+  (1,1):\ & X\tfrac{1}{\sqrt5}(-2\ii,\ 1)^{\mathsf T}=\tfrac{1}{\sqrt5}(1,\ -2\ii)^{\mathsf T},
+            \ \text{puis}\ Z\ \text{donne}\ \tfrac{1}{\sqrt5}(1,\ 2\ii)^{\mathsf T}.
+\end{align*}
+Pour $(1,1)$ avec les matrices, l'opérateur de correction «~$X$ puis $Z$~» est
+$ZX=\begin{pmatrix}1&0\\0&-1\end{pmatrix}\begin{pmatrix}0&1\\1&0\end{pmatrix}=\begin{pmatrix}0&1\\-1&0\end{pmatrix}$,
+et
+\[
+  ZX\cdot\frac{1}{\sqrt5}\begin{pmatrix}-2\ii\\1\end{pmatrix}
+  =\frac{1}{\sqrt5}\begin{pmatrix}1\\2\ii\end{pmatrix}=\ket{\varphi}.
+\]
+
+\paragraph{3. État de Bob avant la réception des bits.} Pour $\ket{\phi}=\frac{1}{\sqrt5}(u,v)^{\mathsf T}$,
+$\ket{\phi}\bra{\phi}=\frac15\begin{pmatrix}|u|^2&u\bar v\\\bar uv&|v|^2\end{pmatrix}$. Donc
+\[
+  \ket{\phi_{00}}\bra{\phi_{00}}=\tfrac15\begin{pmatrix}1&-2\ii\\2\ii&4\end{pmatrix},\quad
+  \ket{\phi_{01}}\bra{\phi_{01}}=\tfrac15\begin{pmatrix}1&2\ii\\-2\ii&4\end{pmatrix},
+\]
+\[
+  \ket{\phi_{10}}\bra{\phi_{10}}=\tfrac15\begin{pmatrix}4&2\ii\\-2\ii&1\end{pmatrix},\quad
+  \ket{\phi_{11}}\bra{\phi_{11}}=\tfrac15\begin{pmatrix}4&-2\ii\\2\ii&1\end{pmatrix}.
+\]
+Leur somme est $\frac15\begin{pmatrix}10&0\\0&10\end{pmatrix}=2\,\mathrm{Id}$ (les termes hors diagonale
+s'annulent deux à deux), donc
+\[
+  \rho_B=\frac14\sum_{a,q}\ket{\phi_{aq}}\bra{\phi_{aq}}=\frac14\cdot2\,\mathrm{Id}=\frac12\mathrm{Id}.
+\]
+Bob ignore $(a,q)$ : son qubit est dans l'état le plus mélangé possible (centre de la boule de Bloch),
+\emph{indépendant} de $\ket{\varphi}$. Il n'apprend rien avant l'arrivée des deux bits classiques, qui
+ne voyagent pas plus vite que la lumière : la téléportation ne permet aucune communication
+instantanée.
+\end{correction}

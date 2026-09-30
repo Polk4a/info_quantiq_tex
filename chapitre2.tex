@@ -1,21 +1,28 @@
 % =====================================================================
-%  Chapitre 2 : suite de la section 1 (mécanique quantique)
+%  Chapitre 2 : Notation de Dirac et espace de Hilbert
 %  Fichier importé par main.tex avec \include{chapitre2}.
-%  Il PROLONGE chapitre1.tex : pas de \section ici, les sous-sections
-%  1.6 à 1.9 font suite à 1.1 à 1.5 (la suite est dans chapitre3.tex).
-%  Pas de préambule non plus : les
-%  environnements (definition, resultat, remarque), les macros (\ii, \ee,
-%  \dd, \pd, \pdd, \Hop, \ket, \bra, \braket) et les couleurs (insarouge,
-%  insagris) sont définis dans main.tex.
-%  Convention de signe : p = -i hbar d/dx, cohérente avec l'onde plane
-%  e^{i(kx-wt)} de la section 1.3 (les notes de cours donnaient +i hbar).
+%  Il ne contient ni préambule ni \begin{document} : les environnements
+%  (definition, resultat, remarque, aretenir, savoirfaire, exercice, correction),
+%  les macros (\ii, \ee, \dd, \pd, \pdd, \Hop, \ket, \bra, \braket), les symboles
+%  de circuits (ctl, cible, croix, mesure, porte) et les couleurs (insarouge,
+%  insagris) sont définis dans main.tex. Un chapitre = une \section.
 % =====================================================================
 
-% Macros de Dirac (déjà définies dans main.tex récent ; ce bloc évite l'erreur
+% Macros de Dirac (déjà définies dans main.tex ; ce bloc évite l'erreur
 % « Undefined control sequence \ket » si main.tex est une ancienne version).
 \providecommand{\ket}[1]{|#1\rangle}
 \providecommand{\bra}[1]{\langle #1|}
 \providecommand{\braket}[2]{\langle #1|#2\rangle}
+
+% =====================================================================
+\section{Notation de Dirac et espace de Hilbert}\label{chap:dirac}
+% =====================================================================
+
+Le chapitre~\ref{chap:histoire} décrit l'état d'une particule par une fonction d'onde. Ce
+chapitre le reformule avec l'algèbre linéaire : un état est un \emph{vecteur} d'un espace de
+Hilbert, et la notation de Dirac \parencite{dirac1939} permet de calculer sans écrire les
+composantes. On y définit ensuite le \gls{qubit}, système à deux états qui sert de brique de
+base à l'informatique quantique, puis la mesure par projection.
 
 % ---------------------------------------------------------------------
 \subsection{Notation de Dirac}\label{sec:dirac}
@@ -56,6 +63,48 @@ Dans l'autre ordre, le produit d'un ket par un bra est une matrice (un opérateu
   =\begin{pmatrix}a_1b_1^* & a_1b_2^*\\ a_2b_1^* & a_2b_2^*\end{pmatrix}.
 \]
 
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, font=\small,
+    cel/.style={draw=insagris, minimum width=0.95cm, minimum height=0.75cm, inner sep=0pt,
+                font=\footnotesize},
+    brac/.style={cel, fill=insagris!14},
+    kett/.style={cel, fill=insarouge!10},
+    res/.style={cel, fill=white}]
+  % (a) ligne x colonne = nombre
+  \begin{scope}
+    \node[brac] at (0,0.375) {$a_1^*$};
+    \node[brac] at (0.95,0.375) {$a_2^*$};
+    \node at (1.75,0.375) {$\times$};
+    \node[kett] at (2.55,0.75) {$b_1$};
+    \node[kett] at (2.55,0) {$b_2$};
+    \node at (3.35,0.375) {$=$};
+    \node[res, minimum width=2.8cm] at (5.0,0.375) {$a_1^*b_1+a_2^*b_2$};
+    \node[align=center] at (2.5,-1.2)
+      {ligne $\times$ colonne $=$ un \emph{nombre}\\ $\braket{a}{b}$ (bra-ket)};
+  \end{scope}
+  % (b) colonne x ligne = matrice
+  \begin{scope}[xshift=8.6cm]
+    \node[kett] at (0,0.75) {$a_1$};
+    \node[kett] at (0,0) {$a_2$};
+    \node at (0.8,0.375) {$\times$};
+    \node[brac] at (1.6,0.375) {$b_1^*$};
+    \node[brac] at (2.55,0.375) {$b_2^*$};
+    \node at (3.35,0.375) {$=$};
+    \node[res, minimum width=1.5cm] at (4.6,0.75) {$a_1b_1^*$};
+    \node[res, minimum width=1.5cm] at (6.1,0.75) {$a_1b_2^*$};
+    \node[res, minimum width=1.5cm] at (4.6,0) {$a_2b_1^*$};
+    \node[res, minimum width=1.5cm] at (6.1,0) {$a_2b_2^*$};
+    \node[align=center] at (3.6,-1.2)
+      {colonne $\times$ ligne $=$ une \emph{matrice}\\ $\ket{a}\bra{b}$ (opérateur)};
+  \end{scope}
+\end{tikzpicture}
+\caption{Les deux produits d'un ket et d'un bra en dimension~2. Le bra-ket $\braket{a}{b}$ est
+un nombre complexe. Le ket-bra $\ket{a}\bra{b}$ est une matrice $2\times2$, c'est-à-dire un
+opérateur.}
+\label{fig:ketbra}
+\end{figure}
+
 \begin{remarque}[Pourquoi le conjugué ?]
 Pour $\ket{a}=\dfrac{1}{\sqrt2}\begin{pmatrix}1\\ \ii\end{pmatrix}$, on a
 $\bra{a}=\dfrac{1}{\sqrt2}\begin{pmatrix}1 & -\ii\end{pmatrix}$ et
@@ -74,367 +123,436 @@ normalisation de Born (section~\ref{sec:born}) :
 \[
   \braket{\Psi}{\Psi} = \int_{-\infty}^{+\infty}\Psi^*\Psi\,\dd x = 1 .
 \]
-L'espace de Hilbert et le formalisme complet sont repris plus loin dans le cours.
+La section~\ref{sec:hilbert} précise ce qu'est un espace de Hilbert.
 
 % ---------------------------------------------------------------------
-\subsection{Opérateurs quantiques}\label{sec:operateurs}
+\subsection{Espace de Hilbert}\label{sec:hilbert}
 % ---------------------------------------------------------------------
 
-À chaque grandeur physique (position, quantité de mouvement, énergie) on associe
-un \emph{opérateur} $\hat O$ : une règle qui transforme une fonction d'onde en une
-autre, $\Psi\mapsto\hat O\Psi$. Le point de départ est l'onde plane de la
-section~\ref{sec:construction} : $\Psi=\ee^{\ii(kx-\omega t)}$ vérifie
-$-\ii\hbar\,\partial_x\Psi=\hbar k\,\Psi=p\,\Psi$.
+Les kets sont des éléments d'un \glslink{hilbert}{espace de Hilbert} $\mathcal{H}$, cadre
+mathématique de la mécanique quantique.
 
-\begin{definition}{Opérateur quantité de mouvement}
-\[
-  \hat p = -\ii\hbar\,\frac{\partial}{\partial x},
-  \qquad
-  \hat p\,\Psi = -\ii\hbar\,\frac{\partial\Psi}{\partial x}.
-\]
-L'onde plane est fonction propre de $\hat p$, de valeur propre $p=\hbar k$.
+\begin{definition}{Espace de Hilbert}
+C'est un espace vectoriel sur $\mathbb{C}$ muni d'un produit scalaire $\braket{a}{b}\in\mathbb{C}$
+qui vérifie
+\begin{itemize}[nosep]
+  \item $\braket{b}{a}=\braket{a}{b}^*$ ;
+  \item la linéarité à droite : $\braket{a}{\lambda b+\mu c}=\lambda\braket{a}{b}+\mu\braket{a}{c}$
+        (donc l'antilinéarité à gauche : un scalaire sorti d'un bra est conjugué) ;
+  \item $\braket{a}{a}\geq0$, avec égalité seulement si $\ket{a}=0$.
+\end{itemize}
+La \emph{norme} est $\|a\|=\sqrt{\braket{a}{a}}$. L'espace est \emph{complet} : toute suite de
+Cauchy y converge (c'est automatique en dimension finie). Deux vecteurs sont \emph{orthogonaux}
+si $\braket{a}{b}=0$, et un vecteur est \emph{unitaire} si $\braket{a}{a}=1$.
 \end{definition}
 
-Les autres opérateurs s'obtiennent en remplaçant $p$ par $\hat p$ dans
-l'expression classique. Avec $E_c=\tfrac12 mv^2=p^2/2m$ :
+\begin{resultat}{Postulat 1 : l'état d'un système}
+L'état d'un système quantique isolé est un vecteur unitaire $\ket{\Psi}$ d'un espace de Hilbert
+$\mathcal{H}$ : $\braket{\Psi}{\Psi}=1$. Les vecteurs $\ket{\Psi}$ et $\ee^{\ii\varphi}\ket{\Psi}$
+décrivent le même état physique : la phase globale n'est pas observable.
+\end{resultat}
+
+\paragraph{Base orthonormée.} Une famille $\{\ket{e_i}\}$ est une base orthonormée si
+$\braket{e_i}{e_j}=\delta_{ij}$ et si tout vecteur s'en déduit par combinaison linéaire. Pour
+$\ket{a}=\sum_j c_j\ket{e_j}$, multiplier par $\bra{e_i}$ isole le coefficient :
 \[
-  \hat E_c = \frac{\hat p^{\,2}}{2m}
-  = \frac{1}{2m}\Big(-\ii\hbar\frac{\partial}{\partial x}\Big)
-                \Big(-\ii\hbar\frac{\partial}{\partial x}\Big)
-  = \frac{(-\ii\hbar)^2}{2m}\,\frac{\partial^2}{\partial x^2}
-  = -\frac{\hbar^2}{2m}\,\frac{\partial^2}{\partial x^2},
-  \qquad
-  \hat v = \frac{\hat p}{m} = -\frac{\ii\hbar}{m}\,\frac{\partial}{\partial x}.
+  \braket{e_i}{a}=\sum_j c_j\,\braket{e_i}{e_j}=\sum_j c_j\,\delta_{ij}=c_i .
 \]
 
-\begin{center}
-\renewcommand{\arraystretch}{1.6}
-\begin{tabular}{@{}lll@{}}
-\toprule
-\textbf{Grandeur} & \textbf{Classique} & \textbf{Opérateur} \\
-\midrule
-Position & $x$ & $\hat x = x\times$ \\
-Quantité de mouvement & $p$ & $\hat p = -\ii\hbar\,\partial_x$ \\
-Vitesse & $v=\dfrac{p}{m}$ & $\hat v = -\dfrac{\ii\hbar}{m}\,\partial_x$ \\
-Énergie cinétique & $E_c=\dfrac{p^2}{2m}$ & $\hat E_c = -\dfrac{\hbar^2}{2m}\,\partial_x^2$ \\
-Énergie potentielle & $V(x)$ & $\hat V = V(x)\times$ \\
-Énergie totale & $E=E_c+V$ & $\Hop = \hat E_c+\hat V = -\dfrac{\hbar^2}{2m}\,\partial_x^2+V(x)$ \\
-\bottomrule
-\end{tabular}
-\end{center}
-
-L'opérateur hamiltonien $\Hop$ représente l'énergie totale. Avec $E\to\ii\hbar\,\partial_t$,
-l'équation de Schrödinger de la section~\ref{sec:construction} n'est que la relation
-$E=E_c+V$ écrite avec des opérateurs : $\ii\hbar\,\partial_t\Psi=\Hop\Psi$.
-
-\begin{remarque}[Convention de signe]
-Le signe de $\hat p$ dépend du choix de l'onde plane $\ee^{\ii(kx-\omega t)}$. La
-convention conjuguée $\ee^{-\ii(kx-\omega t)}$ inverse les deux signes
-($\hat p=+\ii\hbar\,\partial_x$ et $E\to-\ii\hbar\,\partial_t$) sans changer les
-résultats physiques. Comme $\hat p$ intervient au carré, $\hat E_c$ est le même dans
-les deux conventions.
-\end{remarque}
-
-\begin{definition}{Valeur moyenne d'un opérateur}
-Pour une fonction d'onde normalisée $\Psi$,
+\begin{resultat}{Décomposition sur une base orthonormée}
 \[
-  \langle\hat O\rangle
-  = \int_{-\infty}^{+\infty}\Psi^*(x,t)\;\hat O\,\Psi(x,t)\,\dd x
-  = \bra{\Psi}\hat O\ket{\Psi}.
+  \ket{a}=\sum_i c_i\ket{e_i},\qquad c_i=\braket{e_i}{a},\qquad
+  \braket{a}{b}=\sum_i a_i^*\,b_i,\qquad \braket{a}{a}=\sum_i|c_i|^2 .
 \]
-C'est la moyenne des résultats obtenus en mesurant la grandeur sur un grand nombre
-de systèmes identiques, tous préparés dans l'état $\Psi$. L'opérateur agit sur
-$\Psi$ seul, à droite de $\Psi^*$. Pour la position,
-$\langle\hat x\rangle=\int x\,|\Psi|^2\,\dd x$ : c'est l'espérance de la densité
-de probabilité de Born.
-
-L'\emph{incertitude} (écart type) sur la grandeur associée à $\hat O$ mesure la
-dispersion des résultats autour de cette moyenne :
+Comme $\ket{a}=\sum_i\ket{e_i}\braket{e_i}{a}$ pour tout $\ket{a}$, on obtient la
+\emph{relation de fermeture}
 \[
-  \sigma_O=\sqrt{\langle\hat O^{\,2}\rangle-\langle\hat O\rangle^2}\,,
-  \qquad
-  \langle\hat O^{\,2}\rangle=\int\Psi^*\,\hat O^{\,2}\,\Psi\,\dd x .
-\]
-Si $\Psi$ est une fonction propre de $\hat O$ ($\hat O\Psi=\lambda\Psi$), alors
-$\langle\hat O\rangle=\lambda$, $\langle\hat O^{\,2}\rangle=\lambda^2$ et
-$\sigma_O=0$ : la grandeur a une valeur certaine.
-\end{definition}
-
-% ---------------------------------------------------------------------
-\subsection{Solutions de l'équation de Schrödinger}\label{sec:solutions}
-% ---------------------------------------------------------------------
-
-\subsubsection{Du potentiel à la fonction d'onde}
-
-En mécanique classique, l'énergie potentielle $V(x,t)$ fixe la force
-$F=-\partial V/\partial x$, puis $\dd p/\dd t=F$ donne la trajectoire. En mécanique
-quantique, c'est l'équation de Schrödinger qui joue ce rôle : connaissant $V$, on la
-résout pour obtenir $\Psi(x,t)$.
-
-\begin{resultat}{ESDT : équation de Schrödinger dépendante du temps}
-\[
-  \ii\hbar\,\pd{\Psi(x,t)}{t} = \Hop\,\Psi(x,t),
-  \qquad
-  \Hop = -\frac{\hbar^2}{2m}\,\pdd{}{x} + V(x,t).
+  \sum_i\ket{e_i}\bra{e_i}=\mathrm{Id}.
 \]
 \end{resultat}
 
-Si l'énergie potentielle ne dépend pas du temps, $V(x,t)=V(x)$, la force
-$F=-\dd V/\dd x$ (dérivée ordinaire) est constante dans le temps et l'énergie se
-conserve. L'équation se résout alors par séparation des variables.
-
-\subsubsection{Séparation des variables}
-
-On cherche des solutions produit d'une fonction de $x$ seul et d'une fonction de $t$
-seul :
-\[
-  \Psi(x,t)=\psi(x)\,\varphi(t).
-\]
-Dans l'ESDT, les dérivées partielles deviennent des dérivées ordinaires :
-\[
-  \ii\hbar\,\psi(x)\,\frac{\dd\varphi}{\dd t}
-  = \varphi(t)\left[-\frac{\hbar^2}{2m}\,\frac{\dd^2\psi}{\dd x^2}+V(x)\,\psi(x)\right].
-\]
-On divise par $\psi(x)\,\varphi(t)$ :
-\[
-  \underbrace{\ii\hbar\,\frac{1}{\varphi}\,\frac{\dd\varphi}{\dd t}}_{\text{ne dépend que de }t}
-  \;=\;
-  \underbrace{\frac{1}{\psi}\left[-\frac{\hbar^2}{2m}\,\frac{\dd^2\psi}{\dd x^2}+V(x)\,\psi\right]}_{\text{ne dépend que de }x}.
-\]
-Les deux membres dépendent de variables indépendantes et sont pourtant égaux pour
-tout $(x,t)$ : ils sont égaux à une même constante, notée $E$. On obtient deux
-équations.
-
-\paragraph{Partie temporelle.} $\ii\hbar\,\dd\varphi/\dd t=E\,\varphi$ donne
-\[
-  \varphi(t)=\ee^{-\ii Et/\hbar}=\ee^{-\ii\omega t},
-  \qquad \omega=\frac{E}{\hbar},
-\]
-la constante multiplicative étant absorbée dans $\psi$. On retrouve $E=\hbar\omega$ :
-la constante $E$ est bien l'énergie de la particule.
-
-\paragraph{Partie spatiale.} C'est l'ESIT ci-dessous.
-
-\begin{resultat}{ESIT : équation de Schrödinger indépendante du temps}
-\[
-  -\frac{\hbar^2}{2m}\,\frac{\dd^2\psi(x)}{\dd x^2}+V(x)\,\psi(x)=E\,\psi(x)
-  \qquad\Longleftrightarrow\qquad
-  \Hop\,\psi(x)=E\,\psi(x).
-\]
-C'est un \emph{problème aux valeurs propres} : $E$ est une valeur propre de $\Hop$
-(énergie permise) et $\psi$ la fonction propre associée. Chaque solution
-$(E_n,\psi_n)$ donne un \emph{état stationnaire}
-\[
-  \Psi_n(x,t)=\psi_n(x)\,\ee^{-\ii E_nt/\hbar}.
-\]
-\end{resultat}
-
-Dans un état stationnaire, $|\Psi_n(x,t)|^2=|\psi_n(x)|^2$ ne dépend pas du temps :
-le facteur temporel est une phase globale, non observable. Les conditions physiques
-($\psi$ continue et normalisable) ne sont satisfaites que pour certaines valeurs de
-$E$ : c'est l'origine de la quantification de l'énergie, illustrée ci-dessous.
-
-Comme l'ESDT est linéaire (hypothèse~(c) de la section~\ref{sec:construction}), toute
-superposition $\Psi=\sum_n c_n\,\Psi_n$ est aussi solution, normalisée si
-$\sum_n|c_n|^2=1$ et si les $\psi_n$ sont orthonormées. Une telle superposition
-n'est en général pas stationnaire : $|\Psi|^2$ contient des termes croisés en
-$\ee^{\ii(E_m-E_n)t/\hbar}$.
-
-\subsubsection{Exemple : puits de potentiel infini}
-
-Une particule de masse $m$ (un électron par exemple) est enfermée entre deux parois
-impénétrables, en $x=0$ et $x=a$ :
-\[
-  V(x)=
-  \begin{cases}
-    0 & \text{si } 0<x<a,\\
-    +\infty & \text{ailleurs.}
-  \end{cases}
-\]
-La particule ne peut pas se trouver hors du puits : $\psi=0$ pour $x\le0$ et
-$x\ge a$. La fonction $\psi$ est continue (mais pas sa dérivée, à cause du saut
-infini de $V$), d'où les conditions aux limites
-\[
-  \psi(0)=\psi(a)=0 .
-\]
-
-\paragraph{Opérateur hamiltonien.} Dans le puits $V=0$, donc $\Hop$ se réduit à
-l'opérateur énergie cinétique :
-\[
-  \Hop=\hat E_c=-\frac{\hbar^2}{2m}\,\frac{\dd^2}{\dd x^2}\qquad(0<x<a).
-\]
-
-\paragraph{Résolution de l'ESIT.} Avec $V=0$, l'ESIT s'écrit
-$\psi''=-k^2\psi$ avec $k=\sqrt{2mE}/\hbar$. On prend $E>0$ : pour $E\le0$, la seule
-solution vérifiant $\psi(0)=\psi(a)=0$ est $\psi\equiv0$. La solution générale est
-\[
-  \psi(x)=A\sin(kx)+B\cos(kx).
-\]
-\begin{itemize}[nosep]
-  \item $\psi(0)=0$ donne $B=0$ ;
-  \item $\psi(a)=A\sin(ka)=0$ avec $A\neq0$ (sinon $\psi\equiv0$ : pas de
-        particule) donne $ka=n\pi$, soit
-        $k_n=\dfrac{n\pi}{a}$ avec $n=1,2,3,\dots$
-        ($n=0$ donne $\psi\equiv0$, et $n<0$ redonne les mêmes états au signe près).
-\end{itemize}
-Cela revient à $\lambda_n=2\pi/k_n=2a/n$, soit $a=n\,\lambda_n/2$ : $n$ demi-longueurs
-d'onde tiennent dans le puits, comme pour une onde stationnaire.
-
-\begin{resultat}{Énergie quantifiée}
-\[
-  E_n=\frac{\hbar^2k_n^2}{2m}=\frac{n^2\pi^2\hbar^2}{2ma^2}=\frac{n^2h^2}{8ma^2}=n^2E_1,
-  \qquad n=1,2,3,\dots
-\]
-\textbf{Énergie fondamentale} (niveau $n=1$, le plus bas) :
-$\displaystyle E_1=\frac{\pi^2\hbar^2}{2ma^2}=\frac{h^2}{8ma^2}>0$.
-\end{resultat}
-
-\begin{remarque}[Lecture du résultat]
-\begin{itemize}[nosep]
-  \item Les énergies sont \emph{discrètes} : $E_{n+1}-E_n=(2n+1)E_1$. Comme
-        $E_n\propto1/a^2$, plus le puits est étroit, plus les énergies sont grandes.
-  \item $E_1\neq0$ : une particule confinée ne peut pas être au repos (énergie de
-        point zéro), conséquence du principe d'incertitude de Heisenberg.
-  \item Ordre de grandeur : pour un électron avec $a=1$~nm,
-        $E_1\approx0{,}38$~eV et $E_2=4E_1\approx1{,}5$~eV. Pour $a=1$~cm,
-        $E_1\approx4\times10^{-15}$~eV : la quantification est indétectable.
-\end{itemize}
-\end{remarque}
-
-\paragraph{Normalisation.} Le module de $\ee^{-\ii E_nt/\hbar}$ vaut 1, donc
-$|\Psi_n|^2=A^2\sin^2(n\pi x/a)$ et la condition de Born impose
-\[
-  \int_0^a|\Psi_n|^2\,\dd x
-  = A^2\int_0^a\frac{1-\cos\!\big(2n\pi x/a\big)}{2}\,\dd x
-  = A^2\,\frac{a}{2}=1
-  \quad\Longrightarrow\quad A=\sqrt{\frac{2}{a}},
-\]
-car l'intégrale du cosinus sur $n$ périodes est nulle.
-
-\begin{resultat}{États stationnaires du puits infini}
-\[
-  \Psi_n(x,t)=\sqrt{\frac{2}{a}}\;\sin\!\Big(\frac{n\pi x}{a}\Big)\,\ee^{-\ii E_nt/\hbar}
-  \quad(0<x<a),
-  \qquad
-  |\Psi_n|^2=\frac{2}{a}\,\sin^2\!\Big(\frac{n\pi x}{a}\Big).
-\]
-$\psi_n$ possède $n-1$ nœuds à l'intérieur du puits. Pour $n=1$ (état fondamental,
-d'énergie $E_1$) :
-\[
-  \Psi_1(x,t)=\sqrt{\frac{2}{a}}\;\sin\!\Big(\frac{\pi x}{a}\Big)\,\ee^{-\ii E_1t/\hbar}.
-\]
-\end{resultat}
+Le vecteur $\ket{a}$ est un objet géométrique : ses composantes $c_i=\braket{e_i}{a}$ sont ses
+projections sur les axes de la base, et elles changent quand on change de base. La
+figure~\ref{fig:vecteur} l'illustre avec des amplitudes réelles, pour pouvoir dessiner le vecteur
+dans le plan.
 
 \begin{figure}[!ht]
 \centering
-\begin{tikzpicture}[>=Stealth, x=1cm, y=0.95cm]
-  % ---------- (a) niveaux d'énergie et fonctions propres ----------
+\begin{tikzpicture}[>=Stealth, font=\small]
+  \def\R{2.4}
+  % (a) base Z
   \begin{scope}
-    \node[above, font=\small] at (2,5.0) {(a) niveaux $E_n$ et fonctions propres $\psi_n$};
-    \draw[->] (-2.5,0) -- (-2.5,4.8) node[above] {$E$};
-    \draw[very thick, insarouge] (0,4.4) -- (0,0) -- (4,0) -- (4,4.4);
-    \node[insarouge, right, font=\small] at (4.05,3.9) {$V=+\infty$};
-    \node[insarouge, below, font=\small] at (2,0) {$V=0$};
-    \node[below, font=\small] at (0,-0.35) {$0$};
-    \node[below, font=\small] at (4,-0.35) {$a$};
-    \node[left, font=\small] at (-0.1,0.4) {$E_1$};
-    \node[left, font=\small] at (-0.1,1.6) {$E_2=4E_1$};
-    \node[left, font=\small] at (-0.1,3.6) {$E_3=9E_1$};
-    \foreach \n/\lev in {1/0.4, 2/1.6, 3/3.6} {
-      \draw[dashed, insagris!70] (0,\lev) -- (4,\lev);
-      \draw[thick, insagris, domain=0:1, samples=80]
-        plot ({4*\x}, {\lev+0.5*sin(\n*180*\x)});
-    }
+    \coordinate (psi) at ({\R/sqrt(5)},{2*\R/sqrt(5)});
+    \draw[insagris!45] (0,0) circle (\R);
+    \draw[->] (-\R-0.35,0) -- (\R+0.5,0) node[right] {$\ket{0}$};
+    \draw[->] (0,-\R-0.35) -- (0,\R+0.5) node[above] {$\ket{1}$};
+    \draw[dotted, thick] (psi) -- ({\R/sqrt(5)},0);
+    \draw[dotted, thick] (psi) -- (0,{2*\R/sqrt(5)});
+    \draw[->, very thick, insarouge] (0,0) -- (psi) node[above right] {$\ket{\Psi}$};
+    \node[below] at ({\R/sqrt(5)},0) {$\alpha=\frac{1}{\sqrt5}$};
+    \node[left] at (0,{2*\R/sqrt(5)}) {$\beta=\frac{2}{\sqrt5}$};
+    \node[font=\small\bfseries] at (0,-\R-0.85) {(a) base $Z$ : $\{\ket{0},\ket{1}\}$};
   \end{scope}
-  % ---------- (b) densités de probabilité ----------
-  \begin{scope}[xshift=7cm]
-    \node[above, font=\small] at (2,5.0) {(b) densités de probabilité $|\psi_n|^2$};
-    \draw[->] (-0.3,0) -- (4.6,0) node[right] {$x$};
-    \draw[thick, insarouge] (0,0) -- (0,4.4) (4,0) -- (4,4.4);
-    \node[below, font=\small] at (0,0) {$0$};
-    \node[below, font=\small] at (4,0) {$a$};
-    \node[below, font=\small] at (2,0) {$a/2$};
-    \foreach \n/\lev in {1/0.4, 2/1.6, 3/3.6} {
-      \draw[dashed, insagris!70] (0,\lev) -- (4,\lev);
-      \fill[insarouge!20] (0,\lev) -- plot[domain=0:1, samples=80]
-        ({4*\x}, {\lev+0.6*(sin(\n*180*\x))^2}) -- (4,\lev) -- cycle;
-      \draw[thick, insarouge, domain=0:1, samples=80]
-        plot ({4*\x}, {\lev+0.6*(sin(\n*180*\x))^2});
-    }
-    \draw[dotted, thick, insagris] (2,0) -- (2,4.4);
-    \node[above, font=\small] at (2,4.4) {$\langle\hat x\rangle=a/2$};
+  % (b) base X : |+> a 45 degres, |-> a -45 degres
+  \begin{scope}[xshift=8.4cm]
+    \coordinate (psi) at ({\R/sqrt(5)},{2*\R/sqrt(5)});
+    \draw[insagris!45] (0,0) circle (\R);
+    \draw[insagris, dashed] (0,0) -- (135:{\R+0.35});
+    \draw[insagris, dashed] (0,0) -- (225:{\R+0.35});
+    \draw[->] (0,0) -- (45:{\R+0.5}) node[above right] {$\ket{+}$};
+    \draw[->] (0,0) -- (-45:{\R+0.5}) node[below right] {$\ket{-}$};
+    \coordinate (pp) at ({3*\R/sqrt(20)},{3*\R/sqrt(20)});
+    \coordinate (pm) at ({-\R/sqrt(20)},{\R/sqrt(20)});
+    \draw[dotted, thick] (psi) -- (pp);
+    \draw[dotted, thick] (psi) -- (pm);
+    \draw[->, very thick, insarouge] (0,0) -- (psi) node[above left] {$\ket{\Psi}$};
+    \node[right=3pt] at (pp) {$\braket{+}{\Psi}=\frac{3}{\sqrt{10}}$};
+    \node[above left=1pt, fill=white, inner sep=1pt] at (pm) {$\braket{-}{\Psi}=-\frac{1}{\sqrt{10}}$};
+    \node[font=\small\bfseries] at (0,-\R-0.85) {(b) base $X$ : $\{\ket{+},\ket{-}\}$};
   \end{scope}
 \end{tikzpicture}
-\caption{Puits de potentiel infini de largeur $a$. (a) Niveaux d'énergie
-$E_n=n^2E_1$ et fonctions propres $\psi_n$. (b) Densités de probabilité
-$|\psi_n|^2$, symétriques par rapport à $a/2$.}
+\caption{Le vecteur $\ket{\Psi}=\frac{1}{\sqrt5}\ket{0}+\frac{2}{\sqrt5}\ket{1}$ dans deux bases
+orthonormées. Le cercle représente la norme $\braket{\Psi}{\Psi}=1$ ; les pointillés sont les
+projections orthogonales sur les axes. (a) Dans la base $Z$, $\alpha=\braket{0}{\Psi}$ et
+$\beta=\braket{1}{\Psi}$. (b) Le même vecteur dans la base $X$, avec
+$\ket{\pm}=\frac{1}{\sqrt2}(\ket{0}\pm\ket{1})$ (section~\ref{sec:qubit}) : les composantes
+changent, le vecteur reste le même. La composante sur $\ket{-}$ est négative : elle est portée
+par le prolongement de l'axe.}
+\label{fig:vecteur}
 \end{figure}
 
-\subsubsection{Position moyenne dans le puits}
-
-D'après la définition de la valeur moyenne, avec $\hat x=x\times$ :
-\[
-  \langle\hat x\rangle
-  = \int_0^a\Psi_n^*(x,t)\;x\;\Psi_n(x,t)\,\dd x
-  = \frac{2}{a}\int_0^a x\,\sin^2\!\Big(\frac{n\pi x}{a}\Big)\dd x
-  = \frac{1}{a}\int_0^a x\Big(1-\cos\frac{2n\pi x}{a}\Big)\dd x .
-\]
-Le premier terme vaut $\dfrac1a\cdot\dfrac{a^2}{2}=\dfrac a2$. Pour le second, une
-intégration par parties donne
-\[
-  \int_0^a x\cos\frac{2n\pi x}{a}\,\dd x
-  =\Big[\frac{a\,x}{2n\pi}\sin\frac{2n\pi x}{a}\Big]_0^a
-   +\frac{a^2}{4n^2\pi^2}\Big[\cos\frac{2n\pi x}{a}\Big]_0^a = 0,
-\]
-puisque $\sin(2n\pi)=0$ et $\cos(2n\pi)=1$.
-
-\begin{resultat}{Position moyenne}
-\[
-  \langle\hat x\rangle=\frac{a}{2}\qquad\text{pour tout }n\text{ et à tout instant.}
-\]
-\end{resultat}
-
-Les phases $\ee^{\pm\ii E_nt/\hbar}$ se compensent dans $\Psi^*\Psi$. Le résultat se
-voit d'ailleurs sans calcul, car $|\Psi_n|^2$ est symétrique par rapport à $a/2$.
-
-\begin{remarque}[Moyenne et position la plus probable]
-Pour $n=2$, la densité de probabilité s'annule en $x=a/2$ alors que
-$\langle\hat x\rangle=a/2$ : la valeur moyenne n'est pas la position la plus
-probable, et la particule n'est jamais trouvée là.
-\end{remarque}
-
-\paragraph{Incertitude sur l'énergie.} Comme $\Hop\Psi_n=E_n\Psi_n$, on a aussi
-$\Hop^{2}\Psi_n=E_n^2\Psi_n$, donc $\langle\Hop\rangle=E_n$, $\langle\Hop^{2}\rangle=E_n^2$
-et
-\[
-  \sigma_E=\sqrt{\langle\Hop^{2}\rangle-\langle\Hop\rangle^2}=\sqrt{E_n^2-E_n^2}=0 .
-\]
-Dans un état propre (stationnaire) l'énergie est parfaitement déterminée, alors que la
-position ne l'est pas. Que se passe-t-il si la particule n'est pas dans un état propre ?
-C'est l'objet de la section~\ref{sec:superposition}.
-
-% ---------------------------------------------------------------------
-\subsection{Bilan : opérateurs et puits infini}
-% ---------------------------------------------------------------------
+\paragraph{Dimension finie et dimension infinie.} Le même formalisme décrit un qubit
+(dimension~2) et une particule dans un puits (dimension infinie). Le tableau les compare.
 
 \begin{center}
-\small\renewcommand{\arraystretch}{1.25}
-\begin{tabular}{@{}ll@{}}
+\renewcommand{\arraystretch}{1.55}
+\begin{tabular}{@{}lll@{}}
 \toprule
-\textbf{Notion} & \textbf{Formule} \\
+ & \textbf{Dimension finie : $\mathbb{C}^2$} & \textbf{Dimension infinie : $L^2([0,a])$} \\
 \midrule
-Bra-ket & $\braket{a}{b}=a_1^*b_1+a_2^*b_2$, \quad
-          $\braket{\Psi}{\Psi}=\displaystyle\int\Psi^*\Psi\,\dd x=1$ \\
-Opérateurs & $\hat p=-\ii\hbar\,\partial_x$, \quad
-             $\hat E_c=\dfrac{\hat p^{\,2}}{2m}=-\dfrac{\hbar^2}{2m}\,\partial_x^2$, \quad
-             $\Hop=\hat E_c+V(x)$ \\
-Valeur moyenne, incertitude & $\langle\hat O\rangle=\displaystyle\int\Psi^*\,\hat O\,\Psi\,\dd x$,
-          \quad $\sigma_O=\sqrt{\langle\hat O^{\,2}\rangle-\langle\hat O\rangle^2}$ \\
-ESDT & $\ii\hbar\,\partial_t\Psi=\Hop\,\Psi$ \\
-Séparation ($V=V(x)$) & $\Psi=\psi(x)\,\ee^{-\ii Et/\hbar}$, \quad ESIT : $\Hop\,\psi=E\,\psi$ \\
-Puits infini & $\psi_n=\sqrt{2/a}\,\sin(n\pi x/a)$, \quad
-               $E_n=\dfrac{n^2\pi^2\hbar^2}{2ma^2}$, \quad $E_1=\dfrac{\pi^2\hbar^2}{2ma^2}$ \\
-Moyennes dans $\Psi_n$ & $\langle\hat x\rangle=a/2$, \quad $\langle\Hop\rangle=E_n$, \quad $\sigma_E=0$ \\
+Vecteur & $\ket{a}=(a_1,a_2)^{\mathsf{T}}$ & $\ket{\Psi}\leftrightarrow\Psi(x)$ \\
+Produit scalaire & $\braket{a}{b}=\sum_i a_i^*\,b_i$
+  & $\braket{\varphi}{\psi}=\displaystyle\int_0^a\varphi^*\psi\,\dd x$ \\
+Base orthonormée & $\ket{0},\ \ket{1}$ & $\ket{n}\leftrightarrow\psi_n(x)=\sqrt{\dfrac2a}\sin\dfrac{n\pi x}{a}$ \\
+Coefficients & $c_i=\braket{i}{a}$ & $c_n=\braket{n}{\Psi}=\displaystyle\int_0^a\psi_n^*\,\Psi\,\dd x$ \\
+Exemple & qubit & particule dans le puits infini \\
 \bottomrule
 \end{tabular}
 \end{center}
+
+L'espace $L^2$ est celui des fonctions de carré sommable, $\int|\Psi|^2\dd x<\infty$ : la
+condition de normalisation de Born s'écrit $\braket{\Psi}{\Psi}=1$. Les états stationnaires du
+puits infini forment une base orthonormée (section~\ref{sec:solutions}), et la superposition
+$\Psi=\sum_n c_n\psi_n$ de la section~\ref{sec:superposition} est la décomposition de $\ket{\Psi}$
+sur cette base, avec $P(E_n)=|c_n|^2$.
+
+\begin{remarque}[Cauchy--Schwarz et probabilités]
+Pour deux vecteurs quelconques, $|\braket{a}{b}|^2\leq\braket{a}{a}\,\braket{b}{b}$. Pour deux
+vecteurs unitaires, $|\braket{a}{b}|^2$ est donc un nombre entre $0$ et $1$, égal à $1$ seulement si
+$\ket{a}$ et $\ket{b}$ sont proportionnels : c'est la probabilité de trouver le système dans
+l'état $\ket{b}$ s'il est dans l'état $\ket{a}$ (section~\ref{sec:projecteurs}).
+\end{remarque}
+
+% ---------------------------------------------------------------------
+\subsection{Le qubit}\label{sec:qubit}
+% ---------------------------------------------------------------------
+
+Reprenons l'exemple de la section~\ref{sec:superposition} en ne gardant que deux états du puits,
+notés comme un bit quantique (\gls{qubit}) :
+$\ket{0}$ pour $\Psi_1$ et $\ket{1}$ pour $\Psi_2$. L'état de l'exemple s'écrit
+\[
+  \ket{\Psi}=\frac{1}{\sqrt2}\,\ket{0}+\frac{1}{\sqrt2}\,\ket{1}.
+\]
+
+\begin{center}
+\renewcommand{\arraystretch}{1.85}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Fonctions d'onde} & \textbf{Notation de Dirac} \\
+\midrule
+$\Psi=c_1\Psi_1+c_2\Psi_2$ & $\ket{\Psi}=c_1\ket{0}+c_2\ket{1}$ \\
+$\displaystyle\int\Psi_i^*\Psi_j\,\dd x=\delta_{ij}$ & $\braket{i}{j}=\delta_{ij}$ \\
+$\displaystyle\int\Psi^*\Psi\,\dd x=\sum_i|c_i|^2=1$ & $\braket{\Psi}{\Psi}=1$ \\
+$P(E_i)=|c_i|^2$ & $P(i)=|c_i|^2=|\braket{i}{\Psi}|^2$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Probabilité.} La probabilité que $\ket{\Psi}$ soit mesuré dans l'état
+$\ket{0}$ est
+\[
+  P(\ket{\Psi}\to\ket{0})=P(0)=\left|\frac{1}{\sqrt2}\right|^2=\frac12 .
+\]
+
+\paragraph{Normalisation.}
+\[
+  \braket{\Psi}{\Psi}
+  =\Big(\tfrac{1}{\sqrt2}\bra{0}+\tfrac{1}{\sqrt2}\bra{1}\Big)
+   \Big(\tfrac{1}{\sqrt2}\ket{0}+\tfrac{1}{\sqrt2}\ket{1}\Big)
+  =\tfrac12\braket{0}{0}+\tfrac12\braket{0}{1}+\tfrac12\braket{1}{0}+\tfrac12\braket{1}{1}
+  =\tfrac12\,(1+0+0+1)=1 .
+\]
+
+\begin{definition}{Base de calcul (base $Z$)}
+$\{\ket{0},\ket{1}\}$ est une base \emph{orthonormée} de $\mathcal{H}^2=\mathbb{C}^2$ :
+\[
+  \ket{0}=\begin{pmatrix}1\\ 0\end{pmatrix},\qquad
+  \ket{1}=\begin{pmatrix}0\\ 1\end{pmatrix},\qquad
+  \braket{0}{0}=\begin{pmatrix}1 & 0\end{pmatrix}\begin{pmatrix}1\\ 0\end{pmatrix}=1,\qquad
+  \braket{0}{1}=\begin{pmatrix}1 & 0\end{pmatrix}\begin{pmatrix}0\\ 1\end{pmatrix}=0 .
+\]
+Tout état s'écrit $\ket{\Psi}=\alpha\ket{0}+\beta\ket{1}=\begin{pmatrix}\alpha\\ \beta\end{pmatrix}$
+avec $|\alpha|^2+|\beta|^2=1$ ; alors $P(0)=|\alpha|^2$ et $P(1)=|\beta|^2$.
+\end{definition}
+
+\paragraph{Exemple.} Soit $\ket{\Psi}=\dfrac{1}{\sqrt5}\,\ket{0}+\dfrac{2}{\sqrt5}\,\ket{1}$
+dans $\mathcal{H}^2$.
+\begin{enumerate}[nosep]
+  \item \emph{$\ket{\Psi}$ est-il normalisé ?}
+        $\braket{\Psi}{\Psi}=\dfrac15+\dfrac45=1$ : oui.
+  \item $P(0)=\left|\dfrac{1}{\sqrt5}\right|^2=\dfrac15$.
+  \item $P(1)=\left|\dfrac{2}{\sqrt5}\right|^2=\dfrac45$.
+\end{enumerate}
+
+\begin{remarque}[État non normalisé]
+Si $\braket{\Psi}{\Psi}\neq1$, on divise l'état par sa norme $\sqrt{\braket{\Psi}{\Psi}}$.
+Par exemple $\ket{0}+2\ket{1}$ a pour norme au carré $1+4=5$ : l'état normalisé est
+$\frac{1}{\sqrt5}\ket{0}+\frac{2}{\sqrt5}\ket{1}$, celui de l'exemple.
+\end{remarque}
+
+\paragraph{Autres bases orthonormées.} La base de calcul n'est pas la seule base de $\mathbb{C}^2$.
+Les états
+\[
+  \ket{\pm}=\frac{1}{\sqrt2}\big(\ket{0}\pm\ket{1}\big)\quad(\text{base }X),\qquad
+  \ket{{\pm}\ii}=\frac{1}{\sqrt2}\big(\ket{0}\pm\ii\ket{1}\big)\quad(\text{base }Y)
+\]
+forment deux autres bases orthonormées. Par exemple $\braket{+}{-}=\frac12(1-1)=0$ et, en
+conjuguant le bra, $\braket{{+}\ii}{{-}\ii}=\frac12\big(1+(-\ii)(-\ii)\big)=\frac12(1-1)=0$.
+Réciproquement $\ket{0}=\frac{1}{\sqrt2}(\ket{+}+\ket{-})$ et
+$\ket{1}=\frac{1}{\sqrt2}(\ket{+}-\ket{-})$ : un état de la base $Z$ est une superposition d'états
+de la base $X$, et inversement. La sphère de Bloch (section~\ref{sec:bloch}) place ces six états sur
+trois axes.
+
+% ---------------------------------------------------------------------
+\subsection{Projecteurs et mesure}\label{sec:projecteurs}
+% ---------------------------------------------------------------------
+
+Le produit d'un ket par un bra est un opérateur (section~\ref{sec:dirac}). Avec les
+états de la base de calcul, on obtient deux \emph{projecteurs}.
+
+\begin{definition}{Projecteurs sur $\ket{0}$ et sur $\ket{1}$}
+\[
+  \hat P_0=\ket{0}\bra{0}=\begin{pmatrix}1\\ 0\end{pmatrix}\begin{pmatrix}1 & 0\end{pmatrix}
+  =\begin{pmatrix}1 & 0\\ 0 & 0\end{pmatrix},
+  \qquad
+  \hat P_1=\ket{1}\bra{1}=\begin{pmatrix}0\\ 1\end{pmatrix}\begin{pmatrix}0 & 1\end{pmatrix}
+  =\begin{pmatrix}0 & 0\\ 0 & 1\end{pmatrix}.
+\]
+Ils vérifient
+\[
+  \hat P_i^{\,2}=\hat P_i,
+  \qquad
+  \hat P_i^{\,\dagger}=\hat P_i,
+  \qquad
+  \hat P_0+\hat P_1=\begin{pmatrix}1 & 0\\ 0 & 1\end{pmatrix}=\mathrm{Id}
+  \quad(\text{complétude}).
+\]
+\end{definition}
+
+En effet $\hat P_0^{\,2}=\ket{0}\braket{0}{0}\bra{0}=\ket{0}\bra{0}$ car
+$\braket{0}{0}=1$, et $\hat P_0^{\,\dagger}=(\ket{0}\bra{0})^\dagger=\ket{0}\bra{0}$ : un opérateur
+hermitien qui égale son carré est un projecteur. Appliqué à $\ket{\Psi}=\alpha\ket{0}+\beta\ket{1}$, $\hat P_0$
+ne garde que la composante sur $\ket{0}$ : $\hat P_0\ket{\Psi}=\alpha\ket{0}$.
+
+\begin{resultat}{Postulat 2 : probabilité de mesure (règle de Born)}
+\[
+  P(\ket{\Psi}\to\ket{i})=\bra{\Psi}\hat P_i\ket{\Psi}
+  =\braket{\Psi}{i}\braket{i}{\Psi}=|\braket{i}{\Psi}|^2 .
+\]
+La complétude donne bien $\sum_i P(i)=\bra{\Psi}\big(\sum_i\hat P_i\big)\ket{\Psi}=\braket{\Psi}{\Psi}=1$.
+Après la mesure, l'état du système est $\ket{i}$ (\emph{effondrement}, figure~\ref{fig:mesure}).
+\end{resultat}
+
+C'est la règle de Born \parencite{born1926} de la section~\ref{sec:born}, écrite pour un système
+à états discrets.
+
+\paragraph{Exemple.} Pour $\ket{\Psi}=\dfrac{1}{\sqrt5}\ket{0}+\dfrac{2}{\sqrt5}\ket{1}
+=\begin{pmatrix}1/\sqrt5\\ 2/\sqrt5\end{pmatrix}$ :
+\[
+  \hat P_0\ket{\Psi}=\begin{pmatrix}1 & 0\\ 0 & 0\end{pmatrix}
+  \begin{pmatrix}1/\sqrt5\\ 2/\sqrt5\end{pmatrix}
+  =\begin{pmatrix}1/\sqrt5\\ 0\end{pmatrix},
+  \qquad
+  P(\ket{\Psi}\to\ket{0})=\bra{\Psi}\hat P_0\ket{\Psi}
+  =\begin{pmatrix}\frac{1}{\sqrt5} & \frac{2}{\sqrt5}\end{pmatrix}
+   \begin{pmatrix}\frac{1}{\sqrt5}\\ 0\end{pmatrix}=\frac15 ,
+\]
+\[
+  P(\ket{\Psi}\to\ket{1})=\bra{\Psi}\hat P_1\ket{\Psi}
+  =\begin{pmatrix}\frac{1}{\sqrt5} & \frac{2}{\sqrt5}\end{pmatrix}
+   \begin{pmatrix}0 & 0\\ 0 & 1\end{pmatrix}
+   \begin{pmatrix}\frac{1}{\sqrt5}\\ \frac{2}{\sqrt5}\end{pmatrix}=\frac45 .
+\]
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, font=\small]
+  \node[anchor=east] at (0,0) {$\ket{\Psi}$};
+  \draw[thick] (0.1,0) -- (1.2,0);
+  \pic at (1.5,0) {mesure};
+  \draw[thick] (1.8,0) -- (2.7,0);
+  \draw[->, thick, insarouge] (2.7,0) -- (4.1,1.0);
+  \draw[->, thick, insarouge] (2.7,0) -- (4.1,-1.0);
+  \node[anchor=west, align=left] at (4.2,1.0)
+    {résultat $0$, probabilité $1/5$ :\\ l'état devient $\ket{0}$};
+  \node[anchor=west, align=left] at (4.2,-1.0)
+    {résultat $1$, probabilité $4/5$ :\\ l'état devient $\ket{1}$};
+  \node[insagris, font=\footnotesize\itshape] at (1.5,-0.75) {base $Z$};
+\end{tikzpicture}
+\caption{Mesure d'un qubit $\ket{\Psi}=\frac{1}{\sqrt5}\ket{0}+\frac{2}{\sqrt5}\ket{1}$ dans la
+base $Z$. Le résultat est aléatoire, avec les probabilités données par la règle de Born, et l'état
+s'effondre sur l'état propre correspondant. Le compteur est le symbole de la mesure dans les
+circuits quantiques (chapitre~\ref{chap:portes}).}
+\label{fig:mesure}
+\end{figure}
+
+\paragraph{Mesure dans une autre base.} La règle de Born vaut pour toute base orthonormée. Pour la base
+$X$, les projecteurs sont $\hat P_\pm=\ket{\pm}\bra{\pm}$ et $P(\pm)=|\braket{\pm}{\Psi}|^2$. Pour
+$\ket{\Psi}=\frac{1}{\sqrt5}\ket{0}+\frac{2}{\sqrt5}\ket{1}$,
+\[
+  \braket{+}{\Psi}=\frac{1}{\sqrt2}\Big(\frac{1}{\sqrt5}+\frac{2}{\sqrt5}\Big)=\frac{3}{\sqrt{10}},\qquad
+  \braket{-}{\Psi}=\frac{1}{\sqrt2}\Big(\frac{1}{\sqrt5}-\frac{2}{\sqrt5}\Big)=-\frac{1}{\sqrt{10}},
+\]
+donc $P(+)=\frac{9}{10}$ et $P(-)=\frac{1}{10}$ (figure~\ref{fig:vecteur}b), de somme $1$. Le même état
+donne des probabilités différentes selon la base dans laquelle on le mesure.
+
+\paragraph{Effet d'une phase relative.} Soit $\ket{\Psi'}=\dfrac{1}{\sqrt5}\ket{0}
++\dfrac{2\ii}{\sqrt5}\ket{1}$. Son bra est le \emph{conjugué} :
+$\bra{\Psi'}=\begin{pmatrix}\frac{1}{\sqrt5} & -\frac{2\ii}{\sqrt5}\end{pmatrix}$, donc
+\[
+  \braket{\Psi'}{\Psi'}=\frac15+\Big(-\frac{2\ii}{\sqrt5}\Big)\Big(\frac{2\ii}{\sqrt5}\Big)
+  =\frac15+\frac45=1 ,
+\]
+et $P(0)=1/5$, $P(1)=4/5$ comme pour $\ket{\Psi}$. Les deux états sont pourtant
+différents : le facteur $\ii$ est une phase \emph{relative} entre les deux composantes,
+que la mesure dans la base $Z$ ne voit pas (contrairement à une phase globale, jamais
+observable). La base $X$ la révèle : $\braket{\pm}{\Psi'}=(1\pm2\ii)/\sqrt{10}$, donc
+$P(+)=P(-)=\frac12$, alors que $\ket{\Psi}$ donne $(\frac{9}{10},\frac{1}{10})$
+(figure~\ref{fig:histo}).
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, font=\small]
+  \pgfmathsetmacro{\H}{1.5}
+  \foreach \xs/\pa/\pb/\va/\vb/\la/\lb/\tit in {
+      0/0.2/0.8/{$1/5$}/{$4/5$}/{$0$}/{$1$}/{(a) base $Z$ : $\ket{\Psi}$ et $\ket{\Psi'}$},
+      5.6/0.9/0.1/{$9/10$}/{$1/10$}/{$+$}/{$-$}/{(b) base $X$ : $\ket{\Psi}$},
+      11.2/0.5/0.5/{$1/2$}/{$1/2$}/{$+$}/{$-$}/{(c) base $X$ : $\ket{\Psi'}$}} {
+    \begin{scope}[xshift=\xs cm]
+      \draw[->] (-0.2,0) -- (4.0,0);
+      \draw[->] (0,0) -- (0,\H+0.45) node[above] {$P$};
+      \draw (-0.06,\H) -- (0.06,\H) node[left=3pt, font=\footnotesize] {$1$};
+      \draw[dotted, insagris] (0.06,\H) -- (3.9,\H);
+      \fill[insarouge!25] (0.6,0) rectangle (1.6,{\pa*\H});
+      \draw[insarouge, thick] (0.6,0) rectangle (1.6,{\pa*\H});
+      \fill[insarouge!25] (2.2,0) rectangle (3.2,{\pb*\H});
+      \draw[insarouge, thick] (2.2,0) rectangle (3.2,{\pb*\H});
+      \node[above=1pt, font=\footnotesize, fill=white, inner sep=1pt] at (1.1,{\pa*\H}) {\va};
+      \node[above=1pt, font=\footnotesize, fill=white, inner sep=1pt] at (2.7,{\pb*\H}) {\vb};
+      \node[below] at (1.1,0) {\la};
+      \node[below] at (2.7,0) {\lb};
+      \node[font=\small\bfseries] at (2.0,-0.95) {\tit};
+    \end{scope}
+  }
+\end{tikzpicture}
+\caption{Probabilités de mesure de $\ket{\Psi}=\frac{1}{\sqrt5}\big(\ket{0}+2\ket{1}\big)$ et de
+$\ket{\Psi'}=\frac{1}{\sqrt5}\big(\ket{0}+2\ii\ket{1}\big)$. (a) En base $Z$, les deux états donnent
+la même distribution : la phase relative $\ii$ est invisible. (b), (c) En base $X$, les distributions
+diffèrent : la mesure y révèle la phase relative.}
+\label{fig:histo}
+\end{figure}
+
+
+\clearpage
+% ---------------------------------------------------------------------
+\subsection{Récapitulatif du chapitre}\label{sec:recap2}
+% ---------------------------------------------------------------------
+
+\begin{center}
+\adjustbox{max width=\linewidth}{%
+\begin{tikzpicture}[>=Stealth, font=\footnotesize,
+    boite/.style={draw=insarouge, fill=insarouge!6, rounded corners=2pt, thick,
+                  minimum width=4.4cm, minimum height=1.5cm, align=center, inner sep=3pt},
+    lien/.style={->, very thick, insagris},
+    etiq/.style={font=\scriptsize\itshape, text=insagris, inner sep=2pt}]
+  \node[boite] (dir) at (0,0)
+    {\textbf{Notation de Dirac}\\ $\ket{a}$, \ $\bra{a}$, \ $\braket{a}{b}$\\ {\scriptsize\S\,\ref{sec:dirac}}};
+  \node[boite] (hil) at (5.9,0)
+    {\textbf{Espace de Hilbert}\\ produit scalaire, base orthonormée\\ {\scriptsize\S\,\ref{sec:hilbert}}};
+  \node[boite] (qub) at (11.8,0)
+    {\textbf{Qubit}\\ $\alpha\ket{0}+\beta\ket{1}$, \ bases $Z$, $X$, $Y$\\ {\scriptsize\S\,\ref{sec:qubit}}};
+  \node[boite] (kb) at (0,-2.5)
+    {\textbf{Ket-bra}\\ $\ket{a}\bra{b}$ : une matrice\\ {\scriptsize\S\,\ref{sec:dirac}}};
+  \node[boite] (fer) at (5.9,-2.5)
+    {\textbf{Fermeture}\\ $\sum_i\ket{e_i}\bra{e_i}=\mathrm{Id}$\\ {\scriptsize\S\,\ref{sec:hilbert}}};
+  \node[boite] (mes) at (11.8,-2.5)
+    {\textbf{Mesure (Born)}\\ $P(i)=|\braket{i}{\Psi}|^2$\\ {\scriptsize\S\,\ref{sec:projecteurs}}};
+  \draw[lien] (dir) -- (hil);
+  \draw[lien] (hil) -- (qub) node[etiq, midway, above=1pt] {$\dim=2$};
+  \draw[lien] (dir) -- (kb);
+  \draw[lien] (hil) -- (fer);
+  \draw[lien] (qub) -- (mes) node[etiq, midway, right=1pt] {mesurer};
+  \draw[lien] (kb) -- (fer) node[etiq, midway, above=1pt] {$\hat P_i$};
+  \draw[lien] (fer) -- (mes) node[etiq, midway, above=1pt] {complétude};
+\end{tikzpicture}}
+\end{center}
+
+\begin{aretenir}
+\begin{itemize}
+  \item Un ket est un vecteur colonne, le bra est son transposé \emph{conjugué}. Le bra-ket
+        $\braket{a}{b}$ est un nombre ; le ket-bra $\ket{a}\bra{b}$ est une matrice.
+  \item Un espace de Hilbert est un espace vectoriel complexe muni d'un produit scalaire, complet.
+        Sur une base orthonormée, $c_i=\braket{e_i}{a}$ et $\sum_i\ket{e_i}\bra{e_i}=\mathrm{Id}$.
+  \item Un état est un vecteur unitaire, $\braket{\Psi}{\Psi}=1$, défini à une phase globale près.
+        Une fonction d'onde est un ket de dimension infinie ($L^2$).
+  \item Un qubit est un état $\alpha\ket{0}+\beta\ket{1}$ de $\mathbb{C}^2$ avec $|\alpha|^2+|\beta|^2=1$ ;
+        les bases $Z$, $X$ et $Y$ sont trois bases orthonormées de $\mathbb{C}^2$.
+  \item Mesurer dans une base $\{\ket{i}\}$ donne $i$ avec la probabilité
+        $P(i)=\bra{\Psi}\hat P_i\ket{\Psi}=|\braket{i}{\Psi}|^2$, puis l'état devient $\ket{i}$.
+  \item La phase globale n'est jamais observable. La phase relative est invisible en base $Z$ mais
+        pas dans une autre base (figure~\ref{fig:histo}).
+\end{itemize}
+\end{aretenir}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.45}
+\begin{tabular}{@{}l l r@{}}
+\toprule
+\textbf{Notion} & \textbf{Formule} & \textbf{§} \\
+\midrule
+Bra, produit scalaire & $\bra{a}=(\ket{a})^\dagger$, \quad $\braket{a}{b}=\sum_i a_i^*b_i$,
+  \quad $\braket{b}{a}=\braket{a}{b}^*$ & \ref{sec:dirac} \\
+Ket-bra & $\ket{a}\bra{b}=(a_ib_j^*)_{ij}$ & \ref{sec:dirac} \\
+Décomposition & $\ket{a}=\sum_i c_i\ket{e_i}$, \quad $c_i=\braket{e_i}{a}$ & \ref{sec:hilbert} \\
+Fermeture & $\sum_i\ket{e_i}\bra{e_i}=\mathrm{Id}$ & \ref{sec:hilbert} \\
+Qubit & $\ket{\Psi}=\alpha\ket{0}+\beta\ket{1}$, \quad $|\alpha|^2+|\beta|^2=1$ & \ref{sec:qubit} \\
+Bases $X$ et $Y$ & $\ket{\pm}=\dfrac{\ket{0}\pm\ket{1}}{\sqrt2}$, \quad
+  $\ket{{\pm}\ii}=\dfrac{\ket{0}\pm\ii\ket{1}}{\sqrt2}$ & \ref{sec:qubit} \\
+Projecteurs & $\hat P_i=\ket{i}\bra{i}$, \quad $\hat P_i^{\,2}=\hat P_i$, \quad
+  $\sum_i\hat P_i=\mathrm{Id}$ & \ref{sec:projecteurs} \\
+Règle de Born & $P(i)=\bra{\Psi}\hat P_i\ket{\Psi}=|\braket{i}{\Psi}|^2$ & \ref{sec:projecteurs} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{savoirfaire}
+\begin{itemize}
+  \item Vérifier qu'un ket est normalisé, et le normaliser sinon.
+  \item Écrire un bra (sans oublier de conjuguer) et calculer un produit scalaire
+        (exercice~\ref{ex:orthogo}).
+  \item Décomposer un état sur une base, puis calculer les probabilités de mesure dans les bases
+        $Z$, $X$ et $Y$ (exercice~\ref{ex:baseXY}).
+  \item Distinguer deux états qui diffèrent par une phase globale de deux états qui diffèrent par
+        une phase relative.
+\end{itemize}
+\end{savoirfaire}

@@ -1,31 +1,37 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  TEMPLATE INSA CENTRE VAL DE LOIRE : main.tex
 %
-%  - Chaque partie du document est un fichier séparé (chapitre1.tex, ...)
-%    importé plus bas avec \include{...}. Ces fichiers ne contiennent ni
-%    préambule ni \begin{document} : uniquement du contenu, en commençant par
-%    \section{...} (la classe est article : une partie = une \section).
-%    Un fichier peut aussi prolonger la section précédente : il ne contient alors
-%    que des \subsection (exemple : chapitre2.tex, qui suit chapitre1.tex).
+%  - Chaque partie du document est un fichier séparé, importé plus bas avec
+%    \include{...} : pagetitre, introduction, chapitre1 ... chapitre6, conclusion.
+%    Ces fichiers ne contiennent ni préambule ni \begin{document}. Un chapitre
+%    commence par \section{...} (la classe est article : un chapitre = une \section) ;
+%    l'introduction et la conclusion sont des \section* ajoutées au sommaire.
 %  - Nouveau document : modifier le bloc « Informations du document »,
 %    ajouter ou retirer des \include, décommenter les sections utiles
-%    (résumés, introduction, bibliographie, table des illustrations,
-%    glossaire, annexes).
-%  - Compilation : pdflatex main (2 fois).
-%    Avec bibliographie : pdflatex, biber main, pdflatex, pdflatex.
+%    (résumés, table des illustrations, annexes).
+%  - Compilation : pdflatex main, biber main, pdflatex main, pdflatex main.
+%    (deux passes de pdflatex au minimum : sommaire, renvois, page de titre TikZ)
 %  - Couleurs de la charte : insarouge (principale) et insagris (secondaire),
 %    relevées sur le logo INSA. À utiliser dans les chapitres (figures, tableaux).
+%  - Glossaire : entrées dans glossaire.tex, appel \gls{qubit} dans le texte.
+%    Bibliographie : références dans sources.bib, appel \parencite{cle}.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \documentclass[10pt]{article}
 
 %%%%% Informations du document (à modifier pour chaque document) %%%%%
 \newcommand{\doctitre}{Informatique quantique}
 \newcommand{\docsoustitre}{Notes de cours -- 4A FISE SF}
+\newcommand{\doctagline}{De l'onde de Schr\"odinger au circuit quantique}
 \newcommand{\docauteur}{Niels LOPEZ}
+\newcommand{\docprof}{M.~Adell}
+\newcommand{\docecole}{INSA Centre Val de Loire}
 \newcommand{\docdate}{\today}
-% Nombre de pages de garde importées en PDF : le logo n'apparaît qu'après elles (0 = sur toutes les pages)
+% Nombre de pages de garde au début du document : la page de titre (pagetitre.tex) ou des pages
+% importées en PDF (\includepdf). Elles sont comptées dans la numérotation (le numéro affiché est
+% celui de la page du PDF, sans décalage) mais n'ont ni en-tête ni numéro : le logo n'apparaît
+% qu'après elles. 1 = la page de titre seule ; 0 = aucune page de garde.
 \newcounter{pagesdegarde}
-\setcounter{pagesdegarde}{0}
+\setcounter{pagesdegarde}{1}
 
 %%%%% Package de base %%%%%
 \usepackage{graphicx} % pour insérer des images
@@ -55,6 +61,10 @@
 \usepackage{csquotes}
 \usepackage[backend=biber,style=apa]{biblatex} % pour la biblio
 \addbibresource{sources.bib} % fichier contenant les références
+% autorise les coupures de ligne dans les URL et les DOI de la bibliographie
+\setcounter{biburlnumpenalty}{100}
+\setcounter{biburlucpenalty}{100}
+\setcounter{biburllcpenalty}{100}
 
 %%%%% Pour les lignes de code %%%%%
 \usepackage{listings}
@@ -112,10 +122,25 @@
 \usepackage{booktabs}            % tableau plus soigné (optionnel, sinon \hline suffit)
 
 \usepackage{tikz}
-\usetikzlibrary{positioning, arrows.meta, fit, backgrounds, calc, shapes.geometric, babel} % pour les graphs
+\usetikzlibrary{positioning, arrows.meta, fit, backgrounds, calc, shapes.geometric, babel,
+                decorations.pathmorphing, decorations.pathreplacing, patterns} % pour les graphs
 \usepackage{adjustbox}
 
-%%%%% Encadrés (définitions, résultats, remarques) %%%%%
+%%%%% Symboles de circuits quantiques (utilisés dans tous les chapitres) %%%%%
+\tikzset{
+  ctl/.pic   = {\fill[insarouge] (0,0) circle (2.6pt);},                       % contrôle
+  cible/.pic = {\draw[insarouge, thick, fill=white] (0,0) circle (0.28);       % cible (NOT)
+                \draw[insarouge, thick] (-0.28,0) -- (0.28,0);
+                \draw[insarouge, thick] (0,-0.28) -- (0,0.28);},
+  croix/.pic = {\draw[insarouge, thick] (-0.17,-0.17) -- (0.17,0.17);          % croix du SWAP
+                \draw[insarouge, thick] (-0.17,0.17) -- (0.17,-0.17);},
+  mesure/.pic = {\draw[thick, fill=white] (-0.3,-0.27) rectangle (0.3,0.27);   % mesure
+                 \draw[thick] (-0.19,-0.13) arc[start angle=155, end angle=25, radius=0.21];
+                 \draw[thick, -{Stealth[length=1.3mm]}] (0,-0.17) -- (0.14,0.12);},
+  porte/.style = {draw=insarouge, fill=insarouge!8, minimum size=7mm, thick},  % porte à un qubit
+}
+
+%%%%% Encadrés (définitions, résultats, remarques, récapitulatifs, exercices) %%%%%
 \usepackage[skins,breakable]{tcolorbox}
 \tcbset{boxrule=0.6pt,arc=2pt,left=6pt,right=6pt,top=4pt,bottom=4pt}
 \newtcolorbox{definition}[1]{colback=insarouge!4,colframe=insarouge,
@@ -124,6 +149,31 @@
   fonttitle=\bfseries,title={#1}}
 \newtcolorbox{remarque}[1][Remarque]{colback=insagris!7,colframe=insagris,
   fonttitle=\bfseries,title={#1}}
+% Récapitulatifs de fin de chapitre : points à retenir et savoir-faire
+\newtcolorbox{aretenir}{colback=insarouge!6,colframe=insarouge,boxrule=1pt,
+  fonttitle=\bfseries,title={À retenir}}
+\newtcolorbox{savoirfaire}{colback=insagris!6,colframe=insagris,
+  fonttitle=\bfseries,title={Savoir-faire}}
+% Exercices (numérotés dans la section, cités par \ref{...}) et leur correction
+\newcounter{exercice}[section]
+\renewcommand{\theexercice}{\thesection.\arabic{exercice}}
+\newtcolorbox{exercicebox}[1]{colback=white,
+  colframe=insarouge,boxrule=0.8pt,fonttitle=\bfseries,coltitle=white,
+  colbacktitle=insarouge,title={Exercice~\theexercice\ --- #1}}
+% \refstepcounter est appelé avant la boîte : \label{...} placé dans l'énoncé donne le bon numéro
+\newenvironment{exercice}[1]{\refstepcounter{exercice}\begin{exercicebox}{#1}}{\end{exercicebox}}
+% Début d'une correction : le mot « Correction. » reste sur la même page que la première question
+\makeatletter
+\newcommand{\corrstart}{%
+  \captionsetup{hypcap=false}%
+  \textbf{\color{insagris}Correction.}\par\nobreak
+  \let\corr@oldparagraph\paragraph
+  \renewcommand{\paragraph}[1]{\corr@oldparagraph{##1}\@secpenalty=-300\relax}%
+  \@secpenalty=10000\relax}
+\makeatother
+\newtcolorbox{correction}{breakable,colback=insagris!5,colframe=insagris,boxrule=0pt,
+  toprule=0pt,bottomrule=0pt,rightrule=0pt,leftrule=2.5pt,sharp corners,
+  before upper={\corrstart}}
 
 %%%%% Macros de mathématiques / physique %%%%%
 \newcommand{\ii}{\mathrm{i}}   % unité imaginaire
@@ -164,10 +214,10 @@
 %%%%% Pour le glossaire %%%%%
 \usepackage[hidelinks]{hyperref} %pour rendre les liens cliquables
 \hypersetup{pdftitle={\doctitre}, pdfauthor={\docauteur}, pdfsubject={\docsoustitre}}
-\usepackage{glossaries}
+\usepackage[nonumberlist]{glossaries}
 \renewcommand{\glstextformat}[1]{\textcolor{insarouge}{#1}} %pour colorer les mots glossariés
 %\makeglossaries
-\makenoidxglossaries % (avertissement inoffensif dans le log tant que le glossaire n'est pas imprimé)
+\makenoidxglossaries % pas de makeindex : deux passes de pdflatex suffisent
 \input{glossaire} % charge les entrées depuis glossaire.tex
 
 %%%%% Pour les corner images : logo INSA, titre du document, filet rouge %%%%%
@@ -202,6 +252,9 @@
   \fancyfoot[C]{\small\bfseries\textcolor{insarouge}{\thepage}}%
 }
 
+%%%%% Coupures de ligne : évite les débordements dans les marges %%%%%
+\setlength{\emergencystretch}{1.5em}
+
 %%%%% Marges %%%%%
 \usepackage[a4paper,
             top=3.5cm,
@@ -210,7 +263,7 @@
             right=2.2cm,
             headheight=14pt]{geometry}
 
-%%%%% Page de garde %%%%%
+%%%%% Import de pages PDF (par exemple une page de garde) %%%%%
 % Import de pages PDF, par exemple une page de garde :
 %   \includepdf[pages={1,2}]{page1.pdf}   (puis régler le compteur pagesdegarde en haut du fichier)
 \usepackage{pdfpages}
@@ -223,11 +276,15 @@
 %\includeonly{chapitre1}
 
 \begin{document}
-%\maketitle % page de titre LaTeX (optionnelle)
+
+%%%%% Page de titre : page 1 du PDF, sans en-tête ni numéro (le sommaire est la page 2) %%%%%
+\input{pagetitre}
 
 %%%%% Sommaire %%%%%
+\renewcommand{\contentsname}{Sommaire}
+\setcounter{tocdepth}{2}
 \begingroup
-\fontsize{8pt}{10pt}\selectfont
+\fontsize{8pt}{9.4pt}\selectfont
 \tableofcontents
 \endgroup
 
@@ -237,48 +294,42 @@
 %\addcontentsline{toc}{section}{Résumés}
 %\input{sections/0_summary}
 
-%%%%% INTRO %%%%%
-%\newpage
-%\section{Introduction}
-%
-%%Voici une citation~: \cite{lamport1994latex}.
-%%Voici un texte utilisant \gls{latex} et \gls{biber}.
-%
-%\input{sections/1_intro}
+%%%%% Introduction (section non numérotée, ajoutée au sommaire) %%%%%
+\include{introduction}
 
-%%%%% Chapitres (un fichier par chapitre) %%%%%
-% Un chapitre indépendant commence par \section{...} (chapitre1, chapitre4, chapitre5,
-% chapitre6, chapitre7).
-% chapitre2 et chapitre3 PROLONGENT la section 1 : ils ne contiennent que des
-% \subsection (1.6 à 1.9, puis 1.10 à 1.13), sans \section.
-\include{chapitre1}
-\include{chapitre2}
-\include{chapitre3}
-\include{chapitre4}
-\include{chapitre5}
-\include{chapitre6}
-\include{chapitre7}
-%\include{chapitre8}
+%%%%% Chapitres (un fichier par chapitre, chacun commence par \section) %%%%%
+\include{chapitre1} % 1. Histoire et mécanique quantique
+\include{chapitre2} % 2. Notation de Dirac et espace de Hilbert
+\include{chapitre3} % 3. Opérateurs, matrice de densité, sphère de Bloch, produit tensoriel
+\include{chapitre4} % 4. Portes quantiques et systèmes multi-qubits
+\include{chapitre5} % 5. États quantiques, intrication, états de Bell
+\include{chapitre6} % 6. Exemples et exercices corrigés
+%\include{chapitre7}
+
+%%%%% Conclusion (section non numérotée, ajoutée au sommaire) %%%%%
+\include{conclusion}
 
 %%%%% Bibliographie %%%%%
-%\newpage
-%\printbibliography[title=Bibliographie, heading=bibnumbered]
+\clearpage
+\printbibliography[title=Bibliographie, heading=bibintoc]
 
 %%%%% Table des illustrations %%%%%
 %\newpage
 %\renewcommand{\listfigurename}{ }
-%\section{Table des illustrations}
-%%\addcontentsline{toc}{section}{Table des illustrations} % ajoute à la table des matières
+%\section*{Table des illustrations}
+%\addcontentsline{toc}{section}{Table des illustrations}
 %\listoffigures
 
 %%%%% Glossaire %%%%%
-%\newpage
-%\renewcommand{\glossaryname}{Glossaire}
-%\section{\glossaryname}
-%\renewcommand{\glossaryname}{}
-%\glsaddall
-%\vspace{-4em} %pour enlever le saut de ligne
-%\printnoidxglossary
+\clearpage
+\phantomsection
+\section*{Glossaire}
+\addcontentsline{toc}{section}{Glossaire}
+\glsaddall
+\begingroup
+\renewcommand*{\glossarysection}[2][]{}% titre déjà donné ci-dessus
+\printnoidxglossary
+\endgroup
 
 %%%%% Annexes %%%%%
 %\newpage
