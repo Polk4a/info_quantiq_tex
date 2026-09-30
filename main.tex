@@ -2,7 +2,7 @@
 %  TEMPLATE INSA CENTRE VAL DE LOIRE : main.tex
 %
 %  - Chaque partie du document est un fichier séparé, importé plus bas avec
-%    \include{...} : pagetitre, introduction, chapitre1 ... chapitre6, conclusion.
+%    \include{...} : pagetitre, introduction, chapitre1 ... chapitre6, qcm, conclusion.
 %    Ces fichiers ne contiennent ni préambule ni \begin{document}. Un chapitre
 %    commence par \section{...} (la classe est article : un chapitre = une \section) ;
 %    l'introduction et la conclusion sont des \section* ajoutées au sommaire.
@@ -272,6 +272,13 @@
 \author{\docauteur}
 \date{\docdate}
 
+% QCM (chapitre 7) : bascules. Valeurs par défaut : tout est affiché.
+% Décommenter une ligne pour changer le comportement de qcm.tex.
+\newif\ifqcmrefs    \qcmrefstrue      % références « Chap. · § » sous chaque énoncé
+\newif\ifqcmcorrige \qcmcorrigetrue   % corrigé (clé, explications, pièges, fiche de score)
+%\qcmrefsfalse      % masque les références sous les énoncés (le corrigé les garde)
+%\qcmcorrigefalse   % supprime le corrigé : document avec énoncés seuls
+
 % Pour ne compiler que certains chapitres (la numérotation est conservée) :
 %\includeonly{chapitre1}
 
@@ -304,7 +311,8 @@
 \include{chapitre4} % 4. Portes quantiques et systèmes multi-qubits
 \include{chapitre5} % 5. États quantiques, intrication, états de Bell
 \include{chapitre6} % 6. Exemples et exercices corrigés
-%\include{chapitre7}
+\include{qcm}       % 7. QCM sur le cours (100 questions, énoncés puis corrigé)
+%\include{chapitre7} % (optionnel) fichier supplémentaire, qui serait numéroté 8
 
 %%%%% Conclusion (section non numérotée, ajoutée au sommaire) %%%%%
 \include{conclusion}

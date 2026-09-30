@@ -25,7 +25,7 @@ matrice de densité, portes quantiques, systèmes de plusieurs qubits,
 \begin{center}
 \begin{tikzpicture}[>=Stealth, font=\scriptsize,
     boite/.style={draw=insarouge, fill=insarouge!6, thick, rounded corners=2pt,
-                  text width=2.35cm, minimum height=1.55cm, align=center},
+                  text width=2.02cm, minimum height=1.55cm, align=center},
     num/.style={circle, fill=insarouge, text=white, font=\small\bfseries, minimum size=5.5mm, inner sep=0pt}]
   \foreach \i/\txt/\idee in {
       1/{Histoire et mécanique quantique}/{onde de matière},
@@ -33,19 +33,21 @@ matrice de densité, portes quantiques, systèmes de plusieurs qubits,
       3/{Opérateurs, matrice de densité, sphère de Bloch, produit tensoriel}/{états mixtes, Bloch},
       4/{Portes quantiques et systèmes multi-qubits}/{portes unitaires},
       5/{États quantiques, intrication, états de Bell}/{corrélations, téléportation},
-      6/{Exemples et exercices corrigés}/{s'entraîner}} {
-    \node[boite] (b\i) at ({(\i-1)*2.72},0) {\txt};
-    \node[num] at ({(\i-1)*2.72},1.2) {\i};
-    \node[text=insagris, font=\scriptsize\itshape, text width=2.4cm, align=center] at ({(\i-1)*2.72},-1.25) {\idee};
+      6/{Exemples et exercices corrigés}/{s'entraîner},
+      7/{QCM sur le cours}/{s'évaluer}} {
+    \node[boite] (b\i) at ({(\i-1)*2.36},0) {\txt};
+    \node[num] at ({(\i-1)*2.36},1.2) {\i};
+    \node[text=insagris, font=\scriptsize\itshape, text width=2.1cm, align=center] at ({(\i-1)*2.36},-1.25) {\idee};
   }
-  \foreach \i/\j in {1/2, 2/3, 3/4, 4/5, 5/6}
+  \foreach \i/\j in {1/2, 2/3, 3/4, 4/5, 5/6, 6/7}
     \draw[->, insarouge, thick] (b\i.east) -- (b\j.west);
 \end{tikzpicture}
 \end{center}
 
 Chaque chapitre se termine par un \emph{récapitulatif} : schéma de synthèse, points à retenir,
 tableau de formules renvoyant aux sections, et liste de savoir-faire. Le chapitre~\ref{chap:exercices}
-rassemble des exemples et des exercices corrigés. Les termes techniques sont définis dans
+rassemble des exemples et exercices corrigés, et le chapitre~\ref{chap:qcm} un QCM de 100 questions
+avec corrigé détaillé. Les termes techniques sont définis dans
 le glossaire, en fin de document ; les ouvrages de référence figurent dans la bibliographie
 \parencite[par exemple][]{nielsen2010,cohen1973}.
 

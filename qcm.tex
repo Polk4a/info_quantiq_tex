@@ -1,0 +1,1762 @@
+% =====================================================================
+%  Chapitre 7 : QCM sur le cours (100 questions, 4 niveaux).
+%  Fichier importé par main.tex avec \include{qcm}. Un chapitre = une \section.
+%
+%  Organisation :
+%    - les énoncés (niveaux 1 à 4) occupent des pages à part ;
+%    - le corrigé (clé des réponses, explications, pièges, fiche de score)
+%      commence sur une nouvelle page : on peut imprimer les énoncés seuls ;
+%    - chaque question est écrite avec \qcmq puis \qcmx (voir plus bas) : le même
+%      code produit l'énoncé (cases à cocher) et, plus loin, le corrigé.
+%
+%  Bascules (définies dans main.tex ; à placer avant \include{qcm}) :
+%    \qcmrefsfalse     masque la référence « Chap. · § » sous chaque énoncé ;
+%    \qcmcorrigefalse  supprime le corrigé du document (QCM à distribuer seul).
+%
+%  Ce fichier est produit par outils_qcm/gen_qcm.py à partir de la banque de
+%  questions (fichiers texte), mais il reste un fichier LaTeX ordinaire que l'on
+%  peut modifier à la main. Pour ajouter une question à la main : insérer un
+%  couple \qcmq ... \qcmx dans le bon niveau (la numérotation est automatique),
+%  puis mettre à jour (1) les bornes « questions a à b » des titres de niveaux,
+%  (2) les lignes \qcmcorr{n} du corrigé, (3) le tableau « Où revoir ? ».
+% =====================================================================
+
+% Macros de Dirac (déjà définies dans main.tex ; ce bloc évite l'erreur
+% « Undefined control sequence \ket » si main.tex est une ancienne version).
+\providecommand{\ket}[1]{|#1\rangle}
+\providecommand{\bra}[1]{\langle #1|}
+\providecommand{\braket}[2]{\langle #1|#2\rangle}
+
+\makeatletter
+% bascules : normalement déjà définies dans main.tex (valeurs par défaut : vrai)
+\@ifundefined{ifqcmrefs}{\newif\ifqcmrefs\qcmrefstrue}{}
+\@ifundefined{ifqcmcorrige}{\newif\ifqcmcorrige\qcmcorrigetrue}{}
+\newcounter{qcmq}
+
+% case à cocher (3 mm) pour le crayon
+\newcommand{\qcmbox}{{\setlength{\fboxsep}{0pt}\setlength{\fboxrule}{0.5pt}%
+  \raisebox{-0.4mm}{\fbox{\rule{0pt}{3mm}\rule{3mm}{0pt}}}}}
+
+% une proposition : case, lettre, texte (retrait suspendu)
+\newcommand{\qcm@opt}[2]{\noindent\hangindent=3.2em \hangafter=1
+  \hspace*{0.3em}\qcmbox\hspace{0.45em}\textbf{#1)}\hspace{0.4em}#2\par\vspace{2.5pt}}
+
+% \qcmq[colonnes]{ref}{énoncé}{A}{B}{C}{D}{bonne lettre}   (TeX limite les macros à 9 paramètres)
+% \qcmx{com. A}{com. B}{com. C}{com. D}  : commentaires, placés juste après \qcmq
+%   - com. de la bonne lettre = explication ; com. des autres = piège ;
+%   - colonnes = 1 (une proposition par ligne) ou 2 (grille 2x2).
+\newcommand{\qcmq}[8][1]{%
+  \stepcounter{qcmq}%
+  \expandafter\gdef\csname qcm@ref@\theqcmq\endcsname{#2}%
+  \expandafter\gdef\csname qcm@rep@\theqcmq\endcsname{#8}%
+  \expandafter\gdef\csname qcm@o@\theqcmq @A\endcsname{#4}%
+  \expandafter\gdef\csname qcm@o@\theqcmq @B\endcsname{#5}%
+  \expandafter\gdef\csname qcm@o@\theqcmq @C\endcsname{#6}%
+  \expandafter\gdef\csname qcm@o@\theqcmq @D\endcsname{#7}%
+  \par\vspace{7pt plus 3pt minus 2pt}\noindent
+  \begin{minipage}{\linewidth}%
+    \noindent{\color{insarouge}\bfseries Question~\theqcmq}%
+    \ifqcmrefs\hfill{\footnotesize\color{insagris}#2}\fi\par\nopagebreak
+    \vspace{2pt}\noindent #3\par\nopagebreak\vspace{3pt}%
+    \ifnum#1=2
+      \begin{minipage}[t]{0.495\linewidth}\qcm@opt{A}{#4}\end{minipage}\hfill
+      \begin{minipage}[t]{0.495\linewidth}\qcm@opt{B}{#5}\end{minipage}\par\vspace{2pt}
+      \begin{minipage}[t]{0.495\linewidth}\qcm@opt{C}{#6}\end{minipage}\hfill
+      \begin{minipage}[t]{0.495\linewidth}\qcm@opt{D}{#7}\end{minipage}\par
+    \else
+      \qcm@opt{A}{#4}\qcm@opt{B}{#5}\qcm@opt{C}{#6}\qcm@opt{D}{#7}%
+    \fi
+  \end{minipage}\par}
+
+\newcommand{\qcmx}[4]{%
+  \expandafter\gdef\csname qcm@c@\theqcmq @A\endcsname{#1}%
+  \expandafter\gdef\csname qcm@c@\theqcmq @B\endcsname{#2}%
+  \expandafter\gdef\csname qcm@c@\theqcmq @C\endcsname{#3}%
+  \expandafter\gdef\csname qcm@c@\theqcmq @D\endcsname{#4}}
+
+% lettre de la bonne réponse de la question n (« ? » si la question n'existe pas)
+\newcommand{\qcmkey}[1]{\@ifundefined{qcm@rep@#1}{?}{\csname qcm@rep@#1\endcsname}}
+
+% une mauvaise réponse du corrigé (n° de question, lettre) : ignorée si c'est la bonne.
+% (pas de \@for : « := » ne fonctionne pas avec le « : » rendu actif par babel-french)
+\newcommand{\qcm@wrongone}[2]{%
+  \edef\qcm@a{#2}\edef\qcm@b{\csname qcm@rep@#1\endcsname}%
+  \ifx\qcm@a\qcm@b\else
+    \noindent\hangindent=1.4em\hangafter=1 {\color{insagris}\textbf{#2)}}\enspace
+    \csname qcm@o@#1@#2\endcsname\enspace--\enspace\emph{\csname qcm@c@#1@#2\endcsname}\par
+  \fi}
+
+% bloc de corrigé de la question n
+\newcommand{\qcmcorr}[1]{%
+  \par\vspace{6pt plus 2pt minus 2pt}\noindent
+  \begin{minipage}{\linewidth}\small
+    \noindent{\color{insarouge}\bfseries Question~#1}\enspace
+    \textbf{Réponse : \csname qcm@rep@#1\endcsname}\hfill
+    {\footnotesize\color{insagris}\csname qcm@ref@#1\endcsname}\par\nopagebreak
+    \vspace{1pt}\noindent\hangindent=1.4em\hangafter=1
+    \textbf{\csname qcm@rep@#1\endcsname)}\enspace
+    \csname qcm@o@#1@\csname qcm@rep@#1\endcsname\endcsname\enspace---\enspace
+    \csname qcm@c@#1@\csname qcm@rep@#1\endcsname\endcsname\par
+    \qcm@wrongone{#1}{A}\qcm@wrongone{#1}{B}\qcm@wrongone{#1}{C}\qcm@wrongone{#1}{D}%
+  \end{minipage}\par}
+\makeatother
+
+% =====================================================================
+\section{QCM sur le cours}\label{chap:qcm}
+% =====================================================================
+
+\subsection{Mode d'emploi}\label{sec:qcm-mode}
+
+Ce QCM compte \textbf{100 questions} sur les chapitres~\ref{chap:histoire} à~\ref{chap:bell},
+classées en quatre niveaux. Chaque question propose quatre réponses dont \textbf{une seule} est
+exacte : cochez au crayon la case de la proposition choisie.
+\ifqcmrefs À droite du numéro de chaque question, une référence (chapitre, section) indique la
+partie du cours concernée.\else\ifqcmcorrige{} La référence de chaque question (chapitre, section)
+est donnée dans le corrigé.\fi\fi
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}llc>{\raggedright\arraybackslash}p{8.2cm}@{}}
+\toprule
+\textbf{Niveau} & \textbf{Questions} & \textbf{Nombre} & \textbf{Ce qui est demandé}\\
+\midrule
+1. Débutant & 1 à 30 & 30 & définitions, notations, résultats du cours en une étape\\
+2. Intermédiaire & 31 à 60 & 30 & petits calculs, propriétés, application directe d'un résultat\\
+3. Avancé & 61 à 90 & 30 & calculs en plusieurs étapes, portes, circuits et protocoles\\
+4. Maîtrise & 91 à 100 & 10 & raisonnements fins et pièges conceptuels, qui combinent plusieurs notions\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{itemize}[nosep]
+  \item \textbf{Sur papier} : imprimez seulement les pages~\pageref{chap:qcm} à~\pageref{qcm:fin}
+        (mode d'emploi et énoncés, sections~\ref{sec:qcm-n1} à~\ref{sec:qcm-n4}).%
+        \ifqcmcorrige{} Le corrigé commence sur une page distincte, à la page~\pageref{sec:qcm-cle}.\fi
+  \item \textbf{Barème} : 1 point par bonne réponse, 0 sinon (pas de point négatif). Calculatrice
+        autorisée, mais rarement utile (quelques logarithmes et racines).
+  \item \textbf{Correction} :%
+        \ifqcmcorrige{} comparez avec la clé des réponses, puis lisez l'explication de chaque
+        question, même réussie. Les « pièges » décrivent l'erreur qui mène à chaque mauvaise réponse.%
+        \else{} le corrigé n'est pas inclus dans cette version du document.\fi
+\end{itemize}
+
+\bigskip
+\noindent Nom : \makebox[6cm]{\dotfill}\hfill Date : \makebox[3.5cm]{\dotfill}\hfill Score : \makebox[1.6cm]{\dotfill}\,/\,100
+\bigskip
+
+\begin{remarque}[Conventions des énoncés]
+\begin{itemize}[nosep]
+  \item $\ket{ab}=\ket{a}_A\otimes\ket{b}_B$ : le premier chiffre est le qubit $A$, le second le
+        qubit $B$ ; dans un circuit, le fil du haut est le dernier chiffre.
+  \item Le CNOT de la section~\ref{sec:cnot} a pour contrôle le \emph{second} chiffre ; les portes
+        contrôlées de la section~\ref{sec:controlees} ont pour contrôle le \emph{premier}. Chaque
+        énoncé précise le contrôle.
+  \item Sans précision, une mesure est faite dans la base de calcul $Z$. Les logarithmes des
+        entropies sont en base $2$ (résultats en bits).
+  \item $\ket{\pm}=\frac{1}{\sqrt2}(\ket0\pm\ket1)$ et $\ket{{\pm}\ii}=\frac{1}{\sqrt2}(\ket0\pm\ii\ket1)$.
+\end{itemize}
+\end{remarque}
+
+\clearpage
+%% ======================================================================
+\subsection{Niveau 1 : débutant (questions 1 à 30)}\label{sec:qcm-n1}
+%% ======================================================================
+\noindent{\color{insagris}\small Niveau de difficulté : Débutant\quad $\bullet\circ\circ\circ$}\par\smallskip
+% ---- Question 1 (niveau 1, correct : D)
+\qcmq[2]{Chap.~\ref{chap:histoire}\,$\cdot$\,\S\,\ref{sec:dualite}}
+  {En 1905, qui explique l'effet photo-électrique en postulant que la lumière est faite de quanta d'énergie $E=hf$, les photons ?}
+  {Louis de Broglie}
+  {Erwin Schrödinger}
+  {Max Planck}
+  {Albert Einstein}
+  {D}
+\qcmx
+  {Il propose en 1924 une onde de matière ($\lambda=h/p$) pour les particules comme l'électron ; l'idée du photon date de 1905.}
+  {Il écrit en 1926 l'équation d'onde de la matière, plus de vingt ans après l'article sur les photons.}
+  {Il introduit le quantum d'énergie en 1900 pour le rayonnement du corps noir ; c'est Einstein qui en fait une propriété de la lumière elle-même.}
+  {Il postule que la lumière échange son énergie par paquets $E=hf=\hbar\omega$ : c'est la première face de la dualité onde--corpuscule.}
+
+% ---- Question 2 (niveau 1, correct : A)
+\qcmq[1]{Chap.~\ref{chap:histoire}\,$\cdot$\,\S\,\ref{sec:born}}
+  {Selon l'interprétation de Max Born, que représente $|\Psi(x,t)|^2$ ?}
+  {La densité de probabilité de présence de la particule en $x$ à l'instant $t$}
+  {L'énergie cinétique de la particule}
+  {L'amplitude de l'onde de matière}
+  {La vitesse de la particule}
+  {A}
+\qcmx
+  {$|\Psi(x,t)|^2\,\dd x$ est la probabilité de trouver la particule entre $x$ et $x+\dd x$ ; $\Psi$ lui-même n'est pas mesurable.}
+  {L'énergie est associée à l'opérateur hamiltonien $\Hop$ ; $|\Psi|^2$ n'a pas la dimension d'une énergie.}
+  {$\Psi$ est l'amplitude (complexe) ; $|\Psi|^2$ en est le carré du module.}
+  {La vitesse s'obtient avec l'opérateur $\hat p=-\ii\hbar\,\partial_x$, pas avec $|\Psi|^2$.}
+
+% ---- Question 3 (niveau 1, correct : D)
+\qcmq[2]{Chap.~\ref{chap:histoire}\,$\cdot$\,\S\,\ref{sec:dualite}}
+  {Une particule de quantité de mouvement $p$ est associée, d'après de Broglie, à une onde de longueur d'onde $\lambda$. Quelle relation est correcte ?}
+  {$\lambda=hp$}
+  {$\lambda=p/h$}
+  {$\lambda=\hbar/p$}
+  {$\lambda=h/p$}
+  {D}
+\qcmx
+  {Produit au lieu du quotient : $\lambda$ grandirait avec $p$, le contraire de ce qu'on observe.}
+  {Quotient inversé : $p/h=1/\lambda$ s'exprime en m$^{-1}$, pas en mètres.}
+  {Confusion entre $h$ et $\hbar=h/2\pi$ : $\hbar/p=\lambda/2\pi$ est l'inverse du nombre d'onde $k$.}
+  {Relation de de Broglie : plus la particule est rapide ou lourde, plus $\lambda$ est petite (balle de $0{,}1$~kg à $10$~m/s : $\lambda\approx10^{-34}$~m, inobservable).}
+
+% ---- Question 4 (niveau 1, correct : C)
+\qcmq[2]{Chap.~\ref{chap:histoire}\,$\cdot$\,\S\,\ref{sec:construction}}
+  {Quelle est l'équation de Schrödinger dépendante du temps pour un état $\Psi$ et un hamiltonien $\Hop$ ?}
+  {$-\ii\hbar\,\partial_t\Psi=\Hop\Psi$}
+  {$\hbar\,\partial_t\Psi=\Hop\Psi$}
+  {$\ii\hbar\,\partial_t\Psi=\Hop\Psi$}
+  {$\ii\hbar\,\partial_x\Psi=\Hop\Psi$}
+  {C}
+\qcmx
+  {Erreur de signe : la solution serait $\ee^{+\ii\Hop t/\hbar}\Psi(0)$, qui décrit l'évolution à rebours du temps.}
+  {Sans le facteur $\ii$, les solutions sont des exponentielles réelles (croissantes ou décroissantes) et la norme n'est pas conservée.}
+  {Elle relie l'évolution de l'état à l'énergie ; pour un $\Hop$ indépendant du temps, sa solution est $\Psi(t)=\ee^{-\ii\Hop t/\hbar}\Psi(0)$ (chapitre~\ref{chap:portes}).}
+  {C'est la dérivée en $t$ qui décrit l'évolution ; la dérivée en $x$ sert à construire $\hat p=-\ii\hbar\,\partial_x$.}
+
+% ---- Question 5 (niveau 1, correct : A)
+\qcmq[1]{Chap.~\ref{chap:histoire}\,$\cdot$\,\S\,\ref{sec:construction}}
+  {Quel opérateur représente l'énergie totale d'un système quantique ?}
+  {L'hamiltonien $\Hop$}
+  {L'opérateur quantité de mouvement $\hat p$}
+  {L'opérateur position $\hat x$}
+  {L'opérateur identité}
+  {A}
+\qcmx
+  {Somme de l'énergie cinétique $-\frac{\hbar^2}{2m}\partial_x^2$ et de l'énergie potentielle $V$ ; ses valeurs propres sont les énergies mesurables.}
+  {Il représente l'impulsion ; l'énergie cinétique est $\hat p^2/2m$, et il faut y ajouter $V$.}
+  {C'est la multiplication par $x$ : il donne la position, pas l'énergie.}
+  {Il vaut $1$ pour tout état : il ne contient aucune information sur l'énergie.}
+
+% ---- Question 6 (niveau 1, correct : C)
+\qcmq[1]{Chap.~\ref{chap:histoire}\,$\cdot$\,\S\,\ref{sec:histoire}}
+  {Dans quel ordre chronologique ces avancées ont-elles eu lieu ?}
+  {de Broglie $\to$ Planck $\to$ Schrödinger $\to$ Bell}
+  {Planck $\to$ Schrödinger $\to$ de Broglie $\to$ Bell}
+  {Planck (quantum d'énergie) $\to$ de Broglie (onde de matière) $\to$ Schrödinger (équation d'onde) $\to$ Bell (inégalités)}
+  {Planck $\to$ de Broglie $\to$ Bell $\to$ Schrödinger}
+  {C}
+\qcmx
+  {Le quantum d'énergie de Planck (1900) précède l'onde de matière de de Broglie (1924).}
+  {L'équation de Schrödinger (1926) généralise l'idée d'onde de matière de de Broglie (1924) : elle vient après.}
+  {Planck 1900, de Broglie 1924, Schrödinger 1926, Bell 1964.}
+  {Les inégalités de Bell (1964) viennent près de quarante ans après l'équation de Schrödinger.}
+
+% ---- Question 7 (niveau 1, correct : C)
+\qcmq[1]{Chap.~\ref{chap:dirac}\,$\cdot$\,\S\,\ref{sec:dirac}}
+  {En notation de Dirac, comment appelle-t-on $\ket{\Psi}$ et comment le représente-t-on pour un qubit ?}
+  {Un bra, représenté par un vecteur ligne à deux composantes complexes}
+  {Un ket, représenté par un nombre complexe}
+  {Un ket, représenté par un vecteur colonne à deux composantes complexes}
+  {Un bra, représenté par une matrice $2\times2$}
+  {C}
+\qcmx
+  {Le bra $\bra{\Psi}$ est le conjugué transposé du ket : un vecteur ligne, mais ce n'est pas la notation $\ket{\Psi}$.}
+  {Un scalaire ne peut pas décrire une superposition : il faut deux amplitudes $\alpha$ et $\beta$.}
+  {Le ket est le vecteur colonne $\binom{\alpha}{\beta}$ ; son bra $\bra{\Psi}$ est le vecteur ligne conjugué.}
+  {Une matrice est un opérateur ; le bra est une matrice ligne $1\times2$.}
+
+% ---- Question 8 (niveau 1, correct : B)
+\qcmq[2]{Chap.~\ref{chap:dirac}\,$\cdot$\,\S\,\ref{sec:qubit}}
+  {Quelle condition les amplitudes $\alpha$ et $\beta$ de $\alpha\ket{0}+\beta\ket{1}$ doivent-elles vérifier pour que l'état soit normalisé ?}
+  {$\alpha+\beta=1$}
+  {$|\alpha|^2+|\beta|^2=1$}
+  {$\alpha^2+\beta^2=1$}
+  {$|\alpha|+|\beta|=1$}
+  {B}
+\qcmx
+  {On somme les amplitudes (complexes, parfois négatives) ; ce sont leurs modules au carré qui sont des probabilités.}
+  {Les probabilités de mesure $P(0)=|\alpha|^2$ et $P(1)=|\beta|^2$ doivent sommer à $1$.}
+  {Oubli du module : pour $\alpha=\frac{1}{\sqrt2}$ et $\beta=\frac{\ii}{\sqrt2}$, $\alpha^2+\beta^2=0$ alors que l'état est normalisé.}
+  {Somme des modules au lieu des carrés : $\alpha=\beta=\frac{1}{\sqrt2}$ est normalisé, mais $|\alpha|+|\beta|=\sqrt2$.}
+
+% ---- Question 9 (niveau 1, correct : C)
+\qcmq[1]{Chap.~\ref{chap:dirac}\,$\cdot$\,\S\,\ref{sec:projecteurs}}
+  {On mesure dans la base $Z$ un qubit préparé dans $\ket{+}=\frac{1}{\sqrt2}(\ket{0}+\ket{1})$. Que se passe-t-il ?}
+  {On lit $+$ et le qubit reste dans $\ket{+}$}
+  {On lit toujours $0$}
+  {On lit $0$ ou $1$, chacun avec la probabilité $\frac12$, et l'état devient $\ket{0}$ ou $\ket{1}$}
+  {On lit $0$ et $1$ à la fois}
+  {C}
+\qcmx
+  {Une mesure en base $Z$ ne donne que $0$ ou $1$ ; elle modifie l'état.}
+  {Les deux amplitudes ont le même module : $P(0)=P(1)=\frac12$.}
+  {Postulat de la mesure : la superposition s'effondre sur l'état propre correspondant au résultat.}
+  {Chaque mesure donne un seul résultat ; la superposition ne s'observe qu'à travers les statistiques.}
+
+% ---- Question 10 (niveau 1, correct : B)
+\qcmq[2]{Chap.~\ref{chap:dirac}\,$\cdot$\,\S\,\ref{sec:qubit}}
+  {Que vaut le produit scalaire $\braket{0}{1}$ ?}
+  {$1$}
+  {$0$}
+  {$\frac{1}{\sqrt2}$}
+  {$\ket{01}$}
+  {B}
+\qcmx
+  {C'est la valeur de $\braket{0}{0}$ et de $\braket{1}{1}$ (vecteurs normés), pas de $\braket{0}{1}$.}
+  {$\ket{0}$ et $\ket{1}$ sont orthogonaux : $\begin{pmatrix}1&0\end{pmatrix}\begin{pmatrix}0\\1\end{pmatrix}=0$.}
+  {C'est la valeur de $\braket{0}{+}$, pas de $\braket{0}{1}$.}
+  {Confusion avec le produit tensoriel : un produit scalaire est un nombre, pas un ket.}
+
+% ---- Question 11 (niveau 1, correct : D)
+\qcmq[2]{Chap.~\ref{chap:dirac}\,$\cdot$\,\S\,\ref{sec:qubit}}
+  {Un qubit est dans l'état $\ket{-}=\frac{1}{\sqrt2}(\ket{0}-\ket{1})$. Quelle est la probabilité de mesurer $1$ en base $Z$ ?}
+  {$0$}
+  {$-\frac12$}
+  {$\frac{1}{\sqrt2}$}
+  {$\frac12$}
+  {D}
+\qcmx
+  {Le signe $-$ ne « retire » pas $\ket{1}$ de la superposition.}
+  {Une probabilité est toujours positive : on prend le module au carré de l'amplitude.}
+  {C'est l'amplitude en module, pas la probabilité (il faut élever au carré).}
+  {$P(1)=\left|-\frac{1}{\sqrt2}\right|^2=\frac12$ : le signe est une phase relative, qui disparaît dans le module.}
+
+% ---- Question 12 (niveau 1, correct : B)
+\qcmq[2]{Chap.~\ref{chap:dirac}\,$\cdot$\,\S\,\ref{sec:projecteurs}}
+  {Quel est le projecteur sur l'état $\ket{0}$ ?}
+  {$\ket{0}\bra{1}=\begin{pmatrix}0&1\\0&0\end{pmatrix}$}
+  {$\hat P_0=\ket{0}\bra{0}=\begin{pmatrix}1&0\\0&0\end{pmatrix}$}
+  {$\braket{0}{0}=1$}
+  {$\begin{pmatrix}0&0\\0&1\end{pmatrix}$}
+  {B}
+\qcmx
+  {Cet opérateur envoie $\ket{1}$ sur $\ket{0}$ ; son carré est nul : ce n'est pas un projecteur.}
+  {$\hat P_0\ket{\Psi}=\alpha\ket{0}$ : il garde la composante sur $\ket{0}$ ; $\hat P_0^2=\hat P_0$.}
+  {C'est un nombre, pas un opérateur.}
+  {C'est $\ket{1}\bra{1}$, le projecteur sur $\ket{1}$.}
+
+% ---- Question 13 (niveau 1, correct : A)
+\qcmq[1]{Chap.~\ref{chap:operateurs}\,$\cdot$\,\S\,\ref{sec:bloch}}
+  {Où se trouvent les états $\ket{0}$ et $\ket{1}$ sur la sphère de Bloch ?}
+  {Aux deux pôles, Nord et Sud}
+  {Aux deux extrémités de l'axe $x$}
+  {Aux deux extrémités de l'axe $y$}
+  {En deux points voisins de l'équateur}
+  {A}
+\qcmx
+  {$\ket{0}$ au pôle Nord ($\theta=0$), $\ket{1}$ au pôle Sud ($\theta=\pi$) : deux états orthogonaux sont diamétralement opposés.}
+  {Ce sont les places de $\ket{+}$ et $\ket{-}$.}
+  {Ce sont les places de $\ket{{+}\ii}$ et $\ket{{-}\ii}$.}
+  {Des états orthogonaux sont antipodaux, jamais voisins.}
+
+% ---- Question 14 (niveau 1, correct : A)
+\qcmq[2]{Chap.~\ref{chap:operateurs}\,$\cdot$\,\S\,\ref{sec:tenseur}}
+  {Quelle est la dimension de l'espace de Hilbert de $n$ qubits ?}
+  {$2^n$}
+  {$2n$}
+  {$n^2$}
+  {$2^n-1$}
+  {A}
+\qcmx
+  {Le produit tensoriel multiplie les dimensions : $2\times2\times\cdots\times2$ ; deux qubits : $4$, trois qubits : $8$.}
+  {On additionne les dimensions au lieu de les multiplier ; pour $n=3$ on trouverait $6$ au lieu de $8$.}
+  {Juste pour $n=2$ par coïncidence seulement : pour $n=3$ on trouverait $9$ au lieu de $8$.}
+  {Il y a bien $2^n$ vecteurs dans la base de calcul, $\ket{0\cdots0}$ compris.}
+
+% ---- Question 15 (niveau 1, correct : C)
+\qcmq[1]{Chap.~\ref{chap:operateurs}\,$\cdot$\,\S\,\ref{sec:rho}}
+  {Que vaut toujours la trace d'une matrice de densité $\rho$ ?}
+  {$0$}
+  {$1$ pour un état pur, et moins de $1$ pour un état mixte}
+  {$1$}
+  {$2$, la dimension de l'espace}
+  {C}
+\qcmx
+  {C'est la trace des matrices de Pauli, pas d'une matrice de densité.}
+  {Confusion avec $\operatorname{Tr}(\rho^2)$ : c'est la pureté qui distingue les deux cas, la trace vaut toujours $1$.}
+  {C'est la somme des probabilités de mesure (les populations), que l'état soit pur ou mixte.}
+  {C'est la trace de l'identité $\operatorname{Tr}\mathrm{Id}=2$, pas celle de $\rho$.}
+
+% ---- Question 16 (niveau 1, correct : B)
+\qcmq[1]{Chap.~\ref{chap:operateurs}\,$\cdot$\,\S\,\ref{sec:pur-mixte}}
+  {Quelle est la valeur de $\operatorname{Tr}(\rho^2)$ pour un état pur ?}
+  {$0$}
+  {$1$}
+  {$\frac12$}
+  {Une valeur strictement inférieure à $1$}
+  {B}
+\qcmx
+  {$\rho^2=0$ imposerait $\rho=0$, ce qui contredit $\operatorname{Tr}\rho=1$.}
+  {Un état pur s'écrit $\rho=\ket{\Psi}\bra{\Psi}$, donc $\rho^2=\rho$ et $\operatorname{Tr}\rho^2=\operatorname{Tr}\rho=1$.}
+  {C'est la valeur minimale pour un qubit, atteinte par l'état maximalement mixte $\mathrm{Id}/2$.}
+  {C'est la caractérisation d'un état mixte.}
+
+% ---- Question 17 (niveau 1, correct : B)
+\qcmq[1]{Chap.~\ref{chap:operateurs}\,$\cdot$\,\S\,\ref{sec:rho}}
+  {Que représentent les éléments diagonaux $\rho_{00}$ et $\rho_{11}$ de la matrice de densité d'un qubit ?}
+  {Les cohérences entre $\ket{0}$ et $\ket{1}$}
+  {Les probabilités de mesurer $\ket{0}$ et $\ket{1}$ (les populations)}
+  {Les valeurs propres de $\rho$}
+  {Les amplitudes $\alpha$ et $\beta$}
+  {B}
+\qcmx
+  {Les cohérences sont les éléments hors diagonale $\rho_{01}$ et $\rho_{10}$.}
+  {$\rho_{00}=\bra{0}\rho\ket{0}=P(0)$ et $\rho_{11}=P(1)$, d'où $\operatorname{Tr}\rho=1$.}
+  {Seulement si $\rho$ est diagonale dans la base de calcul : $\ket{+}\bra{+}$ a pour diagonale $(\frac12,\frac12)$ mais pour valeurs propres $(1,0)$.}
+  {Pour un état pur, $\rho_{00}=|\alpha|^2$ : le module au carré, pas l'amplitude.}
+
+% ---- Question 18 (niveau 1, correct : D)
+\qcmq[1]{Chap.~\ref{chap:operateurs}\,$\cdot$\,\S\,\ref{sec:op-dirac}}
+  {Pourquoi associe-t-on aux grandeurs mesurables (observables) des opérateurs hermitiens ?}
+  {Parce qu'ils conservent la norme des vecteurs}
+  {Parce qu'ils ont tous une trace nulle}
+  {Parce que leurs valeurs propres valent toutes $\pm1$}
+  {Parce que leurs valeurs propres sont réelles, comme les résultats d'une mesure}
+  {D}
+\qcmx
+  {C'est la propriété des opérateurs unitaires (les portes), pas des opérateurs hermitiens.}
+  {Vrai pour les matrices de Pauli, faux en général (l'identité est hermitienne, de trace $2$), et sans rapport avec le caractère mesurable.}
+  {Vrai pour $X$, $Y$, $Z$ seulement ; l'hamiltonien du puits a les valeurs propres $E_n=n^2E_1$.}
+  {Un opérateur hermitien ($A^\dagger=A$) a des valeurs propres réelles et des vecteurs propres orthogonaux ; les résultats possibles sont ses valeurs propres.}
+
+% ---- Question 19 (niveau 1, correct : C)
+\qcmq[2]{Chap.~\ref{chap:portes}\,$\cdot$\,\S\,\ref{sec:pauli}}
+  {Quelle porte de Pauli réalise l'inversion de bit $\ket{0}\leftrightarrow\ket{1}$ ?}
+  {$Z$}
+  {$Y$}
+  {$X$}
+  {$H$}
+  {C}
+\qcmx
+  {$Z$ laisse $\ket{0}$ et change $\ket{1}$ en $-\ket{1}$ : c'est une inversion de phase.}
+  {$Y\ket{0}=\ii\ket{1}$ : elle inverse le bit mais ajoute une phase ; la porte d'inversion « pure » est $X$.}
+  {$X\ket{0}=\ket{1}$ et $X\ket{1}=\ket{0}$ : c'est le NOT quantique.}
+  {$H$ crée des superpositions : $H\ket{0}=\ket{+}$.}
+
+% ---- Question 20 (niveau 1, correct : B)
+\qcmq[2]{Chap.~\ref{chap:portes}\,$\cdot$\,\S\,\ref{sec:hadamard}}
+  {Que donne la porte de Hadamard appliquée à $\ket{0}$ ?}
+  {$\ket{1}$}
+  {$\ket{+}=\frac{1}{\sqrt2}(\ket{0}+\ket{1})$}
+  {$\ket{-}=\frac{1}{\sqrt2}(\ket{0}-\ket{1})$}
+  {$\ket{0}$}
+  {B}
+\qcmx
+  {C'est l'action de $X$.}
+  {Superposition à poids égaux : $P(0)=P(1)=\frac12$ ; c'est la première étape de la plupart des algorithmes.}
+  {C'est $H\ket{1}$ ; le signe $-$ n'apparaît qu'à partir de $\ket{1}$.}
+  {$H$ n'est pas l'identité ; elle ne laisse inchangés ni $\ket{0}$ ni $\ket{1}$ (elle envoie $\ket{+}$ sur $\ket{0}$).}
+
+% ---- Question 21 (niveau 1, correct : D)
+\qcmq[2]{Chap.~\ref{chap:portes}\,$\cdot$\,\S\,\ref{sec:portes}}
+  {Quelle propriété doit vérifier la matrice $U$ d'une porte quantique ?}
+  {Elle est hermitienne : $U^\dagger=U$}
+  {Sa trace vaut $1$}
+  {Ses coefficients sont réels}
+  {Elle est unitaire : $U^\dagger U=\mathrm{Id}$}
+  {D}
+\qcmx
+  {Vrai pour $X$, $Y$, $Z$, $H$ mais faux pour $S$ et $T$ : ce n'est pas la condition générale.}
+  {C'est une propriété des matrices de densité ; $\operatorname{Tr}X=0$ et $\operatorname{Tr}\mathrm{Id}=2$.}
+  {$Y$ et $S$ sont des portes à coefficients complexes.}
+  {Elle conserve la norme ($\braket{\Psi}{\Psi}=1$ reste vrai) et elle est réversible.}
+
+% ---- Question 22 (niveau 1, correct : A)
+\qcmq[2]{Chap.~\ref{chap:portes}\,$\cdot$\,\S\,\ref{sec:portes}}
+  {Quel est l'inverse d'une porte quantique $U$ ?}
+  {$U^{-1}=U^\dagger$ (transposée conjuguée)}
+  {$U^{-1}=U^{\mathsf T}$ (transposée seule)}
+  {$U^{-1}=U^{*}$ (conjuguée seule)}
+  {$U^{-1}=-U$}
+  {A}
+\qcmx
+  {Conséquence de $U^\dagger U=\mathrm{Id}$ ; par exemple $S^{-1}=S^\dagger=\mathrm{diag}(1,-\ii)$.}
+  {Oubli de la conjugaison : $S^{\mathsf T}=S=\mathrm{diag}(1,\ii)$ alors que $S^{-1}=\mathrm{diag}(1,-\ii)$.}
+  {Faux en général : $Y^*=-Y$ alors que $Y^{-1}=Y$.}
+  {Faux : $X^{-1}=X\neq-X$.}
+
+% ---- Question 23 (niveau 1, correct : C)
+\qcmq[1]{Chap.~\ref{chap:portes}\,$\cdot$\,\S\,\ref{sec:cnot}}
+  {Dans une porte CNOT, que devient le qubit cible lorsque le qubit de contrôle est dans l'état $\ket{0}$ ?}
+  {Il est inversé par la porte $X$}
+  {Il est remis à $\ket{0}$}
+  {Il reste inchangé}
+  {Il subit un changement de signe, comme avec $Z$}
+  {C}
+\qcmx
+  {C'est ce qui se passe quand le contrôle vaut $\ket{1}$.}
+  {Le CNOT est réversible : remettre la cible à zéro détruirait de l'information.}
+  {Avec le contrôle à $\ket{0}$, la porte agit comme l'identité sur la cible.}
+  {Ce serait la porte $Z$ contrôlée (CZ), pas le CNOT.}
+
+% ---- Question 24 (niveau 1, correct : A)
+\qcmq[2]{Chap.~\ref{chap:portes}\,$\cdot$\,\S\,\ref{sec:cnot}}
+  {Le CNOT du cours a pour contrôle le second chiffre du ket et pour cible le premier : $\mathrm{CNOT}\ket{a,b}=\ket{a\oplus b,\,b}$. Que donne-t-il sur $\ket{0,1}$ ?}
+  {$\ket{1,1}$}
+  {$\ket{0,1}$}
+  {$\ket{0,0}$}
+  {$\ket{1,0}$}
+  {A}
+\qcmx
+  {Le contrôle $b=1$ inverse la cible : $0\oplus1=1$.}
+  {Le contrôle vaut $1$ : la cible est bien inversée.}
+  {C'est le contrôle qui serait inversé : le contrôle n'est jamais modifié.}
+  {Les deux qubits seraient inversés : seule la cible change.}
+
+% ---- Question 25 (niveau 1, correct : D)
+\qcmq[1]{Chap.~\ref{chap:bell}\,$\cdot$\,\S\,\ref{sec:bell}}
+  {Quelle propriété caractérise les quatre états de Bell ?}
+  {Ils sont séparables : chaque qubit a son propre état}
+  {Ils décrivent un seul qubit}
+  {Ils ne diffèrent que par une phase globale}
+  {Ils sont maximalement intriqués et forment une base orthonormée de l'espace de deux qubits}
+  {D}
+\qcmx
+  {$D=c_{00}c_{11}-c_{01}c_{10}=\pm\frac12\neq0$ : ils ne se factorisent pas.}
+  {Ce sont des états de deux qubits (quatre amplitudes sur $\ket{00},\ket{01},\ket{10},\ket{11}$).}
+  {Ils sont orthogonaux deux à deux : ce sont quatre états distincts, alors qu'une phase globale ne change pas l'état.}
+  {Aucun n'est un produit d'états à un qubit ($|D|=\frac12$, valeur maximale) et ils sont orthogonaux deux à deux.}
+
+% ---- Question 26 (niveau 1, correct : D)
+\qcmq[1]{Chap.~\ref{chap:bell}\,$\cdot$\,\S\,\ref{sec:teleportation}}
+  {Quel est l'objectif du protocole de téléportation quantique ?}
+  {Copier l'état d'un qubit inconnu sur le qubit de Bob}
+  {Transmettre une information plus vite que la lumière}
+  {Déplacer la particule physique d'Alice vers Bob}
+  {Transférer l'état d'un qubit inconnu d'Alice à Bob, avec une paire intriquée et deux bits classiques}
+  {D}
+\qcmx
+  {La copie est interdite (non-clonage) : après le protocole, l'état n'existe plus que chez Bob.}
+  {Sans les deux bits classiques, le qubit de Bob est dans l'état $\mathrm{Id}/2$ : il n'a reçu aucune information.}
+  {C'est l'état quantique qui est transféré, pas la particule qui le porte.}
+  {Le qubit lui-même n'est pas envoyé : son état est reconstruit chez Bob, et détruit chez Alice par la mesure.}
+
+% ---- Question 27 (niveau 1, correct : B)
+\qcmq[1]{Chap.~\ref{chap:bell}\,$\cdot$\,\S\,\ref{sec:teleportation}}
+  {Dans la téléportation, que doit envoyer Alice à Bob sur un canal classique pour qu'il retrouve l'état ?}
+  {Un qubit intriqué}
+  {Deux bits classiques, le résultat de sa mesure}
+  {Les amplitudes exactes $\alpha$ et $\beta$ de l'état}
+  {Un seul bit}
+  {B}
+\qcmx
+  {La paire intriquée est partagée avant le protocole ; on ne l'envoie pas après.}
+  {Les quatre résultats $(a,q)$ correspondent aux quatre corrections possibles ($I$, $Z$, $X$, $X$ puis $Z$) : il faut deux bits.}
+  {Alice ne connaît pas l'état à téléporter, et ces nombres complexes n'ont pas de description finie en bits.}
+  {Un bit ne distingue que deux cas, alors que Bob doit choisir parmi quatre corrections.}
+
+% ---- Question 28 (niveau 1, correct : A)
+\qcmq[1]{Chap.~\ref{chap:bell}\,$\cdot$\,\S\,\ref{sec:bell} ; ex.\,\ref{ex:superdense}}
+  {Quel est le but du codage superdense ?}
+  {Transmettre deux bits classiques en envoyant un seul qubit, grâce à une paire intriquée partagée}
+  {Transmettre l'état d'un qubit avec deux bits classiques}
+  {Compresser plusieurs qubits en un seul}
+  {Chiffrer un message de façon inviolable}
+  {A}
+\qcmx
+  {Alice applique l'une des quatre portes $I$, $Z$, $X$, $XZ$ à son qubit de la paire, l'envoie, et Bob identifie l'état de Bell obtenu.}
+  {C'est la téléportation, le protocole inverse.}
+  {Le protocole ne compresse pas de qubits : il fait passer deux bits classiques par un canal à un qubit.}
+  {Ce n'est pas un protocole de cryptographie : la paire intriquée sert à doubler la capacité du canal.}
+
+% ---- Question 29 (niveau 1, correct : A)
+\qcmq[1]{Chap.~\ref{chap:bell}\,$\cdot$\,\S\,\ref{sec:teleportation}}
+  {Que dit le théorème de non-clonage ?}
+  {Aucune opération ne peut copier parfaitement un état quantique inconnu quelconque}
+  {Il est impossible de mesurer un qubit sans le perturber}
+  {Il est impossible de créer de l'intrication}
+  {Il est impossible de copier un bit classique}
+  {A}
+\qcmx
+  {Une porte $U$ qui copierait $\ket{0}$ et $\ket{1}$ enverrait $\ket{+}\ket{0}$ sur un état intriqué, par linéarité, et non sur $\ket{+}\ket{+}$.}
+  {C'est l'effondrement de l'état, un autre principe.}
+  {L'intrication se crée très bien (Hadamard puis CNOT).}
+  {Le CNOT copie un bit classique : $\ket{0,b}\to\ket{b,b}$.}
+
+% ---- Question 30 (niveau 1, correct : B)
+\qcmq[1]{Chap.~\ref{chap:bell}\,$\cdot$\,\S\,\ref{sec:circuit-bell}}
+  {Quel enchaînement de portes transforme $\ket{00}$ en l'état de Bell $\ket{\Phi^+}=\frac{1}{\sqrt2}(\ket{00}+\ket{11})$ ?}
+  {CNOT, puis Hadamard sur le contrôle}
+  {Hadamard sur l'un des qubits, puis CNOT dont le contrôle est ce même qubit}
+  {Hadamard sur chacun des deux qubits}
+  {SWAP, puis $X$ sur un qubit}
+  {B}
+\qcmx
+  {Le CNOT ne fait rien sur $\ket{00}$ (contrôle à $0$) ; $H$ donne ensuite un état séparable.}
+  {$H$ crée $\ket{0}\otimes\ket{+}$, puis le CNOT recopie la superposition : $\frac{1}{\sqrt2}(\ket{00}+\ket{11})$.}
+  {On obtient $\ket{+}\otimes\ket{+}$, séparable : des portes locales ne créent pas d'intrication.}
+  {$\ket{00}$ devient $\ket{01}$ ou $\ket{10}$, un état de base séparable.}
+
+\clearpage
+%% ======================================================================
+\subsection{Niveau 2 : intermédiaire (questions 31 à 60)}\label{sec:qcm-n2}
+%% ======================================================================
+\noindent{\color{insagris}\small Niveau de difficulté : Intermédiaire\quad $\bullet\bullet\circ\circ$}\par\smallskip
+% ---- Question 31 (niveau 2, correct : A)
+\qcmq[1]{Chap.~\ref{chap:histoire}\,$\cdot$\,\S\,\ref{sec:born}}
+  {Quelle condition la fonction d'onde d'une particule doit-elle vérifier sur tout l'espace ?}
+  {$\displaystyle\int_{-\infty}^{+\infty}|\Psi(x,t)|^2\,\dd x=1$}
+  {$\displaystyle\int_{-\infty}^{+\infty}\Psi(x,t)\,\dd x=1$}
+  {$|\Psi(x,t)|^2=1$ pour tout $x$}
+  {$\partial_x\Psi(x,t)=0$ en tout point}
+  {A}
+\qcmx
+  {La particule se trouve forcément quelque part : la probabilité totale vaut $1$ (condition de normalisation).}
+  {Sans le module au carré : $\Psi$ est complexe et son intégrale n'est pas une probabilité (elle peut être nulle ou complexe).}
+  {$|\Psi|^2$ est une densité : si elle valait $1$ partout, son intégrale divergerait.}
+  {Une fonction constante n'est pas normalisable ($\int|\Psi|^2\dd x$ diverge) ; la condition porte sur l'intégrale de $|\Psi|^2$.}
+
+% ---- Question 32 (niveau 2, correct : D)
+\qcmq[2]{Chap.~\ref{chap:histoire}\,$\cdot$\,\S\,\ref{sec:operateurs}}
+  {Quelle est l'expression de l'opérateur quantité de mouvement $\hat p$ en une dimension ?}
+  {$\hat p=m\,v$}
+  {$\hat p=-\dfrac{\hbar^2}{2m}\dfrac{\partial^2}{\partial x^2}$}
+  {$\hat p=+\ii\hbar\,\dfrac{\partial}{\partial x}$}
+  {$\hat p=-\ii\hbar\,\dfrac{\partial}{\partial x}$}
+  {D}
+\qcmx
+  {C'est la grandeur classique ; en mécanique quantique $p$ est un opérateur différentiel.}
+  {C'est l'énergie cinétique $\hat p^2/2m$.}
+  {Erreur de signe : on trouverait $p=-\hbar k$ pour l'onde $\ee^{\ii kx}$.}
+  {Convention du cours : $\hat p\,\ee^{\ii kx}=\hbar k\,\ee^{\ii kx}$, donc une onde vers les $x$ croissants a $p=\hbar k>0$.}
+
+% ---- Question 33 (niveau 2, correct : B)
+\qcmq[2]{Chap.~\ref{chap:histoire}\,$\cdot$\,\S\,\ref{sec:solutions}}
+  {Pour une particule dans un puits de potentiel infini de largeur $a$, comment varie l'énergie $E_n$ avec le numéro $n$ du niveau ?}
+  {$E_n=E_1/n$}
+  {$E_n=n^2E_1$, avec $E_1=\dfrac{\pi^2\hbar^2}{2ma^2}$}
+  {$E_n=nE_1$}
+  {$E_n=E_1$ pour tout $n$}
+  {B}
+\qcmx
+  {Les niveaux se resserreraient quand $n$ augmente ; c'est l'inverse pour le puits infini.}
+  {$k_n=\frac{n\pi}{a}$ et $E_n=\frac{\hbar^2k_n^2}{2m}$ : les niveaux s'écartent quand $n$ croît ($E_{n+1}-E_n=(2n+1)E_1$).}
+  {Niveaux équidistants : ce n'est pas le puits infini, où $E_2=4E_1$ et $E_3=9E_1$.}
+  {Il n'y aurait pas de quantification : tous les états auraient la même énergie.}
+
+% ---- Question 34 (niveau 2, correct : C)
+\qcmq[2]{Chap.~\ref{chap:histoire}\,$\cdot$\,\S\,\ref{sec:solutions}}
+  {Une particule est dans un état stationnaire $\Psi_n$ de l'hamiltonien ($\Hop\Psi_n=E_n\Psi_n$). Que vaut l'écart-type $\sigma_E$ de son énergie ?}
+  {$E_n$}
+  {$E_n^2$}
+  {$0$}
+  {$\sqrt{E_n}$}
+  {C}
+\qcmx
+  {C'est la valeur moyenne de l'énergie, pas son écart-type.}
+  {C'est la valeur de $\langle\Hop^2\rangle$, avant soustraction de $\langle\Hop\rangle^2$.}
+  {$\langle\Hop\rangle=E_n$ et $\langle\Hop^2\rangle=E_n^2$, donc $\sigma_E=\sqrt{E_n^2-E_n^2}=0$ : l'énergie est parfaitement déterminée.}
+  {Mélange avec la formule $\sigma=\sqrt{\langle\Hop^2\rangle-\langle\Hop\rangle^2}$ : les deux termes sont égaux à $E_n^2$.}
+
+% ---- Question 35 (niveau 2, correct : C)
+\qcmq[2]{Chap.~\ref{chap:histoire}\,$\cdot$\,\S\,\ref{sec:solutions}}
+  {Pour un état stationnaire $\Psi_n$ du puits infini $]0,a[$, que vaut la position moyenne $\langle\hat x\rangle$ ?}
+  {$a/n$}
+  {$a/4$}
+  {$a/2$ pour tout $n$}
+  {$0$}
+  {C}
+\qcmx
+  {Elle dépendrait de $n$, ce que la symétrie de $|\Psi_n|^2$ interdit.}
+  {C'est la position d'un maximum de $|\Psi_2|^2$ ; la moyenne des deux maxima $\frac a4$ et $\frac{3a}{4}$ donne $\frac a2$.}
+  {$|\Psi_n|^2=\frac2a\sin^2\frac{n\pi x}{a}$ est symétrique par rapport au centre du puits.}
+  {$\Psi_n$ s'annule sur la paroi, mais $\langle\hat x\rangle$ est une moyenne pondérée sur tout le puits.}
+
+% ---- Question 36 (niveau 2, correct : D)
+\qcmq[2]{Chap.~\ref{chap:dirac}\,$\cdot$\,\S\,\ref{sec:qubit}}
+  {Un qubit est dans l'état $\ket{\Psi}=\frac{1}{\sqrt5}\ket{0}+\frac{2\ii}{\sqrt5}\ket{1}$. Quelle est la probabilité de mesurer $1$ en base $Z$ ?}
+  {$\frac25$}
+  {$-\frac45$}
+  {$\frac15$}
+  {$\frac45$}
+  {D}
+\qcmx
+  {On divise le coefficient $2$ par $5$ : on oublie à la fois la racine et le carré.}
+  {On élève $\frac{2\ii}{\sqrt5}$ au carré sans conjuguer : $\left(\frac{2\ii}{\sqrt5}\right)^2=-\frac45$ ; une probabilité est $|\cdot|^2$.}
+  {C'est $P(0)=\left|\frac{1}{\sqrt5}\right|^2$.}
+  {$P(1)=\left|\frac{2\ii}{\sqrt5}\right|^2=\frac45$ : le facteur $\ii$ est une phase relative, invisible en base $Z$.}
+
+% ---- Question 37 (niveau 2, correct : C)
+\qcmq[2]{Chap.~\ref{chap:dirac}\,$\cdot$\,\S\,\ref{sec:projecteurs}}
+  {Un qubit préparé dans $\ket{0}$ est mesuré dans la base $X$ $\{\ket{+},\ket{-}\}$. Quelle est la probabilité d'obtenir $-$ ?}
+  {$0$}
+  {$1$}
+  {$\frac12$}
+  {$\frac{1}{\sqrt2}$}
+  {C}
+\qcmx
+  {$\ket{0}$ est certain en base $Z$, mais pas en base $X$ : une autre base donne une autre loi.}
+  {Même confusion dans l'autre sens : $\ket{0}$ n'est pas l'état $\ket{-}$.}
+  {$P(-)=|\braket{-}{0}|^2=\left|\frac{1}{\sqrt2}\right|^2=\frac12$.}
+  {C'est l'amplitude $\braket{-}{0}$ ; il faut élever son module au carré.}
+
+% ---- Question 38 (niveau 2, correct : C)
+\qcmq[2]{Chap.~\ref{chap:dirac}\,$\cdot$\,\S\,\ref{sec:qubit}}
+  {Quel facteur $N>0$ normalise l'état $N\big(\ket{0}+(1-\ii)\ket{1}\big)$ ?}
+  {$N=\frac{1}{\sqrt2}$}
+  {$N=\frac13$}
+  {$N=\frac{1}{\sqrt3}$}
+  {$N=\frac{1}{\sqrt{1-2\ii}}$}
+  {C}
+\qcmx
+  {On oublie la composante $\ket{0}$ : $|1-\ii|^2=2$, mais la norme au carré est $1+2=3$.}
+  {On oublie la racine carrée : $3N^2=1$ donne $N=\frac{1}{\sqrt3}$, pas $\frac13$.}
+  {$\braket{\Psi}{\Psi}=N^2\big(1+|1-\ii|^2\big)=N^2(1+2)=3N^2$.}
+  {On élève $1-\ii$ au carré sans prendre le module : $(1-\ii)^2=-2\ii$ n'est pas réel ; il faut $|1-\ii|^2=2$.}
+
+% ---- Question 39 (niveau 2, correct : D)
+\qcmq[2]{Chap.~\ref{chap:dirac}\,$\cdot$\,\S\,\ref{sec:hilbert}}
+  {Soient $\ket{\psi}=\frac{1}{\sqrt2}(\ket{0}+\ii\ket{1})$ et $\ket{\varphi}=\frac{1}{\sqrt2}(\ket{0}-\ket{1})$. Que vaut $\braket{\psi}{\varphi}$ ?}
+  {$\frac{1-\ii}{2}$}
+  {$\frac12$}
+  {$0$}
+  {$\frac{1+\ii}{2}$}
+  {D}
+\qcmx
+  {On oublie de conjuguer l'amplitude $\ii$ du bra : on calcule $\frac12\big(1+\ii\cdot(-1)\big)$.}
+  {Seul le terme en $\ket{0}$ est compté ; le terme en $\ket{1}$ vaut $\frac12(-\ii)(-1)=\frac{\ii}{2}$, non nul.}
+  {Confusion avec $\braket{+}{-}=0$ ; ici $|\braket{\psi}{\varphi}|^2=\frac12$.}
+  {Le bra conjugue les amplitudes : $\bra{\psi}=\frac{1}{\sqrt2}(\bra{0}-\ii\bra{1})$, d'où $\frac12\big(1+(-\ii)(-1)\big)=\frac{1+\ii}{2}$.}
+
+% ---- Question 40 (niveau 2, correct : A)
+\qcmq[2]{Chap.~\ref{chap:dirac}\,$\cdot$\,\S\,\ref{sec:qubit}}
+  {Lequel de ces états est orthogonal à $\ket{{+}\ii}=\frac{1}{\sqrt2}(\ket{0}+\ii\ket{1})$ ?}
+  {$\ket{{-}\ii}=\frac{1}{\sqrt2}(\ket{0}-\ii\ket{1})$}
+  {$\ket{-}=\frac{1}{\sqrt2}(\ket{0}-\ket{1})$}
+  {$\ket{+}=\frac{1}{\sqrt2}(\ket{0}+\ket{1})$}
+  {$\ket{1}$}
+  {A}
+\qcmx
+  {$\braket{{+}\ii}{{-}\ii}=\frac12\big(1+(-\ii)(-\ii)\big)=\frac12(1-1)=0$, en conjuguant le bra.}
+  {$\braket{{+}\ii}{-}=\frac{1+\ii}{2}\neq0$ : $\ket{-}$ est orthogonal à $\ket{+}$, pas à $\ket{{+}\ii}$.}
+  {$\braket{{+}\ii}{+}=\frac{1-\ii}{2}\neq0$.}
+  {$\braket{{+}\ii}{1}=\frac{-\ii}{\sqrt2}\neq0$ : $\ket{1}$ est orthogonal à $\ket{0}$ seulement.}
+
+% ---- Question 41 (niveau 2, correct : D)
+\qcmq[1]{Chap.~\ref{chap:operateurs}\,$\cdot$\,\S\,\ref{sec:pur-mixte}}
+  {Une matrice de densité de qubit a pour pureté $\operatorname{Tr}(\rho^2)=\frac58$. Que peut-on en conclure ?}
+  {L'état est pur}
+  {La matrice n'est pas une matrice de densité valide}
+  {L'état est maximalement mixte, $\rho=\mathrm{Id}/2$}
+  {L'état est mixte (mélange statistique)}
+  {D}
+\qcmx
+  {Il faudrait $\operatorname{Tr}\rho^2=1$.}
+  {$\frac58$ est compris entre $\frac12$ et $1$ : valeur admissible (exemple du cours : $\mathrm{diag}(\frac34,\frac14)$).}
+  {Ce cas donnerait $\operatorname{Tr}\rho^2=\frac12$.}
+  {$\operatorname{Tr}\rho^2<1$ ; pour un qubit, $\frac12\leq\operatorname{Tr}\rho^2\leq1$ et $\frac58$ est une valeur admissible.}
+
+% ---- Question 42 (niveau 2, correct : B)
+\qcmq[2]{Chap.~\ref{chap:operateurs}\,$\cdot$\,\S\,\ref{sec:rho}}
+  {Que vaut $\langle Z\rangle=\operatorname{Tr}(\rho Z)$ pour un qubit dans l'état $\ket{+}$ ?}
+  {$1$}
+  {$0$}
+  {$-1$}
+  {$\frac{1}{\sqrt2}$}
+  {B}
+\qcmx
+  {C'est la valeur pour $\ket{0}$.}
+  {$\rho=\frac12\begin{pmatrix}1&1\\1&1\end{pmatrix}$ et $\operatorname{Tr}(\rho Z)=\frac12-\frac12=0$ : les résultats $+1$ et $-1$ sont équiprobables.}
+  {C'est la valeur pour $\ket{1}$.}
+  {C'est l'amplitude de $\ket{0}$ dans $\ket{+}$, pas une valeur moyenne de $Z$.}
+
+% ---- Question 43 (niveau 2, correct : A)
+\qcmq[1]{Chap.~\ref{chap:operateurs}\,$\cdot$\,\S\,\ref{sec:bloch}}
+  {Sur la boule de Bloch, que représente un point situé à l'intérieur de la sphère ($|\vec r|<1$) ?}
+  {Un état mixte, de pureté $\operatorname{Tr}\rho^2=\frac{1+|\vec r|^2}{2}<1$}
+  {Un état pur dont la norme n'est pas $1$}
+  {Un état pur en superposition}
+  {Un point sans signification physique}
+  {A}
+\qcmx
+  {Les états purs sont sur la sphère ; le centre $\vec r=\vec0$ est l'état maximalement mixte $\mathrm{Id}/2$.}
+  {Tout état pur est normalisé et situé sur la sphère.}
+  {Les états purs, superpositions comprises, sont tous \emph{sur} la sphère.}
+  {Tout point de la boule est une matrice de densité valide.}
+
+% ---- Question 44 (niveau 2, correct : B)
+\qcmq[1]{Chap.~\ref{chap:operateurs}\,$\cdot$\,\S\,\ref{sec:pur-mixte}}
+  {Par quoi la matrice de densité distingue-t-elle l'état pur $\ket{+}$ du mélange équiprobable de $\ket{0}$ et $\ket{1}$ ?}
+  {Par leur trace, égale à $1$ pour l'état pur seulement}
+  {Par les éléments hors diagonale (cohérences), non nuls pour $\ket{+}$ et nuls pour le mélange}
+  {Par leurs éléments diagonaux, qui sont différents}
+  {Ils ne se distinguent pas : c'est la même matrice}
+  {B}
+\qcmx
+  {La trace vaut $1$ pour toute matrice de densité.}
+  {$\ket{+}\bra{+}=\frac12\begin{pmatrix}1&1\\1&1\end{pmatrix}$ et le mélange vaut $\frac12\mathrm{Id}$ ; une mesure en base $X$ les distingue.}
+  {Les deux ont la diagonale $(\frac12,\frac12)$ : $P(0)=P(1)=\frac12$ dans les deux cas.}
+  {Les matrices sont différentes : en base $X$, $\ket{+}$ donne $+$ avec certitude, le mélange donne $\pm$ à pile ou face.}
+
+% ---- Question 45 (niveau 2, correct : C)
+\qcmq[2]{Chap.~\ref{chap:operateurs}\,$\cdot$\,\S\,\ref{sec:rho}}
+  {Un qubit est préparé dans $\ket{0}$ avec la probabilité $\frac34$ et dans $\ket{1}$ avec la probabilité $\frac14$. Que vaut $\langle Z\rangle=\operatorname{Tr}(\rho Z)$ ?}
+  {$\frac34$}
+  {$1$}
+  {$\frac12$}
+  {$0$}
+  {C}
+\qcmx
+  {C'est la probabilité $\rho_{00}$ de lire $0$ ; or $Z$ vaut $+1$ pour $0$ et $-1$ pour $1$.}
+  {Valeur pour $\rho=\ket{0}\bra{0}$ (préparation certaine de $\ket{0}$).}
+  {$\rho=\mathrm{diag}(\frac34,\frac14)$, donc $\operatorname{Tr}(\rho Z)=\frac34\cdot1+\frac14\cdot(-1)=\frac12$ : c'est la coordonnée $r_z$ de la sphère de Bloch.}
+  {Valeur pour le mélange équiprobable $\mathrm{Id}/2$.}
+
+% ---- Question 46 (niveau 2, correct : B)
+\qcmq[2]{Chap.~\ref{chap:operateurs}\,$\cdot$\,\S\,\ref{sec:tenseur}}
+  {Dans la base ordonnée $\{\ket{00},\ket{01},\ket{10},\ket{11}\}$, quel vecteur colonne représente $\ket{1}\otimes\ket{0}=\ket{10}$ ?}
+  {$(0,1,0,0)^{\mathsf T}$}
+  {$(0,0,1,0)^{\mathsf T}$}
+  {$(1,0,0,0)^{\mathsf T}$}
+  {$(0,0,0,1)^{\mathsf T}$}
+  {B}
+\qcmx
+  {C'est $\ket{01}$ : l'ordre des facteurs est inversé.}
+  {$\binom{0}{1}\otimes\binom{1}{0}=\big(0\binom{1}{0},\,1\binom{1}{0}\big)=(0,0,1,0)^{\mathsf T}$ : c'est le troisième vecteur de la base.}
+  {C'est $\ket{00}$.}
+  {C'est $\ket{11}$.}
+
+% ---- Question 47 (niveau 2, correct : D)
+\qcmq[2]{Chap.~\ref{chap:portes}\,$\cdot$\,\S\,\ref{sec:phase}}
+  {Quelle relation lie la porte de phase $S=\mathrm{diag}(1,\ii)$ à la porte $Z$ ?}
+  {$S=Z$}
+  {$S^2=X$}
+  {$S^4=Z$}
+  {$S^2=Z$}
+  {D}
+\qcmx
+  {$Z=\mathrm{diag}(1,-1)$ : $S$ est un quart de tour, $Z$ un demi-tour.}
+  {$S^2$ est diagonale alors que $X$ ne l'est pas ; c'est $HSH$ qui est une racine carrée de $X$.}
+  {$S^4=\mathrm{diag}(1,\ii^4)=\mathrm{Id}$.}
+  {$S^2=\mathrm{diag}(1,\ii^2)=\mathrm{diag}(1,-1)=Z$ : deux quarts de tour autour de $z$ font un demi-tour.}
+
+% ---- Question 48 (niveau 2, correct : A)
+\qcmq[2]{Chap.~\ref{chap:portes}\,$\cdot$\,\S\,\ref{sec:controlees}}
+  {Dans la porte de Toffoli (CCNOT) à trois qubits $x,y,z$, à quelle condition la cible $z$ est-elle inversée ?}
+  {Seulement si $x=1$ et $y=1$}
+  {Si $x=1$ ou $y=1$}
+  {Si $x\neq y$}
+  {Si $x=0$ et $y=0$}
+  {A}
+\qcmx
+  {$\ket{x,y,z}\to\ket{x,y,z\oplus xy}$ : la cible est inversée si et seulement si le produit $xy$ vaut $1$.}
+  {Un seul contrôle à $1$ ne suffit pas : pour $(x,y)=(1,0)$, $xy=0$ et la cible ne change pas.}
+  {Ce serait deux CNOT ($z\to z\oplus x\oplus y$) ; pour $(1,0)$ le Toffoli n'inverse rien.}
+  {Pour $(0,0)$ on a $xy=0$ : la cible ne change pas.}
+
+% ---- Question 49 (niveau 2, correct : A)
+\qcmq[1]{Chap.~\ref{chap:portes}\,$\cdot$\,\S\,\ref{sec:portes}}
+  {Pour un hamiltonien $\Hop$ indépendant du temps, quel opérateur d'évolution $U(t,t_0)$ vérifie $\ket{\Psi(t)}=U(t,t_0)\ket{\Psi(t_0)}$ ?}
+  {$U(t,t_0)=\ee^{-\ii\Hop(t-t_0)/\hbar}$}
+  {$U(t,t_0)=\ee^{+\ii\Hop(t-t_0)/\hbar}$}
+  {$U(t,t_0)=-\ii\hbar\,\partial_t$}
+  {$U(t,t_0)=\Hop\,(t-t_0)/\hbar$}
+  {A}
+\qcmx
+  {Solution de $\ii\hbar\,\partial_t\ket{\Psi}=\Hop\ket{\Psi}$ ; comme $\Hop$ est hermitien, $U^\dagger U=\mathrm{Id}$ : l'évolution est unitaire.}
+  {Erreur de signe : c'est $U^\dagger$, qui remonte le temps.}
+  {C'est un opérateur différentiel, pas un opérateur d'évolution ; l'équation de Schrödinger s'écrit $\ii\hbar\,\partial_t\ket{\Psi}=\Hop\ket{\Psi}$.}
+  {On oublie l'exponentielle et le facteur $\ii$ : cet opérateur est hermitien, pas unitaire.}
+
+% ---- Question 50 (niveau 2, correct : D)
+\qcmq[2]{Chap.~\ref{chap:portes}\,$\cdot$\,\S\,\ref{sec:controlees}}
+  {La porte de Fredkin (SWAP contrôlé) a pour contrôle le premier qubit. Que donne-t-elle sur $\ket{1,0,1}$ ?}
+  {$\ket{1,0,1}$}
+  {$\ket{0,1,1}$}
+  {$\ket{1,1,1}$}
+  {$\ket{1,1,0}$}
+  {D}
+\qcmx
+  {C'est le résultat si le contrôle valait $0$ ; ici il vaut $1$ et les deux autres qubits sont différents.}
+  {Le SWAP porte sur les qubits $2$ et $3$, pas sur le contrôle.}
+  {Un SWAP ne change pas le nombre de $1$, il permute seulement ; $\ket{1,1,1}$ viendrait d'un NOT.}
+  {Le contrôle vaut $1$ : les deux autres qubits sont échangés, $\ket{0,1}\to\ket{1,0}$.}
+
+% ---- Question 51 (niveau 2, correct : A)
+\qcmq[1]{Chap.~\ref{chap:portes}\,$\cdot$\,\S\,\ref{sec:op2}}
+  {Que donne $(H\otimes I)\ket{00}$, où $H$ agit sur le premier facteur du produit tensoriel $\ket{a}\otimes\ket{b}$ ?}
+  {$\ket{+}\otimes\ket{0}=\frac{1}{\sqrt2}(\ket{00}+\ket{10})$}
+  {$\frac12(\ket{00}+\ket{01}+\ket{10}+\ket{11})$}
+  {$\ket{0}\otimes\ket{+}=\frac{1}{\sqrt2}(\ket{00}+\ket{01})$}
+  {$\frac{1}{\sqrt2}(\ket{00}+\ket{11})$}
+  {A}
+\qcmx
+  {$(A\otimes B)(\ket{u}\otimes\ket{v})=A\ket{u}\otimes B\ket{v}$ : $H\ket{0}=\ket{+}$ sur le premier facteur, $I\ket{0}=\ket{0}$ sur le second.}
+  {C'est $(H\otimes H)\ket{00}$ : ici le second qubit n'est pas touché.}
+  {$H$ agit sur le premier qubit, pas sur le second : les facteurs sont inversés.}
+  {C'est $\ket{\Phi^+}$ : il faut un CNOT pour intriquer ; des portes locales laissent l'état séparable.}
+
+% ---- Question 52 (niveau 2, correct : C)
+\qcmq[1]{Chap.~\ref{chap:bell}\,$\cdot$\,\S\,\ref{sec:separable}}
+  {Pourquoi l'état de Bell $\ket{\Phi^+}=\frac{1}{\sqrt2}(\ket{00}+\ket{11})$ est-il dit intriqué ?}
+  {Parce que $P(01)=0$}
+  {Parce que chaque qubit, pris seul, est dans un état pur}
+  {Il ne peut pas s'écrire comme un produit $\ket{\varphi}_A\otimes\ket{\chi}_B$ : $D=c_{00}c_{11}-c_{01}c_{10}=\frac12\neq0$}
+  {Parce qu'il est orthogonal à $\ket{00}$}
+  {C}
+\qcmx
+  {C'est vrai, mais $\ket{00}$ a aussi $P(01)=0$ et il est séparable : cette condition ne prouve rien.}
+  {C'est l'inverse : pris seul, chaque qubit est complètement mixte ($\rho_A=\mathrm{Id}/2$).}
+  {Un produit imposerait $D=0$ ; aucun des deux qubits n'a d'état propre.}
+  {$\braket{00}{\Phi^+}=\frac{1}{\sqrt2}\neq0$ ; l'orthogonalité n'a pas de lien avec l'intrication.}
+
+% ---- Question 53 (niveau 2, correct : B)
+\qcmq[2]{Chap.~\ref{chap:bell}\,$\cdot$\,\S\,\ref{sec:teleportation}}
+  {Dans la téléportation du cours, Alice obtient les résultats $a=0$ et $q=1$. Quelle correction Bob doit-il appliquer à son qubit ?}
+  {La porte $X$}
+  {La porte $Z$}
+  {$X$ puis $Z$}
+  {Aucune, l'état est déjà $\ket{\varphi}$}
+  {B}
+\qcmx
+  {$X$ corrige le cas $a=1$ (inversion de bit) ; ici $a=0$.}
+  {Bob détient $\alpha\ket{0}-\beta\ket{1}=Z\ket{\varphi}$ ; $Z$ rétablit le signe : $Z(\alpha\ket{0}-\beta\ket{1})=\alpha\ket{0}+\beta\ket{1}$.}
+  {Les deux corrections ne sont nécessaires que pour $(a,q)=(1,1)$.}
+  {Ce n'est vrai que pour $(a,q)=(0,0)$.}
+
+% ---- Question 54 (niveau 2, correct : B)
+\qcmq[2]{Chap.~\ref{chap:bell}\,$\cdot$\,\S\,\ref{sec:bell} ; ex.\,\ref{ex:superdense}}
+  {Dans le codage superdense, Alice et Bob partagent $\ket{\Phi^+}$ et Alice agit sur son qubit. Quelle porte transforme $\ket{\Phi^+}$ en $\ket{\Psi^+}=\frac{1}{\sqrt2}(\ket{01}+\ket{10})$ ?}
+  {La porte $Z$}
+  {La porte $X$}
+  {La porte identité}
+  {La porte $H$}
+  {B}
+\qcmx
+  {$Z$ donne $\ket{\Phi^-}=\frac{1}{\sqrt2}(\ket{00}-\ket{11})$ : elle change un signe, pas les chiffres.}
+  {$X$ échange $\ket{0}$ et $\ket{1}$ sur un qubit : $\ket{00}+\ket{11}\to\ket{01}+\ket{10}$ ; c'est le message $10$.}
+  {Elle laisse $\ket{\Phi^+}$ : c'est le message $00$.}
+  {$(H\otimes I)\ket{\Phi^+}$ est une superposition de deux états de Bell, pas un état de Bell.}
+
+% ---- Question 55 (niveau 2, correct : D)
+\qcmq[2]{Chap.~\ref{chap:bell}\,$\cdot$\,\S\,\ref{sec:info}}
+  {Pour deux qubits dans l'état de Bell $\ket{\Phi^+}$, que vaut l'entropie conditionnelle $H(A|B)=H(A,B)-H(B)$ ?}
+  {$0$ bit}
+  {$+1$ bit}
+  {$+2$ bits}
+  {$-1$ bit}
+  {D}
+\qcmx
+  {C'est la valeur classique quand $A$ est entièrement déterminé par $B$ (deux bits identiques) ; ici $H(A,B)=0$, pas $H(B)$.}
+  {C'est la valeur quand $A$ et $B$ sont indépendants : $H(A|B)=H(A)=1$.}
+  {C'est l'information mutuelle $I(A;B)=1+1-0=2$ bits, pas l'entropie conditionnelle.}
+  {$H(A,B)=S(\rho_{AB})=0$ (état pur) et $H(B)=1$ bit ($\rho_B=\mathrm{Id}/2$) : $0-1=-1$, valeur impossible en classique.}
+
+% ---- Question 56 (niveau 2, correct : B)
+\qcmq[1]{Chap.~\ref{chap:bell}\,$\cdot$\,\S\,\ref{sec:trace}}
+  {Quelle est la matrice de densité réduite $\rho_A=\operatorname{Tr}_B\rho_{AB}$ d'un qubit d'une paire dans l'état $\ket{\Phi^+}$ ?}
+  {$\rho_A=\ket{0}\bra{0}$}
+  {$\rho_A=\frac12\mathrm{Id}$, de pureté $\operatorname{Tr}\rho_A^2=\frac12$}
+  {$\rho_A=\ket{+}\bra{+}=\frac12\begin{pmatrix}1&1\\1&1\end{pmatrix}$}
+  {$\rho_A=\ket{\Phi^+}\bra{\Phi^+}$}
+  {B}
+\qcmx
+  {Le qubit aurait un état défini, ce qui est faux pour un état intriqué : $P(0)=P(1)=\frac12$.}
+  {$\rho_A=\frac12\big(\ket{0}\bra{0}+\ket{1}\bra{1}\big)$ : les termes croisés $\ket{00}\bra{11}$ s'annulent ($\braket{1}{0}=0$). Le couple est pur, mais chaque qubit est complètement mixte.}
+  {Les termes croisés sont multipliés par $\braket{1}{0}=0$ dans la trace partielle : ils disparaissent.}
+  {C'est la matrice $4\times4$ du couple ; la trace partielle donne une matrice $2\times2$.}
+
+% ---- Question 57 (niveau 2, correct : C)
+\qcmq[1]{Chap.~\ref{chap:bell}\,$\cdot$\,\S\,\ref{sec:separable}}
+  {Pour $\ket{\Psi}=c_{00}\ket{00}+c_{01}\ket{01}+c_{10}\ket{10}+c_{11}\ket{11}$, quel est le critère de séparabilité ?}
+  {$c_{00}c_{11}+c_{01}c_{10}=0$}
+  {$c_{00}c_{01}-c_{10}c_{11}=0$}
+  {$D=c_{00}c_{11}-c_{01}c_{10}=0$}
+  {$c_{00}=c_{11}$ et $c_{01}=c_{10}$}
+  {C}
+\qcmx
+  {Mauvais signe : $\ket{+}\otimes\ket{-}$ est séparable mais donnerait $-\frac12\neq0$.}
+  {Mauvais appariement : $\ket{\Psi^+}$ (intriqué) la vérifie, puisque $c_{00}=c_{11}=0$.}
+  {Un produit $(a_0\ket{0}+a_1\ket{1})\otimes(b_0\ket{0}+b_1\ket{1})$ a $c_{ij}=a_ib_j$, donc $c_{00}c_{11}=a_0a_1b_0b_1=c_{01}c_{10}$ ; la réciproque est vraie aussi.}
+  {Ni nécessaire ($\ket{00}$ est séparable avec $c_{00}\neq c_{11}$) ni suffisant ($\ket{\Phi^+}$ la vérifie et est intriqué).}
+
+% ---- Question 58 (niveau 2, correct : B)
+\qcmq[2]{Chap.~\ref{chap:bell}\,$\cdot$\,\S\,\ref{sec:bell}}
+  {Quelle est la valeur propre de $X\otimes X$ pour l'état $\ket{\Phi^+}$ ?}
+  {$-1$}
+  {$+1$}
+  {$0$}
+  {$\ket{\Phi^+}$ n'est pas un état propre de $X\otimes X$}
+  {B}
+\qcmx
+  {C'est la valeur pour $\ket{\Phi^-}$ et $\ket{\Psi^-}$ : le signe $-$ de l'état se retrouve dans la valeur propre.}
+  {$(X\otimes X)\ket{00}=\ket{11}$ et $(X\otimes X)\ket{11}=\ket{00}$, donc $(X\otimes X)\ket{\Phi^+}=\ket{\Phi^+}$.}
+  {$X\otimes X$ est unitaire : ses valeurs propres sont de module $1$, jamais nulles.}
+  {Les quatre états de Bell sont des états propres communs de $Z\otimes Z$ et de $X\otimes X$.}
+
+% ---- Question 59 (niveau 2, correct : A)
+\qcmq[2]{Chap.~\ref{chap:bell}\,$\cdot$\,\S\,\ref{sec:info}}
+  {Que vaut l'entropie de von Neumann $S(\rho)=-\sum_i\lambda_i\log_2\lambda_i$ d'un état pur ?}
+  {$0$ bit}
+  {$1$ bit}
+  {$-1$ bit}
+  {$+\infty$}
+  {A}
+\qcmx
+  {Les valeurs propres sont $1$ et $0$ : $1\cdot\log_21=0$ et $0\cdot\log_20=0$ (par continuité, $x\log_2x\to0$).}
+  {C'est la valeur pour l'état maximalement mixte $\mathrm{Id}/2$ d'un qubit.}
+  {L'entropie de $\rho$ est positive ou nulle ; seule l'entropie conditionnelle quantique peut être négative.}
+  {$\log_20$ diverge, mais le terme $0\cdot\log_20$ vaut $0$ par continuité.}
+
+% ---- Question 60 (niveau 2, correct : A)
+\qcmq[2]{Chap.~\ref{chap:bell}\,$\cdot$\,\S\,\ref{sec:bell}}
+  {Lequel des états de Bell a pour valeur propre $-1$ à la fois pour $Z\otimes Z$ et pour $X\otimes X$ ?}
+  {$\ket{\Psi^-}=\frac{1}{\sqrt2}(\ket{01}-\ket{10})$}
+  {$\ket{\Phi^+}$}
+  {$\ket{\Phi^-}$}
+  {$\ket{\Psi^+}$}
+  {A}
+\qcmx
+  {Résultats opposés dans les deux bases : $Z\otimes Z=-1$ (chiffres différents) et $X\otimes X=-1$ (signe $-$ dans l'état).}
+  {Valeurs propres $(Z\otimes Z,\,X\otimes X)=(+1,+1)$.}
+  {Valeurs propres $(Z\otimes Z,\,X\otimes X)=(+1,-1)$.}
+  {Valeurs propres $(Z\otimes Z,\,X\otimes X)=(-1,+1)$.}
+
+\clearpage
+%% ======================================================================
+\subsection{Niveau 3 : avancé (questions 61 à 90)}\label{sec:qcm-n3}
+%% ======================================================================
+\noindent{\color{insagris}\small Niveau de difficulté : Avancé\quad $\bullet\bullet\bullet\circ$}\par\smallskip
+% ---- Question 61 (niveau 3, correct : A)
+\qcmq[2]{Chap.~\ref{chap:histoire}\,$\cdot$\,\S\,\ref{sec:solutions}}
+  {Un électron d'un puits infini passe du niveau $n=3$ au niveau $n=2$ en émettant un photon. Quelle est l'énergie du photon, en fonction de $E_1$ ?}
+  {$5E_1$}
+  {$E_1$}
+  {$\frac94E_1$}
+  {$13E_1$}
+  {A}
+\qcmx
+  {$E_3-E_2=9E_1-4E_1=5E_1$ ; le photon a la fréquence $f=(E_3-E_2)/h$.}
+  {On a soustrait les numéros de niveau ($3-2=1$) au lieu de leurs carrés.}
+  {C'est le rapport $E_3/E_2$, pas la différence $E_3-E_2$.}
+  {On a additionné $9E_1+4E_1$ : l'énergie du photon est une différence de niveaux.}
+
+% ---- Question 62 (niveau 3, correct : A)
+\qcmq[2]{Chap.~\ref{chap:histoire}\,$\cdot$\,\S\,\ref{sec:superposition}}
+  {À $t=0$, une particule du puits infini est dans l'état $\Psi=\frac{\sqrt3}{2}\,\psi_1+\frac12\,\psi_3$ ($\psi_n$ : états stationnaires normalisés, d'énergies $E_n=n^2E_1$). Quelle est son énergie moyenne $\langle E\rangle$ ?}
+  {$3E_1$}
+  {$5E_1$}
+  {$\left(\frac{\sqrt3}{2}+\frac92\right)E_1$}
+  {$7E_1$}
+  {A}
+\qcmx
+  {$P(E_1)=\frac34$ et $P(E_3)=\frac14$, donc $\langle E\rangle=\frac34E_1+\frac14\cdot9E_1=3E_1$.}
+  {On a pondéré également les deux niveaux, $\frac{E_1+9E_1}{2}$ : les poids sont les $|c_i|^2$, pas $\frac12$.}
+  {On a pondéré par les amplitudes $c_i$ au lieu de leurs carrés $|c_i|^2$.}
+  {Poids permutés : $\frac14E_1+\frac34\cdot9E_1=7E_1$ ; la probabilité de $E_1$ est $\left|\frac{\sqrt3}{2}\right|^2=\frac34$.}
+
+% ---- Question 63 (niveau 3, correct : C)
+\qcmq[1]{Chap.~\ref{chap:histoire}\,$\cdot$\,\S\,\ref{sec:solutions}}
+  {Pour l'état stationnaire $n=2$ du puits infini $]0,a[$, que valent la densité de probabilité de présence en $x=a/2$ et la position moyenne $\langle\hat x\rangle$ ?}
+  {Densité maximale en $a/2$, et $\langle\hat x\rangle=a/2$}
+  {Densité nulle en $a/2$, et $\langle\hat x\rangle=0$}
+  {Densité nulle en $a/2$, et $\langle\hat x\rangle=a/2$}
+  {Densité maximale en $a/2$, et $\langle\hat x\rangle=a/4$}
+  {C}
+\qcmx
+  {C'est le cas de $n=1$ ; pour $n=2$ il y a un nœud au centre.}
+  {Une densité nulle au centre ne donne pas une moyenne nulle : $\langle\hat x\rangle$ pondère tout le puits et vaut $\frac a2$ par symétrie.}
+  {$|\Psi_2|^2=\frac2a\sin^2\frac{2\pi x}{a}$ s'annule en $x=\frac a2$ (nœud), alors que la symétrie impose $\langle\hat x\rangle=\frac a2$ : la moyenne n'est pas la position la plus probable.}
+  {Ni l'un ni l'autre : maxima en $\frac a4$ et $\frac{3a}4$, nœud en $\frac a2$, moyenne $\frac a2$.}
+
+% ---- Question 64 (niveau 3, correct : C)
+\qcmq[2]{Chap.~\ref{chap:dirac}\,$\cdot$\,\S\,\ref{sec:projecteurs}}
+  {Quelle est la matrice du projecteur $\hat P_+=\ket{+}\bra{+}$ dans la base $\{\ket{0},\ket{1}\}$ ?}
+  {$\frac12\begin{pmatrix}1&-1\\-1&1\end{pmatrix}$}
+  {$\begin{pmatrix}1&0\\0&0\end{pmatrix}$}
+  {$\frac12\begin{pmatrix}1&1\\1&1\end{pmatrix}$}
+  {$\frac{1}{\sqrt2}\begin{pmatrix}1&1\\1&-1\end{pmatrix}$}
+  {C}
+\qcmx
+  {C'est $\ket{-}\bra{-}$, le projecteur sur $\ket{-}$.}
+  {C'est $\ket{0}\bra{0}$ : projecteur de la base $Z$, pas de la base $X$.}
+  {$\ket{+}\bra{+}=\frac12(\ket0+\ket1)(\bra0+\bra1)$ ; on vérifie $\hat P_+^2=\hat P_+$ et $\operatorname{Tr}\hat P_+=1$.}
+  {C'est la matrice de Hadamard, unitaire ($H^2=\mathrm{Id}$), et non un projecteur (un projecteur vérifie $P^2=P$).}
+
+% ---- Question 65 (niveau 3, correct : B)
+\qcmq[2]{Chap.~\ref{chap:dirac}\,$\cdot$\,\S\,\ref{sec:projecteurs}}
+  {Un qubit préparé dans $\ket{0}$ est mesuré en base $X$, puis aussitôt en base $Z$. Quelle est la probabilité d'obtenir $1$ à la seconde mesure ?}
+  {$0$}
+  {$\frac12$}
+  {$1$}
+  {$\frac14$}
+  {B}
+\qcmx
+  {On garde $\ket{0}$ en mémoire : la mesure en base $X$ a effondré l'état sur $\ket{\pm}$ et effacé $\ket{0}$.}
+  {La première mesure donne $\ket{+}$ ou $\ket{-}$ (probabilité $\frac12$ chacun) ; dans les deux cas $P(1)=\frac12$ en base $Z$ : $\frac12\cdot\frac12+\frac12\cdot\frac12=\frac12$.}
+  {Sans rapport : $\ket{0}$ n'est plus l'état après la mesure en base $X$.}
+  {On n'a compté qu'une branche de la première mesure ; il faut sommer les deux ($\frac14+\frac14$).}
+
+% ---- Question 66 (niveau 3, correct : D)
+\qcmq[2]{Chap.~\ref{chap:dirac}\,$\cdot$\,\S\,\ref{sec:projecteurs}}
+  {Un qubit est dans l'état $\ket{\psi}=\frac{3}{5}\ket{0}+\frac{4}{5}\ket{1}$. Quelle est la probabilité d'obtenir $-$ en mesurant dans la base $X$ ?}
+  {$\frac{16}{25}$}
+  {$\frac{1}{25}$}
+  {$\frac{49}{50}$}
+  {$\frac{1}{50}$}
+  {D}
+\qcmx
+  {C'est $P(1)$ en base $Z$ ($|\frac45|^2$) : on a mesuré dans la mauvaise base.}
+  {On a oublié le facteur $\frac{1}{\sqrt2}$ de $\ket{-}$ : $\left|\frac35-\frac45\right|^2=\frac1{25}$, il manque le $\frac12$.}
+  {C'est $P(+)$ ; la probabilité demandée est celle du résultat $-$.}
+  {$\braket{-}{\psi}=\frac{1}{\sqrt2}\left(\frac35-\frac45\right)=-\frac{1}{5\sqrt2}$, donc $P(-)=\frac1{50}$ ; et $P(+)=\frac{49}{50}$.}
+
+% ---- Question 67 (niveau 3, correct : B)
+\qcmq[1]{Chap.~\ref{chap:dirac}\,$\cdot$\,\S\,\ref{sec:projecteurs}}
+  {Lequel de ces kets décrit le même état physique que $\ket{+}=\frac{1}{\sqrt2}(\ket{0}+\ket{1})$ ?}
+  {$\frac{1}{\sqrt2}\big(\ket{0}+\ii\ket{1}\big)$}
+  {$\ee^{\ii\pi/3}\ket{+}$}
+  {$\frac{1}{\sqrt2}\big(\ket{0}+\ee^{\ii\pi}\ket{1}\big)$}
+  {$\frac{1}{\sqrt2}\big(\ket{0}+\ee^{\ii\pi/3}\ket{1}\big)$}
+  {B}
+\qcmx
+  {La phase $\ii$ ne porte que sur $\ket{1}$ : c'est une phase \emph{relative}, et l'état est $\ket{{+}\ii}$ (base $Y$).}
+  {Un facteur de phase \emph{globale} multiplie tout le ket : toutes les probabilités de mesure (et $\rho=\ket{+}\bra{+}$) sont inchangées.}
+  {$\ee^{\ii\pi}=-1$ : c'est $\ket{-}$, orthogonal à $\ket{+}$.}
+  {Phase relative $\frac\pi3$ : c'est un autre état, sur l'équateur de la sphère de Bloch, à l'azimut $\frac\pi3$.}
+
+% ---- Question 68 (niveau 3, correct : A)
+\qcmq[2]{Chap.~\ref{chap:dirac}\,$\cdot$\,\S\,\ref{sec:qubit}}
+  {Laquelle de ces paires est une base orthonormée de $\mathbb{C}^2$ ?}
+  {$\{\ket{{+}\ii},\ket{{-}\ii}\}$}
+  {$\{\ket{0},\ket{+}\}$}
+  {$\{\ket{+},\ket{{-}\ii}\}$}
+  {$\{\ket{0},\ket{0}+\ket{1}\}$}
+  {A}
+\qcmx
+  {Ces deux états sont normés et orthogonaux : $\braket{{+}\ii}{{-}\ii}=\frac12(1-1)=0$.}
+  {Normés, mais $\braket{0}{+}=\frac{1}{\sqrt2}\neq0$ : pas orthogonaux.}
+  {$\braket{+}{{-}\ii}=\frac12(1-\ii)\neq0$ : pas orthogonaux.}
+  {Le second ket n'est pas normé (norme au carré $2$) ni orthogonal à $\ket{0}$.}
+
+% ---- Question 69 (niveau 3, correct : C)
+\qcmq[2]{Chap.~\ref{chap:operateurs}\,$\cdot$\,\S\,\ref{sec:rho}}
+  {Laquelle de ces matrices peut être la matrice de densité d'un qubit ?}
+  {$\begin{pmatrix}\frac12&\frac34\\\frac34&\frac12\end{pmatrix}$}
+  {$\begin{pmatrix}\frac12&\frac{\ii}{2}\\\frac{\ii}{2}&\frac12\end{pmatrix}$}
+  {$\begin{pmatrix}\frac23&\frac{\ii}{3}\\-\frac{\ii}{3}&\frac13\end{pmatrix}$}
+  {$\begin{pmatrix}\frac34&0\\0&\frac12\end{pmatrix}$}
+  {C}
+\qcmx
+  {Hermitienne et de trace $1$, mais pas positive : $\det=\frac14-\frac9{16}<0$, valeurs propres $\frac54$ et $-\frac14$ (une « probabilité » négative).}
+  {De trace $1$ mais pas hermitienne : il faudrait $\rho_{10}=\overline{\rho_{01}}=-\frac{\ii}{2}$.}
+  {Hermitienne ($\rho_{10}=\overline{\rho_{01}}$), de trace $1$ et positive : $\det\rho=\frac29-\frac19=\frac19>0$ avec $\operatorname{Tr}\rho>0$ donne deux valeurs propres positives, $\frac{3\pm\sqrt5}{6}$.}
+  {Hermitienne et positive, mais de trace $\frac54\neq1$ : les probabilités diagonales ne somment pas à $1$.}
+
+% ---- Question 70 (niveau 3, correct : B)
+\qcmq[2]{Chap.~\ref{chap:operateurs}\,$\cdot$\,\S\,\ref{sec:op-dirac}}
+  {Un qubit est dans l'état $\ket{\psi}=\frac{1}{\sqrt5}\big(\ket{0}+2\ii\ket{1}\big)$. Que vaut la valeur moyenne $\langle Y\rangle=\bra{\psi}Y\ket{\psi}$, avec $Y=\begin{pmatrix}0&-\ii\\\ii&0\end{pmatrix}$ ?}
+  {$0$}
+  {$\frac45$}
+  {$-\frac45$}
+  {$-\frac35$}
+  {B}
+\qcmx
+  {On a oublié de conjuguer les amplitudes du bra : $\psi^{\mathsf T}Y\psi=\frac15(2+2\ii\cdot\ii)=0$ (c'est d'ailleurs la valeur de $\langle X\rangle$ pour cet état).}
+  {$Y\ket\psi=\frac1{\sqrt5}(2\ket0+\ii\ket1)$, puis $\bra\psi Y\ket\psi=\frac15\big(1\cdot2+(-2\ii)(\ii)\big)=\frac45$ ; en général $\langle Y\rangle=2\,\mathrm{Im}(\bar\alpha\beta)$.}
+  {Erreur de signe : on a utilisé la transposée $\begin{pmatrix}0&\ii\\-\ii&0\end{pmatrix}=-Y$.}
+  {C'est $\langle Z\rangle=\frac15-\frac45$ : on a calculé la valeur moyenne d'une autre observable.}
+
+% ---- Question 71 (niveau 3, correct : D)
+\qcmq[1]{Chap.~\ref{chap:operateurs}\,$\cdot$\,\S\,\ref{sec:spectral}}
+  {On mesure l'observable $A=\begin{pmatrix}2&1\\1&2\end{pmatrix}$ sur un qubit préparé dans $\ket{0}$. Quelle affirmation est correcte ?}
+  {On obtient toujours $2$}
+  {On obtient $+1$ ou $-1$, avec la probabilité $\frac12$ chacun}
+  {On obtient $2$ ou $1$, avec les probabilités $\frac45$ et $\frac15$}
+  {On obtient $3$ ou $1$, avec la probabilité $\frac12$ chacun (moyenne $2$)}
+  {D}
+\qcmx
+  {On a lu le coefficient diagonal : $A\ket0=2\ket0+\ket1$ n'est pas proportionnel à $\ket0$, donc $\ket0$ n'est pas vecteur propre de $A$.}
+  {Ce sont les valeurs propres de $X$, pas de $A$ : le décalage $2\,\mathrm{Id}$ translate le spectre ($2\pm1$).}
+  {On a lu $A\ket0=2\ket0+\ket1$ comme un état : $A$ n'est pas unitaire, ce n'est pas une évolution ; les résultats possibles d'une mesure sont les valeurs propres de $A$.}
+  {$A=2\,\mathrm{Id}+X$ a les vecteurs propres de $X$ : valeur propre $3$ pour $\ket+$, $1$ pour $\ket-$. Comme $\ket0=\frac{1}{\sqrt2}(\ket++\ket-)$, les deux résultats sont équiprobables, et $\langle A\rangle=\bra0A\ket0=2$.}
+
+% ---- Question 72 (niveau 3, correct : D)
+\qcmq[2]{Chap.~\ref{chap:operateurs}\,$\cdot$\,\S\,\ref{sec:pur-mixte}}
+  {Un qubit est préparé dans $\ket{0}$ avec la probabilité $\frac12$ et dans $\ket{+}$ avec la probabilité $\frac12$. Quelle est la pureté $\operatorname{Tr}(\rho^2)$ de son état ?}
+  {$1$}
+  {$\frac12$}
+  {$\frac58$}
+  {$\frac34$}
+  {D}
+\qcmx
+  {Un mélange de deux états purs n'est pur que s'ils sont identiques ; ici $\ket0\neq\ket+$, donc $\operatorname{Tr}\rho^2<1$.}
+  {Valeur de l'état maximalement mixte $\frac{\mathrm{Id}}2$, atteinte pour deux états \emph{orthogonaux} ; ici ils ne le sont pas (on a aussi pu oublier les termes croisés).}
+  {On n'a additionné que les carrés des éléments diagonaux ($\frac9{16}+\frac1{16}$) : il manque $2\rho_{01}\rho_{10}=\frac2{16}$.}
+  {$\rho=\frac12\ket0\bra0+\frac12\ket+\bra+=\begin{pmatrix}\frac34&\frac14\\\frac14&\frac14\end{pmatrix}$, donc $\operatorname{Tr}\rho^2=\frac9{16}+\frac1{16}+2\cdot\frac1{16}=\frac34$ : état mixte, mais moins que $\frac{\mathrm{Id}}2$ car $\ket0$ et $\ket+$ ne sont pas orthogonaux.}
+
+% ---- Question 73 (niveau 3, correct : B)
+\qcmq[2]{Chap.~\ref{chap:operateurs}\,$\cdot$\,\S\,\ref{sec:bloch}}
+  {Quel est le vecteur de Bloch $(r_x,r_y,r_z)$ de l'état $\ket{\psi}=\cos\frac\pi6\,\ket0+\sin\frac\pi6\,\ket1$ ?}
+  {$\left(\frac12,\,0,\,\frac{\sqrt3}{2}\right)$}
+  {$\left(\frac{\sqrt3}{2},\,0,\,\frac12\right)$}
+  {$\left(\frac{\sqrt3}{4},\,0,\,\frac12\right)$}
+  {$\left(\frac{\sqrt3}{2},\,0,\,\frac34\right)$}
+  {B}
+\qcmx
+  {On a pris $\theta=\frac\pi6$ : l'angle de Bloch est le \emph{double} de l'angle qui figure dans les amplitudes.}
+  {Ici $\frac\theta2=\frac\pi6$, donc $\theta=\frac\pi3$ et $\varphi=0$ : $\vec r=(\sin\theta\cos\varphi,\sin\theta\sin\varphi,\cos\theta)$. Contrôle : $r_z=|\alpha|^2-|\beta|^2=\frac34-\frac14$ et $r_x=2\alpha\beta=\frac{\sqrt3}2$.}
+  {On a écrit $r_x=\alpha\beta$ en oubliant le facteur $2$ ; on le voit à $|\vec r|^2=\frac7{16}<1$, impossible pour un état pur.}
+  {On a pris $r_z=|\alpha|^2$ au lieu de $|\alpha|^2-|\beta|^2$ ; or $|\vec r|^2=\frac{21}{16}>1$ est impossible.}
+
+% ---- Question 74 (niveau 3, correct : A)
+\qcmq[2]{Chap.~\ref{chap:operateurs}\,$\cdot$\,\S\,\ref{sec:bloch}}
+  {Un qubit a pour matrice de densité $\rho=\frac12\begin{pmatrix}1&-\ii\\\ii&1\end{pmatrix}$. Quel est son vecteur de Bloch ?}
+  {$(0,\,1,\,0)$ : c'est l'état pur $\ket{{+}\ii}$}
+  {$(0,\,-1,\,0)$}
+  {$\left(0,\,\frac12,\,0\right)$}
+  {$(0,\,0,\,0)$}
+  {A}
+\qcmx
+  {Avec $\rho=\frac12\begin{pmatrix}1+r_z&r_x-\ii r_y\\r_x+\ii r_y&1-r_z\end{pmatrix}$ : $r_z=0$ et $r_x-\ii r_y=-\ii$, donc $r_y=1$, $r_x=0$. Comme $|\vec r|=1$, l'état est pur : $\ket{{+}\ii}\bra{{+}\ii}$.}
+  {Erreur de signe : $\rho_{01}=\frac{r_x-\ii r_y}{2}$, donc $\rho_{01}=-\frac\ii2$ correspond à $r_y=+1$ ($r_y=-1$ pour $\ket{{-}\ii}$).}
+  {On a lu $\rho_{01}=-\frac\ii2$ comme $-\ii r_y$ : il faut multiplier par $2$ ($\rho=\frac12(\mathrm{Id}+\vec r\cdot\vec\sigma)$).}
+  {Les diagonales $\frac12,\frac12$ donnent $r_z=0$, mais les éléments non diagonaux (cohérences) ne sont pas nuls : l'état est pur, et non $\frac{\mathrm{Id}}2$.}
+
+% ---- Question 75 (niveau 3, correct : C)
+\qcmq[2]{Chap.~\ref{chap:operateurs}\,$\cdot$\,\S\,\ref{sec:tenseur}}
+  {Que donne $(X\otimes Z)\,\big(\ket{+}\otimes\ket{-}\big)$ ?}
+  {$-\ket{-}\otimes\ket{-}$}
+  {$\ket{-}\otimes\ket{+}$}
+  {$\ket{+}\otimes\ket{+}$}
+  {$\ket{+}\otimes\ket{-}$}
+  {C}
+\qcmx
+  {On a échangé les facteurs ($Z\otimes X$) : $Z\ket+=\ket-$ et $X\ket-=-\ket-$. Le premier opérateur agit sur le premier qubit.}
+  {On a cru que $X$ transforme $\ket+$ en $\ket-$ ; or $X$ échange $\ket0$ et $\ket1$ et laisse $\ket+$ inchangé.}
+  {$(A\otimes B)(\ket u\otimes\ket v)=A\ket u\otimes B\ket v$ : $X\ket+=\ket+$ ($\ket+$ est propre pour $X$, valeur propre $+1$) et $Z\ket-=\ket+$ ($Z$ échange $\ket+$ et $\ket-$).}
+  {On a cru que $Z$ laisse $\ket-$ inchangé ; $Z$ ne laisse invariants que $\ket0$ et $\ket1$, et échange $\ket+$ et $\ket-$.}
+
+% ---- Question 76 (niveau 3, correct : C)
+\qcmq[2]{Chap.~\ref{chap:portes}\,$\cdot$\,\S\,\ref{sec:phase}}
+  {Le qubit $\ket{+}$ traverse la porte $T=\mathrm{diag}\big(1,\ee^{\ii\pi/4}\big)$, puis est mesuré dans la base $X$ $\{\ket+,\ket-\}$. Quelle est la probabilité d'obtenir $+$ ?}
+  {$\frac12$}
+  {$\frac{2-\sqrt2}{4}\approx0{,}15$}
+  {$\frac{2+\sqrt2}{4}\approx0{,}85$}
+  {$\frac{\sqrt2}{2}\approx0{,}71$}
+  {C}
+\qcmx
+  {On a cru que la phase ne change pas les probabilités : c'est vrai en base $Z$, mais la base $X$ est sensible à la phase \emph{relative} (le point de Bloch est à l'azimut $\frac\pi4$ de l'axe $+x$).}
+  {C'est $P(-)=\sin^2\frac\pi8$ : on a permuté les résultats $+$ et $-$.}
+  {$T\ket+=\frac1{\sqrt2}(\ket0+\ee^{\ii\pi/4}\ket1)$, donc $\braket{+}{\psi}=\frac12\big(1+\ee^{\ii\pi/4}\big)$ et $P(+)=\frac14\big|1+\ee^{\ii\pi/4}\big|^2=\frac{2+2\cos\frac\pi4}{4}=\frac{2+\sqrt2}{4}$ (soit $\cos^2\frac\pi8$).}
+  {On a pris $\cos\frac\pi4$ comme probabilité ; il faut le \emph{demi}-angle et le carré : $P=\cos^2\frac{\pi/4}{2}=\cos^2\frac\pi8$.}
+
+% ---- Question 77 (niveau 3, correct : B)
+\qcmq[2]{Chap.~\ref{chap:portes}\,$\cdot$\,\S\,\ref{sec:hadamard}}
+  {Que vaut le produit de matrices $HYH$, où $Y=\begin{pmatrix}0&-\ii\\\ii&0\end{pmatrix}$ ?}
+  {$Y$}
+  {$-Y$}
+  {$Z$}
+  {$X$}
+  {B}
+\qcmx
+  {Par analogie avec $HXH=Z$, on a cru que $H$ ne modifie pas $Y$ ; en fait l'axe $y$ est retourné (signe $-$).}
+  {$H$ échange les axes $x$ et $z$ et retourne l'axe $y$ : $HXH=Z$, $HZH=X$, $HYH=-Y$. Direct : $HY=\frac{1}{\sqrt2}\begin{pmatrix}\ii&-\ii\\-\ii&-\ii\end{pmatrix}$, puis $HYH=\begin{pmatrix}0&\ii\\-\ii&0\end{pmatrix}=-Y$.}
+  {C'est $HXH$ : $H$ n'échange que les axes $x$ et $z$, l'axe $y$ reste l'axe $y$.}
+  {C'est $HZH$ : $Y$ ne peut pas devenir $X$, car $H$ laisse l'axe $y$ à sa place (au signe près).}
+
+% ---- Question 78 (niveau 3, correct : D)
+\qcmq[1]{Chap.~\ref{chap:portes}\,$\cdot$\,\S\,\ref{sec:op2}}
+  {Que donne $(H\otimes H)\ket{01}$, où $\ket{01}=\ket0\otimes\ket1$ ?}
+  {$\frac12\big(\ket{00}+\ket{01}-\ket{10}-\ket{11}\big)$}
+  {$\frac12\big(\ket{00}-\ket{01}-\ket{10}+\ket{11}\big)$}
+  {$\frac12\big(\ket{00}+\ket{01}+\ket{10}+\ket{11}\big)$}
+  {$\frac12\big(\ket{00}-\ket{01}+\ket{10}-\ket{11}\big)$}
+  {D}
+\qcmx
+  {C'est $\ket-\otimes\ket+$ : on a attribué le $\ket-$ au premier qubit, alors que c'est le second qui vaut $\ket1$.}
+  {C'est $\ket-\otimes\ket-$ : $H\ket0=\ket+$, et non $\ket-$.}
+  {C'est $\ket+\otimes\ket+$, le résultat pour $\ket{00}$ : on a oublié que $H\ket1=\ket-$ introduit des signes.}
+  {$H\ket0\otimes H\ket1=\ket+\otimes\ket-=\frac12(\ket0+\ket1)\otimes(\ket0-\ket1)$. Le signe $-$ apparaît quand le \emph{second} chiffre vaut $1$ (formule générale $\frac12\sum_y(-1)^{x\cdot y}\ket y$ avec $x=01$).}
+
+% ---- Question 79 (niveau 3, correct : D)
+\qcmq[2]{Chap.~\ref{chap:portes}\,$\cdot$\,\S\,\ref{sec:cnot}}
+  {Avec le CNOT du cours (contrôle : second qubit $B$ ; cible : premier qubit $A$ ; $\mathrm{CNOT}\ket{a,b}=\ket{a\oplus b,\,b}$), quel état obtient-on à partir de $\ket{1}_A\otimes\ket{+}_B$ ?}
+  {$\ket{1}\otimes\ket{+}$ (inchangé)}
+  {$\frac{1}{\sqrt2}\big(\ket{00}+\ket{11}\big)=\ket{\Phi^+}$}
+  {$\frac{1}{\sqrt2}\big(\ket{01}-\ket{10}\big)=\ket{\Psi^-}$}
+  {$\frac{1}{\sqrt2}\big(\ket{01}+\ket{10}\big)=\ket{\Psi^+}$}
+  {D}
+\qcmx
+  {On a pris le premier qubit comme contrôle : le CNOT agirait alors sur $B$, et $X\ket+=\ket+$ laisserait l'état inchangé. Mais ici le contrôle est $B$.}
+  {C'est le résultat pour $\ket{0}_A\ket{+}_B$ ; ici $A$ vaut $\ket1$, ce qui échange les deux termes.}
+  {Aucun signe $-$ n'apparaît : le CNOT permute des états de base sans leur ajouter de phase.}
+  {$\ket1\ket+=\frac1{\sqrt2}(\ket{10}+\ket{11})$ ; $\ket{10}\mapsto\ket{1\oplus0,0}=\ket{10}$ et $\ket{11}\mapsto\ket{1\oplus1,1}=\ket{01}$. C'est un état de Bell, donc intriqué.}
+
+% ---- Question 80 (niveau 3, correct : C)
+\qcmq[2]{Chap.~\ref{chap:portes}\,$\cdot$\,\S\,\ref{sec:swap}}
+  {Que vaut $\mathrm{SWAP}\,(X\otimes\mathrm{Id})\,\mathrm{SWAP}$ ?}
+  {$X\otimes\mathrm{Id}$}
+  {$\mathrm{Id}\otimes\mathrm{Id}$}
+  {$\mathrm{Id}\otimes X$}
+  {$X\otimes X$}
+  {C}
+\qcmx
+  {On a supposé que $\mathrm{SWAP}$ commute avec $X\otimes\mathrm{Id}$ ; ce n'est pas le cas, puisque cet opérateur n'agit pas de la même façon sur les deux qubits.}
+  {On a simplifié $\mathrm{SWAP}^2=\mathrm{Id}$ en oubliant que $X\otimes\mathrm{Id}$ se trouve \emph{entre} les deux SWAP : on ne peut pas les rapprocher.}
+  {$\mathrm{SWAP}\,(X\otimes\mathrm{Id})\,\mathrm{SWAP}\ket{a,b}=\mathrm{SWAP}\,(X\otimes\mathrm{Id})\ket{b,a}=\mathrm{SWAP}\ket{b\oplus1,a}=\ket{a,b\oplus1}$ : le SWAP transporte l'opérateur d'un qubit à l'autre (même mécanisme que $\mathrm{CNOT}_{21}=\mathrm{SWAP}\,\mathrm{CNOT}_{12}\,\mathrm{SWAP}$).}
+  {Cet opérateur inverserait les deux bits ; ici un seul bit est inversé, celui du \emph{second} qubit.}
+
+% ---- Question 81 (niveau 3, correct : C)
+\qcmq[1]{Chap.~\ref{chap:portes}\,$\cdot$\,\S\,\ref{sec:controlees}}
+  {La porte $Z$ contrôlée ($\mathrm{CZ}=\mathrm{diag}(1,1,1,-1)$, contrôle : premier qubit) est appliquée à $\ket{+}\otimes\ket{+}$. Quel état obtient-on ?}
+  {$\ket{+}\otimes\ket{+}$}
+  {$\ket{-}\otimes\ket{-}$}
+  {$\frac12\big(\ket{00}+\ket{01}+\ket{10}-\ket{11}\big)$, un état intriqué}
+  {$\ket{+}\otimes\ket{-}$}
+  {C}
+\qcmx
+  {On a cru qu'un simple signe est une phase globale ; mais le signe $-$ ne touche que $\ket{11}$ : c'est une phase \emph{relative}.}
+  {C'est $Z\otimes Z$ ($Z$ sur les deux qubits), et non une porte contrôlée.}
+  {CZ ne change que le signe de $\ket{11}$. Critère de séparabilité : $c_{00}c_{11}-c_{01}c_{10}=-\frac14-\frac14=-\frac12\neq0$ ; on peut l'écrire $\frac{1}{\sqrt2}\big(\ket0\ket++\ket1\ket-\big)$.}
+  {On a appliqué $Z$ au second qubit sans condition ; le contrôle exige que le premier qubit soit dans $\ket1$.}
+
+% ---- Question 82 (niveau 3, correct : D)
+\qcmq[2]{Chap.~\ref{chap:portes}\,$\cdot$\,\S\,\ref{sec:phase}, \ref{sec:portes-bloch}}
+  {Un qubit préparé dans $\ket{0}$ traverse successivement $H$, puis $S$, puis $H$ (dans cet ordre). Quel est l'état final, à une phase globale près ?}
+  {$\ket{{+}\ii}$}
+  {$\ket{0}$}
+  {$\ket{1}$}
+  {$\ket{{-}\ii}=\frac{1}{\sqrt2}\big(\ket0-\ii\ket1\big)$}
+  {D}
+\qcmx
+  {Mauvais sens de rotation : on a perdu un signe en calculant $H\ket{{+}\ii}$ (la phase relative vaut $-\ii$, pas $+\ii$).}
+  {On a « simplifié » $HSH$ en $S$ (puis $S\ket0=\ket0$) : mais $H$ ne commute pas avec $S$, on ne peut pas supprimer les deux $H$.}
+  {C'est le résultat pour $HZH=X$ ; or $S$ n'est qu'un \emph{quart} de tour autour de $z$ (et non un demi-tour comme $Z$), donc $HSH$ est un quart de tour autour de $x$.}
+  {$HSH=\sqrt X$ est un quart de tour autour de $x$ (§\,\ref{sec:phase}). Directement : $H\ket0=\ket+$, $S\ket+=\ket{{+}\ii}$, $H\ket{{+}\ii}=\frac{1+\ii}{2}\ket0+\frac{1-\ii}{2}\ket1=\frac{1+\ii}{2}\big(\ket0-\ii\ket1\big)$.}
+
+% ---- Question 83 (niveau 3, correct : A)
+\qcmq[1]{Chap.~\ref{chap:bell}\,$\cdot$\,\S\,\ref{sec:mesure2}}
+  {Deux qubits sont dans l'état $\ket{\Psi}=\frac{1}{\sqrt3}\big(\ket{00}+\ket{01}+\ket{11}\big)$. On mesure le \emph{second} qubit $B$ en base $Z$ et on obtient $1$. Que valait la probabilité de ce résultat, et dans quel état se trouve alors $A$ ?}
+  {$P(B{=}1)=\frac23$ ; $A$ est dans l'état $\ket{+}$}
+  {$P(B{=}1)=\frac13$ ; $A$ est dans l'état $\ket{0}$}
+  {$P(B{=}1)=\frac23$ ; $A$ est dans l'état $\ket{1}$}
+  {$P(B{=}1)=\frac13$ ; $A$ est dans l'état $\ket{+}$}
+  {A}
+\qcmx
+  {$P(B{=}1)=|c_{01}|^2+|c_{11}|^2=\frac13+\frac13$. On garde les termes dont le second chiffre vaut $1$ : $\frac{1}{\sqrt3}\big(\ket{01}+\ket{11}\big)=\frac{1}{\sqrt3}(\ket0+\ket1)\otimes\ket1$, qui renormalisé donne $\ket{+}_A\otimes\ket{1}_B$.}
+  {C'est le résultat $B=0$ : seul le terme $\ket{00}$ a un second chiffre nul, d'où la probabilité $\frac13$ et $A$ dans $\ket0$.}
+  {On a projeté sur le seul terme $\ket{11}$ ; or $\ket{01}$ a aussi son second chiffre égal à $1$ : $A$ vaut $0$ ou $1$ (état $\ket+$).}
+  {L'état de $A$ est juste, mais on n'a compté qu'un seul terme pour la probabilité ; il faut sommer $|c_{01}|^2+|c_{11}|^2$.}
+
+% ---- Question 84 (niveau 3, correct : A)
+\qcmq[2]{Chap.~\ref{chap:bell}\,$\cdot$\,\S\,\ref{sec:separable}}
+  {Pour quelle valeur de $x$ l'état (non normalisé) $\ket{00}+2\ket{01}+3\ket{10}+x\ket{11}$ est-il séparable ?}
+  {$x=6$}
+  {$x=-6$}
+  {$x=\frac16$}
+  {$x=5$}
+  {A}
+\qcmx
+  {Critère $D=c_{00}c_{11}-c_{01}c_{10}=x-2\cdot3=0$. On obtient bien un produit : $(\ket0+3\ket1)\otimes(\ket0+2\ket1)=\ket{00}+2\ket{01}+3\ket{10}+6\ket{11}$.}
+  {Erreur de signe : $D=x-6$ s'annule pour $x=+6$ ; pour $x=-6$, $D=-12\neq0$ et l'état est intriqué.}
+  {On a inversé le rapport : $c_{00}c_{11}=c_{01}c_{10}$ donne $x=\frac{c_{01}c_{10}}{c_{00}}=6$, et non $\frac{c_{00}}{c_{01}c_{10}}$.}
+  {On a additionné ($2+3$) au lieu de multiplier : le critère de séparabilité porte sur des \emph{produits} de coefficients.}
+
+% ---- Question 85 (niveau 3, correct : B)
+\qcmq[2]{Chap.~\ref{chap:bell}\,$\cdot$\,\S\,\ref{sec:bell}}
+  {Comment s'écrit $\ket{00}$ dans la base de Bell ?}
+  {$\frac{1}{\sqrt2}\big(\ket{\Phi^+}-\ket{\Phi^-}\big)$}
+  {$\frac{1}{\sqrt2}\big(\ket{\Phi^+}+\ket{\Phi^-}\big)$}
+  {$\frac{1}{\sqrt2}\big(\ket{\Phi^+}+\ket{\Psi^+}\big)$}
+  {$\ket{\Phi^+}$}
+  {B}
+\qcmx
+  {Erreur de signe : cette combinaison vaut $\ket{11}$, puisque $\ket{\Phi^+}-\ket{\Phi^-}=\sqrt2\,\ket{11}$.}
+  {$\ket{\Phi^+}+\ket{\Phi^-}=\frac{1}{\sqrt2}\cdot2\ket{00}=\sqrt2\,\ket{00}$. Une mesure de Bell sur $\ket{00}$ donne donc $\Phi^+$ ou $\Phi^-$ avec la probabilité $\frac12$ chacun (jamais $\Psi^\pm$).}
+  {Cette combinaison vaut $\ket{+}\otimes\ket{+}=\frac12(\ket{00}+\ket{01}+\ket{10}+\ket{11})$ : les deux états de Bell « pairs » et « impairs » s'y ajoutent.}
+  {On a confondu $\ket{00}$, état séparable, avec $\ket{\Phi^+}=\frac{1}{\sqrt2}(\ket{00}+\ket{11})$, qui contient aussi $\ket{11}$ et est intriqué.}
+
+% ---- Question 86 (niveau 3, correct : A)
+\qcmq[1]{Chap.~\ref{chap:bell}\,$\cdot$\,\S\,\ref{sec:circuit-bell}}
+  {Le générateur de Bell du cours est $G=\mathrm{CNOT}\cdot(\mathrm{Id}\otimes H)$ : $H$ sur le second qubit $B$, puis CNOT de contrôle $B$ et de cible $A$. Quel circuit permet de \emph{mesurer} une paire dans la base de Bell (on le place avant une mesure en base $Z$) ?}
+  {D'abord le CNOT (contrôle $B$, cible $A$), puis $H$ sur $B$}
+  {D'abord $H$ sur $B$, puis le CNOT}
+  {D'abord le CNOT, puis $H$ sur $A$ (la cible)}
+  {Aucun circuit : on mesure directement les deux qubits en base $Z$}
+  {A}
+\qcmx
+  {C'est l'inverse $G^\dagger=(\mathrm{Id}\otimes H)\,\mathrm{CNOT}$ : les portes sont leurs propres inverses et l'ordre s'inverse. Il envoie $\Phi^+,\Phi^-,\Psi^+,\Psi^-$ sur $\ket{00},\ket{01},\ket{10},\ket{11}$ (à une phase près).}
+  {C'est $G$ lui-même, qui \emph{fabrique} des états de Bell : on garde le même ordre au lieu de l'inverser, et la mesure ne distingue plus les quatre états.}
+  {Mauvais qubit : pour $\Phi^+$ on trouve $\ket{+}\otimes\ket{+}$, dont les deux bits sont aléatoires. Le $H$ doit agir sur $B$, qui a reçu le $H$ dans $G$.}
+  {$\Phi^+$ et $\Phi^-$ (comme $\Psi^+$ et $\Psi^-$) donnent les mêmes résultats en base $Z$ : cette base ne voit pas le signe relatif, il faut d'abord défaire l'intrication.}
+
+% ---- Question 87 (niveau 3, correct : B)
+\qcmq[2]{Chap.~\ref{chap:bell}\,$\cdot$\,\S\,\ref{sec:trace}}
+  {Quelle est la matrice de densité réduite $\rho_A=\operatorname{Tr}_B\ket\Psi\bra\Psi$ du premier qubit pour $\ket{\Psi}=\frac12\ket{00}+\frac{\sqrt3}{2}\ket{11}$ ?}
+  {$\begin{pmatrix}\frac14&\frac{\sqrt3}{4}\\\frac{\sqrt3}{4}&\frac34\end{pmatrix}$}
+  {$\begin{pmatrix}\frac14&0\\0&\frac34\end{pmatrix}$}
+  {$\begin{pmatrix}\frac12&0\\0&\frac12\end{pmatrix}$}
+  {$\begin{pmatrix}\frac12&0\\0&\frac{\sqrt3}{2}\end{pmatrix}$}
+  {B}
+\qcmx
+  {C'est la matrice $\ket\chi\bra\chi$ de l'état pur $\ket\chi=\frac12\ket0+\frac{\sqrt3}2\ket1$ : on a gardé les cohérences, comme si $A$ était seul ; l'intrication avec $B$ les détruit.}
+  {Avec $C=\begin{pmatrix}c_{00}&c_{01}\\c_{10}&c_{11}\end{pmatrix}=\begin{pmatrix}\frac12&0\\0&\frac{\sqrt3}2\end{pmatrix}$, $\rho_A=CC^\dagger=\mathrm{diag}\big(\frac14,\frac34\big)$ : état mixte, de pureté $\frac{10}{16}=1-2|D|^2$ avec $D=\frac{\sqrt3}{4}$.}
+  {C'est la réponse pour un état de Bell (intrication maximale) ; ici les poids $\frac14$ et $\frac34$ diffèrent : l'intrication est partielle.}
+  {On a mis les amplitudes au lieu de leurs carrés : la trace vaudrait $\frac{1+\sqrt3}{2}\neq1$.}
+
+% ---- Question 88 (niveau 3, correct : A)
+\qcmq[2]{Chap.~\ref{chap:bell}\,$\cdot$\,\S\,\ref{sec:info}}
+  {Deux qubits sont dans le mélange statistique $\rho_{AB}=\frac12\ket{00}\bra{00}+\frac12\ket{11}\bra{11}$ (corrélations purement classiques). Que vaut $H(A|B)=S(\rho_{AB})-S(\rho_B)$, en bits ?}
+  {$0$}
+  {$-1$}
+  {$1$}
+  {$2$}
+  {A}
+\qcmx
+  {$\rho_{AB}$ a pour valeurs propres $\frac12,\frac12,0,0$, donc $S(\rho_{AB})=1$ ; et $\rho_B=\frac12\mathrm{Id}$ donne $S(\rho_B)=1$. Ainsi $H(A|B)=0$ : connaître $B$ fixe $A$. Une valeur négative est propre à l'intrication.}
+  {C'est la valeur pour l'état de Bell \emph{pur} $\ket{\Phi^+}$ : mêmes résultats en base $Z$, mais $S(\rho_{AB})=0$ car l'état global est pur. Ici l'état est mixte.}
+  {On a pris $H(A|B)=H(A)$, comme si $B$ ne disait rien sur $A$ ; or les deux bits sont toujours égaux.}
+  {On a additionné les entropies des deux qubits ($1+1$), valeur de deux bits indépendants : ce n'est pas une entropie conditionnelle.}
+
+% ---- Question 89 (niveau 3, correct : B)
+\qcmq[1]{Chap.~\ref{chap:bell}\,$\cdot$\,\S\,\ref{sec:teleportation}}
+  {Dans la téléportation, avant de recevoir les deux bits $(a,q)$ d'Alice, dans quel état se trouve le qubit de Bob ?}
+  {Dans l'état pur $\alpha\ket0+\beta\ket1$, déjà téléporté}
+  {Dans l'état complètement mélangé $\rho_B=\frac12\mathrm{Id}$, indépendant de $\alpha$ et $\beta$}
+  {Dans le mélange $|\alpha|^2\ket0\bra0+|\beta|^2\ket1\bra1$}
+  {Dans l'état pur $\ket{0}$, son état initial}
+  {B}
+\qcmx
+  {Ce serait une communication instantanée. L'état $\alpha\ket0+\beta\ket1$ n'apparaît qu'\emph{après} la correction, qui dépend de $(a,q)$.}
+  {Les quatre kets $\ket{\phi_{aq}}$ sont équiprobables ($\frac14$) et $\frac14\sum_{a,q}\ket{\phi_{aq}}\bra{\phi_{aq}}=\frac12\mathrm{Id}$. Bob n'apprend rien avant le message classique : rien ne voyage plus vite que la lumière.}
+  {Bob connaîtrait alors les statistiques de $\ket\varphi$ sans aucun message : or les probabilités d'Alice ($\frac14$ pour chaque résultat) ne dépendent pas de $\alpha,\beta$.}
+  {Le qubit de Bob est la moitié de la paire $\ket{\Phi^+}$ : pris seul, il n'a pas d'état pur ($\rho_B=\frac12\mathrm{Id}$ avant comme après la mesure d'Alice, tant que Bob ignore le résultat).}
+
+% ---- Question 90 (niveau 3, correct : D)
+\qcmq[1]{Chap.~\ref{chap:bell}\,$\cdot$\,\S\,\ref{sec:chsh}}
+  {Au jeu CHSH (gain si $a\oplus b=x\cdot y$), quelles sont les meilleures probabilités de gain avec une stratégie classique, même avec du hasard partagé, et avec une paire $\ket{\Phi^+}$ mesurée dans des bases bien choisies ?}
+  {$\frac12$ en classique ; $1$ avec l'intrication}
+  {$\frac34$ dans les deux cas}
+  {$1$ en classique si Alice et Bob s'accordent à l'avance ; aucun avantage quantique}
+  {$\frac34$ en classique ; $\cos^2\frac\pi8\approx0{,}85$ avec l'intrication}
+  {D}
+\qcmx
+  {Classique : répondre toujours $0$ donne déjà $\frac34$. Quantique : l'intrication ne permet pas de gagner à tous les coups (borne de Tsirelson $\cos^2\frac\pi8$).}
+  {Si l'intrication n'apportait rien, on n'aurait pas de violation de l'inégalité de Bell ; l'avantage quantique ($0{,}85>0{,}75$) est précisément ce que l'expérience de Bell met en évidence.}
+  {S'accorder à l'avance (ou partager du hasard) ne suffit pas : aucune stratégie déterministe ne gagne les quatre parties, d'après l'argument de parité.}
+  {Une stratégie déterministe perd au moins une des quatre parties (la somme modulo $2$ des conditions donne $0=1$) ; avec $\Phi^+$, chaque partie est gagnée avec la probabilité $\cos^2\frac\pi8=\frac{2+\sqrt2}{4}$.}
+
+\clearpage
+%% ======================================================================
+\subsection{Niveau 4 : maîtrise (questions 91 à 100)}\label{sec:qcm-n4}
+%% ======================================================================
+\noindent{\color{insagris}\small Niveau de difficulté : Maîtrise\quad $\bullet\bullet\bullet\bullet$}\par\smallskip
+% ---- Question 91 (niveau 4, correct : C)
+\qcmq[2]{Chap.~\ref{chap:histoire}\,$\cdot$\,\S\,\ref{sec:superposition}}
+  {Une particule du puits infini est préparée à $t=0$ dans l'état $\Psi=\frac{1}{\sqrt2}\big(\psi_1+\psi_2\big)$, avec $E_n=n^2E_1$. Au bout de quelle durée minimale la densité de probabilité $|\Psi(x,t)|^2$ retrouve-t-elle sa forme initiale ?}
+  {$T=\dfrac{2\pi\hbar}{E_1}$}
+  {$T=\dfrac{2\pi\hbar}{5E_1}$}
+  {$T=\dfrac{2\pi\hbar}{3E_1}$}
+  {$T=\dfrac{\pi\hbar}{3E_1}$}
+  {C}
+\qcmx
+  {C'est la période de la phase $\ee^{-\ii E_1t/\hbar}$ de $\psi_1$ seul ; or les phases globales ne se voient pas dans $|\Psi|^2$ : seul compte l'écart $E_2-E_1=3E_1$.}
+  {On a pris la somme $E_1+E_2=5E_1$ ; c'est la \emph{différence} des énergies (phase relative) qui intervient.}
+  {$|\Psi|^2=\frac12(\psi_1^2+\psi_2^2)+\psi_1\psi_2\cos\frac{(E_2-E_1)t}{\hbar}$ : seul le terme croisé dépend du temps, à la pulsation $\omega=\frac{E_2-E_1}{\hbar}=\frac{3E_1}{\hbar}$, donc $T=\frac{2\pi}{\omega}$.}
+  {C'est la demi-période : à $t=\frac T2$ le cosinus vaut $-1$ et la densité est le symétrique de l'état initial ($x\to a-x$), pas encore sa forme de départ.}
+
+% ---- Question 92 (niveau 4, correct : D)
+\qcmq[1]{Chap.~\ref{chap:dirac}\,$\cdot$\,\S\,\ref{sec:projecteurs}, \ref{sec:qubit}}
+  {Un expérimentateur reçoit un qubit préparé soit dans $\ket{0}$, soit dans $\ket{+}$. Laquelle de ces affirmations est correcte ?}
+  {Une mesure en base $Z$ les distingue : $\ket0$ donne $0$ et $\ket+$ donne $1$}
+  {Une mesure en base $X$ les distingue : $\ket+$ donne $+$ et $\ket0$ donne $-$}
+  {On les distingue en répétant la mesure sur le même qubit}
+  {Aucune mesure ne permet de les distinguer à coup sûr, car $\braket{0}{+}=\frac{1}{\sqrt2}\neq0$}
+  {D}
+\qcmx
+  {$\ket+$ donne $0$ ou $1$ avec la probabilité $\frac12$ : le résultat $0$ est possible pour les deux états.}
+  {$\ket0=\frac{1}{\sqrt2}(\ket++\ket-)$ donne $+$ ou $-$ avec la probabilité $\frac12$ : le résultat $+$ est possible pour les deux états.}
+  {Après une première mesure l'état est effondré : répéter ne donne aucune information nouvelle, et on ne peut pas copier le qubit pour recommencer (non-clonage).}
+  {Seuls des états \emph{orthogonaux} sont parfaitement discernables. En base $Z$, $\ket0$ donne toujours $0$ et $\ket+$ donne $0$ une fois sur deux : obtenir $0$ ne tranche pas (obtenir $1$ prouve seulement qu'on avait $\ket+$).}
+
+% ---- Question 93 (niveau 4, correct : C)
+\qcmq[1]{Chap.~\ref{chap:operateurs}\,$\cdot$\,\S\,\ref{sec:pur-mixte}}
+  {Une source envoie au hasard $\ket{0}$ ou $\ket{1}$ (probabilité $\frac12$ chacun) ; une autre envoie au hasard $\ket{+}$ ou $\ket{-}$ (probabilité $\frac12$ chacun). Peut-on distinguer ces deux sources en mesurant les qubits émis ?}
+  {Oui : en base $Z$, la première source donne des résultats prévisibles}
+  {Oui : en base $X$, la seconde source donne des résultats prévisibles}
+  {Non : les deux ont la même matrice de densité $\frac{\mathrm{Id}}{2}$, donc les mêmes statistiques pour toute mesure}
+  {Oui : les états purs envoyés ne sont pas les mêmes}
+  {C}
+\qcmx
+  {Chaque qubit est bien $\ket0$ ou $\ket1$, mais on ignore lequel : le résultat vaut $0$ ou $1$ avec la probabilité $\frac12$, exactement comme avec la seconde source ($|\braket{0}{\pm}|^2=\frac12$).}
+  {Même erreur : chaque qubit est $\ket+$ ou $\ket-$, mais on ignore lequel ; le résultat en base $X$ est aléatoire, et la première source donne aussi $+$ ou $-$ avec la probabilité $\frac12$.}
+  {$\frac12\ket0\bra0+\frac12\ket1\bra1=\frac12\ket+\bra++\frac12\ket-\bra-=\frac{\mathrm{Id}}2$ (relation de fermeture dans chaque base). Les probabilités de toute mesure ne dépendent que de $\rho$.}
+  {Ce qui compte n'est pas la liste des états purs envoyés mais la matrice de densité moyenne : des préparations différentes peuvent avoir la même $\rho$.}
+
+% ---- Question 94 (niveau 4, correct : B)
+\qcmq[1]{Chap.~\ref{chap:operateurs}\,$\cdot$\,\S\,\ref{sec:pur-mixte} ; Chap.~\ref{chap:portes}\,$\cdot$\,\S\,\ref{sec:portes-bloch}}
+  {Un qubit est dans l'état complètement mélangé $\rho=\frac{\mathrm{Id}}{2}$. Existe-t-il une porte quantique $U$ qui le transforme en un état pur, par exemple $\ket{0}\bra{0}$ ?}
+  {Oui : la porte de Hadamard, qui crée des superpositions}
+  {Non : $\rho\mapsto U\rho U^\dagger$ conserve les valeurs propres, donc la pureté ; ici $U\frac{\mathrm{Id}}{2}U^\dagger=\frac{\mathrm{Id}}{2}$}
+  {Oui : une rotation de Bloch qui amène le centre de la boule au pôle nord}
+  {Oui : une mesure en base $Z$, qui donne $\ket0$}
+  {B}
+\qcmx
+  {$H$ envoie un état pur sur un état pur ($\ket0\mapsto\ket+$) et laisse $\frac{\mathrm{Id}}{2}$ invariant : $H\frac{\mathrm{Id}}2H=\frac{\mathrm{Id}}2$ car $H^2=\mathrm{Id}$.}
+  {$\operatorname{Tr}\big[(U\rho U^\dagger)^2\big]=\operatorname{Tr}\rho^2$ ($=\frac12$ ici). Sur la boule de Bloch, une porte est une rotation : elle laisse le centre fixe.}
+  {Une rotation tourne la boule autour de son centre, qui reste fixe : elle ne peut pas l'amener sur la sphère.}
+  {Une mesure n'est pas une porte (elle est non unitaire) ; de plus elle donne $\ket0$ ou $\ket1$ au hasard, pas $\ket0$ à coup sûr.}
+
+% ---- Question 95 (niveau 4, correct : D)
+\qcmq[1]{Chap.~\ref{chap:portes}\,$\cdot$\,\S\,\ref{sec:cnot}}
+  {Que vaut $(H\otimes H)\,\mathrm{CNOT}_{12}\,(H\otimes H)$, où $\mathrm{CNOT}_{12}$ a pour contrôle le \emph{premier} qubit et pour cible le second ?}
+  {$\mathrm{CNOT}_{12}$, inchangé}
+  {$\mathrm{CZ}$ (porte $Z$ contrôlée)}
+  {$\mathrm{SWAP}$}
+  {$\mathrm{CNOT}_{21}$ (contrôle : second qubit ; cible : premier qubit)}
+  {D}
+\qcmx
+  {On a cru que les deux $H$ s'annulent ($H^2=\mathrm{Id}$) ; mais ils encadrent le CNOT au lieu d'être côte à côte : on ne peut pas les simplifier.}
+  {C'est le résultat quand $H$ n'encadre que la \emph{cible} : $(\mathrm{Id}\otimes H)\,\mathrm{CNOT}_{12}\,(\mathrm{Id}\otimes H)=\mathrm{CZ}$, car $HXH=Z$. Ici $H$ agit aussi sur le contrôle.}
+  {Le SWAP s'obtient avec \emph{trois} CNOT alternés, pas avec un seul CNOT conjugué par $H\otimes H$ ; il n'y a pas de contrôle dans un SWAP.}
+  {$H\ket0\bra0H=\ket+\bra+$, $H\ket1\bra1H=\ket-\bra-$ et $HXH=Z$ donnent $\ket+\bra+\otimes I+\ket-\bra-\otimes Z=I\otimes\ket0\bra0+X\otimes\ket1\bra1=\mathrm{CNOT}_{21}$ : dans la base $\{\ket+,\ket-\}$, contrôle et cible échangent leurs rôles (rebond de phase).}
+
+% ---- Question 96 (niveau 4, correct : A)
+\qcmq[1]{Chap.~\ref{chap:portes}\,$\cdot$\,\S\,\ref{sec:controlees}}
+  {On applique la porte de Toffoli (contrôles : qubits 1 et 2 ; cible : qubit 3) à $\ket{+}\otimes\ket{+}\otimes\ket{0}$, puis on mesure le troisième qubit en base $Z$. Que peut-on dire si l'on obtient $1$ ?}
+  {Ce résultat a la probabilité $\frac14$, et les deux premiers qubits sont alors dans l'état $\ket{11}$}
+  {Ce résultat a la probabilité $\frac12$, et les deux premiers qubits restent dans $\ket{+}\ket{+}$}
+  {Ce résultat a la probabilité $\frac14$, mais les deux premiers qubits restent dans $\ket{+}\ket{+}$}
+  {Ce résultat a la probabilité $\frac34$, et les deux premiers qubits sont dans l'état $\frac{1}{\sqrt3}\big(\ket{00}+\ket{01}+\ket{10}\big)$}
+  {A}
+\qcmx
+  {$\mathrm{CCNOT}\ket{x,y,0}=\ket{x,y,xy}$ donne $\frac12\big(\ket{000}+\ket{010}+\ket{100}+\ket{111}\big)$ : seul $\ket{111}$ a un troisième chiffre égal à $1$ (probabilité $\frac14$), et il impose $x=y=1$.}
+  {La cible n'est inversée que si $x=y=1$ (probabilité $\frac14$) et non une fois sur deux ; de plus l'état est intriqué, donc mesurer le qubit 3 modifie les qubits 1 et 2.}
+  {La probabilité est juste, mais la mesure de la cible n'est pas sans effet sur les contrôles : l'état après la Toffoli est intriqué, donc le résultat $1$ les projette sur $\ket{11}$.}
+  {C'est le cas du résultat $0$ (probabilité $\frac34$ : $x,y\in\{00,01,10\}$). Le résultat $1$ est le cas rare, celui du ET vrai ($x=y=1$).}
+
+% ---- Question 97 (niveau 4, correct : A)
+\qcmq[1]{Chap.~\ref{chap:bell}\,$\cdot$\,\S\,\ref{sec:bell}}
+  {Que donne $(H\otimes H)\ket{\Psi^-}$, avec $\ket{\Psi^-}=\frac{1}{\sqrt2}\big(\ket{01}-\ket{10}\big)$ ?}
+  {$-\ket{\Psi^-}$, c'est-à-dire le même état physique}
+  {$\ket{\Phi^-}$}
+  {$\ket{\Psi^+}$}
+  {$\ket{\Phi^+}$}
+  {A}
+\qcmx
+  {Le singulet est invariant par $U\otimes U$ à un facteur près : $(U\otimes U)\ket{\Psi^-}=\det(U)\ket{\Psi^-}$ avec $\det H=-1$. Directement : $\frac{1}{\sqrt2}\big(\ket+\ket--\ket-\ket+\big)=-\ket{\Psi^-}$.}
+  {C'est l'image de $\ket{\Psi^+}$, pas de $\ket{\Psi^-}$ : $(H\otimes H)\ket{\Psi^+}=\ket{\Phi^-}$. Le signe $-$ du singulet change le calcul (les termes $\ket{00}$ et $\ket{11}$ se compensent).}
+  {$\ket{\Psi^+}$ est symétrique par échange des deux qubits, $\ket{\Psi^-}$ antisymétrique ; $H\otimes H$ commute avec le SWAP et conserve donc cette symétrie.}
+  {C'est l'état que $H\otimes H$ laisse invariant ($\ket{\Phi^+}=\frac{1}{\sqrt2}(\ket{++}+\ket{--})$) ; le singulet n'a pas ce comportement.}
+
+% ---- Question 98 (niveau 4, correct : B)
+\qcmq[1]{Chap.~\ref{chap:bell}\,$\cdot$\,\S\,\ref{sec:chsh}}
+  {Une expérience de type CHSH (avec $S=E_{00}+E_{01}+E_{10}-E_{11}$) mesure $S=2{,}6$. Que peut-on en conclure ?}
+  {C'est impossible : on a toujours $|S|\leq2$}
+  {Aucun modèle local à résultats prédéterminés ne l'explique, mais c'est compatible avec la mécanique quantique}
+  {C'est impossible en mécanique quantique, car $2\sqrt2\approx2{,}4<2{,}6$}
+  {Les particules s'échangent de l'information plus vite que la lumière}
+  {B}
+\qcmx
+  {Cette borne ne vaut que pour les modèles classiques (locaux) ; l'expérience et la mécanique quantique la dépassent, jusqu'à $2\sqrt2$.}
+  {Classique : $|S|\leq2$ ; quantique : $|S|\leq2\sqrt2\approx2{,}83$ (borne de Tsirelson). Comme $2<2{,}6<2\sqrt2$, l'inégalité de Bell est violée sans dépasser le maximum quantique ; le gain correspondant est $\frac12+\frac{2{,}6}{8}\approx0{,}825$.}
+  {Erreur numérique : $2\sqrt2\approx2{,}83$, donc $2{,}6$ est permis.}
+  {Les corrélations violent l'inégalité de Bell mais ne permettent aucun signal : la réponse de Bob est uniforme quelle que soit la base choisie par Alice.}
+
+% ---- Question 99 (niveau 4, correct : A)
+\qcmq[2]{Chap.~\ref{chap:bell}\,$\cdot$\,\S\,\ref{sec:info}}
+  {Pour l'état $\ket{\Psi}=\frac{1}{\sqrt3}\big(\ket{00}+\sqrt2\,\ket{11}\big)$, quelle est l'entropie de von Neumann $S(\rho_A)$ du premier qubit, en bits ?}
+  {$\log_2 3-\frac23\approx0{,}92$}
+  {$1$}
+  {$0$}
+  {$0{,}64$}
+  {A}
+\qcmx
+  {$\rho_A=\mathrm{diag}\big(\frac13,\frac23\big)$ (trace partielle), donc $S=-\frac13\log_2\frac13-\frac23\log_2\frac23=\log_23-\frac23\approx1{,}585-0{,}667$. C'est moins que le maximum d'un bit (état de Bell) : l'intrication est partielle.}
+  {C'est la valeur pour un état de Bell ($\rho_A=\frac{\mathrm{Id}}{2}$) ; ici les poids $\frac13$ et $\frac23$ diffèrent, donc $S<1$.}
+  {$S(\rho_A)=0$ vaut pour un état séparable ; ici $D=\frac{\sqrt2}{3}\neq0$ : l'état est intriqué, $\rho_A$ est mixte et $S>0$ (le couple $AB$ est pur, pas $A$ seul).}
+  {On a utilisé le logarithme \emph{népérien} (résultat en nats) ; en bits il faut $\log_2$, ce qui donne $0{,}92$.}
+
+% ---- Question 100 (niveau 4, correct : B)
+\qcmq[1]{Chap.~\ref{chap:bell}\,$\cdot$\,\S\,\ref{sec:bell}}
+  {Pourquoi peut-on mesurer simultanément les deux « parités » $Z\otimes Z$ et $X\otimes X$ de deux qubits, alors qu'on ne peut pas mesurer simultanément $Z$ et $X$ sur un seul qubit ?}
+  {Parce que l'incertitude de Heisenberg ne s'applique pas à deux qubits}
+  {Parce que $Z\otimes Z$ et $X\otimes X$ commutent : les deux signes $-1$ de $ZX=-XZ$ se compensent}
+  {Parce que les deux qubits sont indépendants}
+  {Parce que $Z\otimes Z$ et $X\otimes X$ agissent sur des qubits différents}
+  {B}
+\qcmx
+  {Elle s'applique toujours : $Z\otimes\mathrm{Id}$ et $X\otimes\mathrm{Id}$ ne commutent pas. C'est la commutation de ces deux opérateurs précis qui permet la mesure simultanée.}
+  {$(Z\otimes Z)(X\otimes X)=ZX\otimes ZX=(-XZ)\otimes(-XZ)=XZ\otimes XZ=(X\otimes X)(Z\otimes Z)$. Ils ont donc une base propre commune : la base de Bell.}
+  {Dans un état de Bell les qubits sont intriqués, donc loin d'être indépendants ; la commutation est une propriété des opérateurs, pas de l'état.}
+  {Chacun des deux opérateurs agit sur \emph{les deux} qubits à la fois. (Ce sont $Z\otimes\mathrm{Id}$ et $\mathrm{Id}\otimes X$, sur des qubits différents, qui commutent pour cette raison.)}
+
+\label{qcm:fin}
+
+\clearpage
+\ifqcmcorrige
+
+% ======================================================================
+\subsection{Clé des réponses et fiche de score}\label{sec:qcm-cle}
+% ======================================================================
+\noindent\textbf{Cette partie donne les réponses : ne la lisez qu'après avoir répondu à toutes les
+questions.}
+
+\paragraph{Clé des réponses.} La lettre de la bonne réponse de la question $n$ se lit à la ligne
+qui contient $n$, dans la colonne du rang de $n$ dans la ligne (question~24 : ligne 21--30,
+colonne 4).
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\setlength{\tabcolsep}{5.5pt}
+\begin{tabular}{@{}l*{10}{c}@{}}
+\toprule
+ & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 \\
+\midrule
+1--10 & \qcmkey{1} & \qcmkey{2} & \qcmkey{3} & \qcmkey{4} & \qcmkey{5} & \qcmkey{6} & \qcmkey{7} & \qcmkey{8} & \qcmkey{9} & \qcmkey{10} \\
+11--20 & \qcmkey{11} & \qcmkey{12} & \qcmkey{13} & \qcmkey{14} & \qcmkey{15} & \qcmkey{16} & \qcmkey{17} & \qcmkey{18} & \qcmkey{19} & \qcmkey{20} \\
+21--30 & \qcmkey{21} & \qcmkey{22} & \qcmkey{23} & \qcmkey{24} & \qcmkey{25} & \qcmkey{26} & \qcmkey{27} & \qcmkey{28} & \qcmkey{29} & \qcmkey{30} \\
+31--40 & \qcmkey{31} & \qcmkey{32} & \qcmkey{33} & \qcmkey{34} & \qcmkey{35} & \qcmkey{36} & \qcmkey{37} & \qcmkey{38} & \qcmkey{39} & \qcmkey{40} \\
+41--50 & \qcmkey{41} & \qcmkey{42} & \qcmkey{43} & \qcmkey{44} & \qcmkey{45} & \qcmkey{46} & \qcmkey{47} & \qcmkey{48} & \qcmkey{49} & \qcmkey{50} \\
+51--60 & \qcmkey{51} & \qcmkey{52} & \qcmkey{53} & \qcmkey{54} & \qcmkey{55} & \qcmkey{56} & \qcmkey{57} & \qcmkey{58} & \qcmkey{59} & \qcmkey{60} \\
+61--70 & \qcmkey{61} & \qcmkey{62} & \qcmkey{63} & \qcmkey{64} & \qcmkey{65} & \qcmkey{66} & \qcmkey{67} & \qcmkey{68} & \qcmkey{69} & \qcmkey{70} \\
+71--80 & \qcmkey{71} & \qcmkey{72} & \qcmkey{73} & \qcmkey{74} & \qcmkey{75} & \qcmkey{76} & \qcmkey{77} & \qcmkey{78} & \qcmkey{79} & \qcmkey{80} \\
+81--90 & \qcmkey{81} & \qcmkey{82} & \qcmkey{83} & \qcmkey{84} & \qcmkey{85} & \qcmkey{86} & \qcmkey{87} & \qcmkey{88} & \qcmkey{89} & \qcmkey{90} \\
+91--100 & \qcmkey{91} & \qcmkey{92} & \qcmkey{93} & \qcmkey{94} & \qcmkey{95} & \qcmkey{96} & \qcmkey{97} & \qcmkey{98} & \qcmkey{99} & \qcmkey{100} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Fiche de score.} Reportez le nombre de bonnes réponses de chaque niveau.
+\begin{center}
+\renewcommand{\arraystretch}{1.6}
+\begin{tabular}{@{}l l c c c@{}}
+\toprule
+\textbf{Niveau} & \textbf{Questions} & \textbf{Bonnes réponses} & \textbf{Sur} & \textbf{Pourcentage}\\
+\midrule
+1. Débutant & 1--30 & \makebox[2.6cm]{\dotfill} & 30 & \makebox[2cm]{\dotfill}\,\%\\
+2. Intermédiaire & 31--60 & \makebox[2.6cm]{\dotfill} & 30 & \makebox[2cm]{\dotfill}\,\%\\
+3. Avancé & 61--90 & \makebox[2.6cm]{\dotfill} & 30 & \makebox[2cm]{\dotfill}\,\%\\
+4. Maîtrise & 91--100 & \makebox[2.6cm]{\dotfill} & 10 & \makebox[2cm]{\dotfill}\,\%\\
+\midrule
+\textbf{Total} & 1--100 & \makebox[2.6cm]{\dotfill} & 100 & \makebox[2cm]{\dotfill}\,\%\\
+\bottomrule
+\end{tabular}
+\end{center}
+Repères : au moins $80\,\%$ à un niveau, il est acquis et on peut passer au suivant ; entre $50$ et
+$80\,\%$, revoyez les sections des questions manquées ; en dessous, relisez le chapitre concerné et
+son récapitulatif avant de recommencer.
+
+\paragraph{Où revoir ?} Questions classées par chapitre du cours.
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}l >{\raggedright\arraybackslash}p{5.9cm} >{\raggedright\arraybackslash}p{6.9cm}@{}}
+\toprule
+\textbf{Chapitre} & \textbf{Titre} & \textbf{Questions}\\
+\midrule
+Chap.~\ref{chap:histoire} & Histoire et mécanique quantique & 1, 2, 3, 4, 5, 6, 31, 32, 33, 34, 35, 61, 62, 63, 91 \\
+Chap.~\ref{chap:dirac} & Notation de Dirac et espace de Hilbert & 7, 8, 9, 10, 11, 12, 36, 37, 38, 39, 40, 64, 65, 66, 67, 68, 92 \\
+Chap.~\ref{chap:operateurs} & Opérateurs, matrice de densité, Bloch, produit tensoriel & 13, 14, 15, 16, 17, 18, 41, 42, 43, 44, 45, 46, 69, 70, 71, 72, 73, 74, 75, 93, 94 \\
+Chap.~\ref{chap:portes} & Portes quantiques et systèmes multi-qubits & 19, 20, 21, 22, 23, 24, 47, 48, 49, 50, 51, 76, 77, 78, 79, 80, 81, 82, 95, 96 \\
+Chap.~\ref{chap:bell} & États quantiques, intrication, Bell & 25, 26, 27, 28, 29, 30, 52, 53, 54, 55, 56, 57, 58, 59, 60, 83, 84, 85, 86, 87, 88, 89, 90, 97, 98, 99, 100 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\clearpage
+\subsection{Corrigé du niveau 1 : débutant (questions 1 à 30)}\label{sec:qcm-c1}
+\qcmcorr{1}
+\qcmcorr{2}
+\qcmcorr{3}
+\qcmcorr{4}
+\qcmcorr{5}
+\qcmcorr{6}
+\qcmcorr{7}
+\qcmcorr{8}
+\qcmcorr{9}
+\qcmcorr{10}
+\qcmcorr{11}
+\qcmcorr{12}
+\qcmcorr{13}
+\qcmcorr{14}
+\qcmcorr{15}
+\qcmcorr{16}
+\qcmcorr{17}
+\qcmcorr{18}
+\qcmcorr{19}
+\qcmcorr{20}
+\qcmcorr{21}
+\qcmcorr{22}
+\qcmcorr{23}
+\qcmcorr{24}
+\qcmcorr{25}
+\qcmcorr{26}
+\qcmcorr{27}
+\qcmcorr{28}
+\qcmcorr{29}
+\qcmcorr{30}
+
+\clearpage
+\subsection{Corrigé du niveau 2 : intermédiaire (questions 31 à 60)}\label{sec:qcm-c2}
+\qcmcorr{31}
+\qcmcorr{32}
+\qcmcorr{33}
+\qcmcorr{34}
+\qcmcorr{35}
+\qcmcorr{36}
+\qcmcorr{37}
+\qcmcorr{38}
+\qcmcorr{39}
+\qcmcorr{40}
+\qcmcorr{41}
+\qcmcorr{42}
+\qcmcorr{43}
+\qcmcorr{44}
+\qcmcorr{45}
+\qcmcorr{46}
+\qcmcorr{47}
+\qcmcorr{48}
+\qcmcorr{49}
+\qcmcorr{50}
+\qcmcorr{51}
+\qcmcorr{52}
+\qcmcorr{53}
+\qcmcorr{54}
+\qcmcorr{55}
+\qcmcorr{56}
+\qcmcorr{57}
+\qcmcorr{58}
+\qcmcorr{59}
+\qcmcorr{60}
+
+\clearpage
+\subsection{Corrigé du niveau 3 : avancé (questions 61 à 90)}\label{sec:qcm-c3}
+\qcmcorr{61}
+\qcmcorr{62}
+\qcmcorr{63}
+\qcmcorr{64}
+\qcmcorr{65}
+\qcmcorr{66}
+\qcmcorr{67}
+\qcmcorr{68}
+\qcmcorr{69}
+\qcmcorr{70}
+\qcmcorr{71}
+\qcmcorr{72}
+\qcmcorr{73}
+\qcmcorr{74}
+\qcmcorr{75}
+\qcmcorr{76}
+\qcmcorr{77}
+\qcmcorr{78}
+\qcmcorr{79}
+\qcmcorr{80}
+\qcmcorr{81}
+\qcmcorr{82}
+\qcmcorr{83}
+\qcmcorr{84}
+\qcmcorr{85}
+\qcmcorr{86}
+\qcmcorr{87}
+\qcmcorr{88}
+\qcmcorr{89}
+\qcmcorr{90}
+
+\clearpage
+\subsection{Corrigé du niveau 4 : maîtrise (questions 91 à 100)}\label{sec:qcm-c4}
+\qcmcorr{91}
+\qcmcorr{92}
+\qcmcorr{93}
+\qcmcorr{94}
+\qcmcorr{95}
+\qcmcorr{96}
+\qcmcorr{97}
+\qcmcorr{98}
+\qcmcorr{99}
+\qcmcorr{100}
+\fi

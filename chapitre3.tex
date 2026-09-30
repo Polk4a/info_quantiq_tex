@@ -274,6 +274,18 @@ $\bra{+}\big(\ket{+}\bra{+}\big)\ket{+}=1$. Ce sont les termes hors diagonale qu
 différence.
 \end{remarque}
 
+\begin{remarque}[Un même $\rho$, plusieurs préparations]\label{rem:ensembles}
+La matrice de densité ne garde pas la façon dont le mélange a été préparé. Comme
+$\ket{+}\bra{+}+\ket{-}\bra{-}=\mathrm{Id}$ (relation de fermeture, vraie dans toute base orthonormée),
+\[
+  \tfrac12\ket{0}\bra{0}+\tfrac12\ket{1}\bra{1}
+  =\tfrac12\ket{+}\bra{+}+\tfrac12\ket{-}\bra{-}=\frac{\mathrm{Id}}{2}.
+\]
+Un qubit tiré au hasard parmi $\ket{0},\ket{1}$ et un qubit tiré au hasard parmi $\ket{+},\ket{-}$ ont
+la même matrice de densité, donc les mêmes probabilités pour \emph{toute} mesure : aucune expérience
+ne distingue ces deux préparations.
+\end{remarque}
+
 % ---------------------------------------------------------------------
 \subsection{Théorème de décomposition spectrale}\label{sec:spectral}
 % ---------------------------------------------------------------------
