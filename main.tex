@@ -1,0 +1,288 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  TEMPLATE INSA CENTRE VAL DE LOIRE : main.tex
+%
+%  - Chaque partie du document est un fichier séparé (chapitre1.tex, ...)
+%    importé plus bas avec \include{...}. Ces fichiers ne contiennent ni
+%    préambule ni \begin{document} : uniquement du contenu, en commençant par
+%    \section{...} (la classe est article : une partie = une \section).
+%    Un fichier peut aussi prolonger la section précédente : il ne contient alors
+%    que des \subsection (exemple : chapitre2.tex, qui suit chapitre1.tex).
+%  - Nouveau document : modifier le bloc « Informations du document »,
+%    ajouter ou retirer des \include, décommenter les sections utiles
+%    (résumés, introduction, bibliographie, table des illustrations,
+%    glossaire, annexes).
+%  - Compilation : pdflatex main (2 fois).
+%    Avec bibliographie : pdflatex, biber main, pdflatex, pdflatex.
+%  - Couleurs de la charte : insarouge (principale) et insagris (secondaire),
+%    relevées sur le logo INSA. À utiliser dans les chapitres (figures, tableaux).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass[10pt]{article}
+
+%%%%% Informations du document (à modifier pour chaque document) %%%%%
+\newcommand{\doctitre}{Informatique quantique}
+\newcommand{\docsoustitre}{Notes de cours -- 4A FISE SF}
+\newcommand{\docauteur}{Niels LOPEZ}
+\newcommand{\docdate}{\today}
+% Nombre de pages de garde importées en PDF : le logo n'apparaît qu'après elles (0 = sur toutes les pages)
+\newcounter{pagesdegarde}
+\setcounter{pagesdegarde}{0}
+
+%%%%% Package de base %%%%%
+\usepackage{graphicx} % pour insérer des images
+\graphicspath{{images/}}
+\usepackage{float} % pour placer les images ([H])
+
+\usepackage{amsmath}% pour les équations
+\usepackage{amssymb}% pour les symboles mathématiques (\mathbb, ...)
+\numberwithin{figure}{section}%pour les numérotations des figures
+\numberwithin{equation}{section}%idem pour les équations
+\numberwithin{table}{section}%idem pour les tableaux
+
+\usepackage{array}%pour les tableaux
+\usepackage{makecell}  % idem
+
+\usepackage[utf8]{inputenc}%pour glossaire
+\usepackage[T1]{fontenc}
+\usepackage{lmodern} % police Latin Modern (équivalent de Computer Modern en T1)
+\usepackage[french]{babel}
+
+%%%%% Charte graphique INSA CVL %%%%%
+\usepackage{xcolor}
+\definecolor{insarouge}{HTML}{E42618} % rouge du logo INSA (couleur principale)
+\definecolor{insagris}{HTML}{5F5F5F}  % gris du logo INSA (couleur secondaire)
+
+%%%%% Pour la biblio %%%%%
+\usepackage{csquotes}
+\usepackage[backend=biber,style=apa]{biblatex} % pour la biblio
+\addbibresource{sources.bib} % fichier contenant les références
+
+%%%%% Pour les lignes de code %%%%%
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\small,
+  backgroundcolor=\color{insagris!8},
+  frame=single,
+  rulecolor=\color{insagris!60},
+  breaklines=true
+}
+\lstdefinestyle{terminal}{
+  backgroundcolor=\color{black!5},
+  basicstyle=\ttfamily\small\color{black},
+  frame=single,
+  framerule=0pt,
+  xleftmargin=1em,
+  showstringspaces=false,
+  breaklines=true,
+  escapeinside={(*@}{@*)},
+}
+\newcommand{\prompt}{\textcolor{gray}{\texttt{user@linux:~\$}} }
+\lstdefinestyle{darkterminal}{
+  backgroundcolor=\color{black},
+  basicstyle=\ttfamily\small\color{green},
+  frame=single,
+  framerule=0pt,
+  xleftmargin=1em,
+  breaklines=true,
+  showstringspaces=false
+}
+\lstdefinestyle{verbatimlike}{
+    basicstyle=\ttfamily\small,     % police type machine à écrire, comme verbatim
+    breaklines=true,                % retour automatique à la ligne
+    breakatwhitespace=false,        % casse les mots si nécessaire
+    showstringspaces=false,         % pas de soulignement des espaces dans les chaînes
+    numbers=none,                   % pas de numérotation
+    frame=none,                     % pas de cadre
+    framerule=0pt,                  % épaisseur de la bordure à 0
+    rulecolor=\color{black},        % couleur du cadre (inutile ici)
+    backgroundcolor=,               % pas de fond
+    tabsize=4,                      % largeur d'une tabulation
+    keepspaces=true,                % préserve les espaces consécutifs
+    columns=flexible                % adapte les colonnes pour éviter les débordements
+}
+
+\usepackage{fancyvrb} %pour les retours à la ligne dans verbatim
+
+\usepackage{enumitem} %pour les listes de puces
+\setlist[itemize,1]{label=\textcolor{insarouge}{\textemdash}} % puces rouges
+
+\usepackage{changepage} %pour dépasser dans les marges
+\usepackage{subcaption}    % pour gérer des figures côte à côte
+
+\usepackage[version=4]{mhchem}   % pour les équations chimiques
+\usepackage{booktabs}            % tableau plus soigné (optionnel, sinon \hline suffit)
+
+\usepackage{tikz}
+\usetikzlibrary{positioning, arrows.meta, fit, backgrounds, calc, shapes.geometric, babel} % pour les graphs
+\usepackage{adjustbox}
+
+%%%%% Encadrés (définitions, résultats, remarques) %%%%%
+\usepackage[skins,breakable]{tcolorbox}
+\tcbset{boxrule=0.6pt,arc=2pt,left=6pt,right=6pt,top=4pt,bottom=4pt}
+\newtcolorbox{definition}[1]{colback=insarouge!4,colframe=insarouge,
+  fonttitle=\bfseries,title={#1}}
+\newtcolorbox{resultat}[1]{colback=insarouge!10,colframe=insarouge!65!black,boxrule=1pt,
+  fonttitle=\bfseries,title={#1}}
+\newtcolorbox{remarque}[1][Remarque]{colback=insagris!7,colframe=insagris,
+  fonttitle=\bfseries,title={#1}}
+
+%%%%% Macros de mathématiques / physique %%%%%
+\newcommand{\ii}{\mathrm{i}}   % unité imaginaire
+\newcommand{\ee}{\mathrm{e}}   % nombre e
+\newcommand{\dd}{\mathrm{d}}   % différentielle droite
+\newcommand{\pd}[2]{\dfrac{\partial #1}{\partial #2}}
+\newcommand{\pdd}[2]{\dfrac{\partial^{2} #1}{\partial #2^{2}}}
+\newcommand{\Hop}{\hat{H}}     % opérateur hamiltonien
+% Notation de Dirac : \ket{a} = |a>, \bra{a} = <a|, \braket{a}{b} = <a|b>
+\newcommand{\ket}[1]{|#1\rangle}
+\newcommand{\bra}[1]{\langle #1|}
+\newcommand{\braket}[2]{\langle #1|#2\rangle}
+
+%%%%% Titres de sections (rouge INSA) %%%%%
+\usepackage{titlesec}
+\titleformat{\section}
+  {\fontsize{15}{18}\selectfont\bfseries\color{insarouge}}{\thesection}{0.7em}{}
+  [{\vspace{0.5ex}\color{insarouge}\titlerule[0.8pt]}]
+% Titres non numérotés (\section*, sommaire, résumés) : même style. Le filet n'est tracé que si le titre
+% n'est pas vide (les titres vides servent à masquer le titre automatique de la liste des figures ou du glossaire).
+\newsavebox{\insatitbox}
+\newcommand{\insatitrenn}[1]{%
+  \sbox{\insatitbox}{\ignorespaces#1\unskip}%
+  \ifdim\wd\insatitbox=0pt\else #1\par\nobreak\vspace{0.5ex}{\color{insarouge}\hrule height 0.8pt}\fi}
+\titleformat{name=\section,numberless}
+  {\fontsize{15}{18}\selectfont\bfseries\color{insarouge}}{}{0pt}{\insatitrenn}
+\titleformat{\subsection}
+  {\fontsize{12}{14.5}\selectfont\bfseries\color{insarouge}}{\thesubsection}{0.7em}{}
+\titleformat{\subsubsection}
+  {\fontsize{10.5}{13}\selectfont\bfseries\color{insagris}}{\thesubsubsection}{0.7em}{}
+\titleformat{\paragraph}[runin]
+  {\normalfont\normalsize\bfseries\color{insagris}}{\theparagraph}{0.7em}{}
+\titlespacing*{\paragraph}{0pt}{1.5ex plus .5ex minus .2ex}{0.6em}
+\titlespacing*{\section}{0pt}{3ex plus 1ex minus .2ex}{1.8ex plus .2ex}
+\titlespacing*{\subsection}{0pt}{2.5ex plus 1ex minus .2ex}{1.2ex plus .2ex}
+\titlespacing*{\subsubsection}{0pt}{2ex plus .5ex minus .2ex}{1ex plus .2ex}
+
+%%%%% Pour le glossaire %%%%%
+\usepackage[hidelinks]{hyperref} %pour rendre les liens cliquables
+\hypersetup{pdftitle={\doctitre}, pdfauthor={\docauteur}, pdfsubject={\docsoustitre}}
+\usepackage{glossaries}
+\renewcommand{\glstextformat}[1]{\textcolor{insarouge}{#1}} %pour colorer les mots glossariés
+%\makeglossaries
+\makenoidxglossaries % (avertissement inoffensif dans le log tant que le glossaire n'est pas imprimé)
+\input{glossaire} % charge les entrées depuis glossaire.tex
+
+%%%%% Pour les corner images : logo INSA, titre du document, filet rouge %%%%%
+\usepackage{eso-pic} % for corner picutres
+\usepackage{ifthen}
+\AddToShipoutPictureBG{%
+ \ifthenelse{\value{page}>\value{pagesdegarde}}{%
+  % logo INSA en haut à gauche
+  \put(0.5cm,\paperheight-1.5cm){\includegraphics[width=6cm]{images/logo_insa.png}}%
+  % titre du document en haut à droite
+  \put(\paperwidth-0.5cm,\paperheight-0.9cm){\makebox(0,0)[r]{%
+    \normalfont\normalsize% (évite d'hériter du gras ou de la taille du texte en cours de page)
+    \renewcommand{\arraystretch}{1}% (évite d'hériter d'un \arraystretch réglé dans un tableau en cours de page)
+    \begin{tabular}{@{}r@{}}
+      {\bfseries\color{insarouge}\doctitre}\\
+      {\footnotesize\color{insagris}\docsoustitre}
+    \end{tabular}}}%
+  % filet rouge sous l'en-tête
+  \put(0.5cm,\paperheight-1.8cm){\color{insarouge}\rule{\dimexpr\paperwidth-1cm\relax}{1pt}}%
+ }{}%
+}
+
+%%%%% Numéro de page (rouge, centré en bas) %%%%%
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\small\bfseries\textcolor{insarouge}{\thepage}}
+\fancypagestyle{plain}{%
+  \fancyhf{}%
+  \renewcommand{\headrulewidth}{0pt}%
+  \fancyfoot[C]{\small\bfseries\textcolor{insarouge}{\thepage}}%
+}
+
+%%%%% Marges %%%%%
+\usepackage[a4paper,
+            top=3.5cm,
+            bottom=2.5cm,
+            left=2.2cm,
+            right=2.2cm,
+            headheight=14pt]{geometry}
+
+%%%%% Page de garde %%%%%
+% Import de pages PDF, par exemple une page de garde :
+%   \includepdf[pages={1,2}]{page1.pdf}   (puis régler le compteur pagesdegarde en haut du fichier)
+\usepackage{pdfpages}
+
+\title{\doctitre}
+\author{\docauteur}
+\date{\docdate}
+
+% Pour ne compiler que certains chapitres (la numérotation est conservée) :
+%\includeonly{chapitre1}
+
+\begin{document}
+%\maketitle % page de titre LaTeX (optionnelle)
+
+%%%%% Sommaire %%%%%
+\begingroup
+\fontsize{8pt}{10pt}\selectfont
+\tableofcontents
+\endgroup
+
+%%%%% Résumés %%%%%
+%\newpage
+%\section*{Résumés}
+%\addcontentsline{toc}{section}{Résumés}
+%\input{sections/0_summary}
+
+%%%%% INTRO %%%%%
+%\newpage
+%\section{Introduction}
+%
+%%Voici une citation~: \cite{lamport1994latex}.
+%%Voici un texte utilisant \gls{latex} et \gls{biber}.
+%
+%\input{sections/1_intro}
+
+%%%%% Chapitres (un fichier par chapitre) %%%%%
+% Un chapitre indépendant commence par \section{...} (chapitre1, chapitre4, chapitre5,
+% chapitre6, chapitre7).
+% chapitre2 et chapitre3 PROLONGENT la section 1 : ils ne contiennent que des
+% \subsection (1.6 à 1.9, puis 1.10 à 1.13), sans \section.
+\include{chapitre1}
+\include{chapitre2}
+\include{chapitre3}
+\include{chapitre4}
+\include{chapitre5}
+\include{chapitre6}
+\include{chapitre7}
+%\include{chapitre8}
+
+%%%%% Bibliographie %%%%%
+%\newpage
+%\printbibliography[title=Bibliographie, heading=bibnumbered]
+
+%%%%% Table des illustrations %%%%%
+%\newpage
+%\renewcommand{\listfigurename}{ }
+%\section{Table des illustrations}
+%%\addcontentsline{toc}{section}{Table des illustrations} % ajoute à la table des matières
+%\listoffigures
+
+%%%%% Glossaire %%%%%
+%\newpage
+%\renewcommand{\glossaryname}{Glossaire}
+%\section{\glossaryname}
+%\renewcommand{\glossaryname}{}
+%\glsaddall
+%\vspace{-4em} %pour enlever le saut de ligne
+%\printnoidxglossary
+
+%%%%% Annexes %%%%%
+%\newpage
+%\section{Annexes}
+%\input{annexes}
+
+\end{document}

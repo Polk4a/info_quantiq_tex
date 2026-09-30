@@ -1,0 +1,440 @@
+% =====================================================================
+%  Chapitre 2 : suite de la section 1 (mécanique quantique)
+%  Fichier importé par main.tex avec \include{chapitre2}.
+%  Il PROLONGE chapitre1.tex : pas de \section ici, les sous-sections
+%  1.6 à 1.9 font suite à 1.1 à 1.5 (la suite est dans chapitre3.tex).
+%  Pas de préambule non plus : les
+%  environnements (definition, resultat, remarque), les macros (\ii, \ee,
+%  \dd, \pd, \pdd, \Hop, \ket, \bra, \braket) et les couleurs (insarouge,
+%  insagris) sont définis dans main.tex.
+%  Convention de signe : p = -i hbar d/dx, cohérente avec l'onde plane
+%  e^{i(kx-wt)} de la section 1.3 (les notes de cours donnaient +i hbar).
+% =====================================================================
+
+% Macros de Dirac (déjà définies dans main.tex récent ; ce bloc évite l'erreur
+% « Undefined control sequence \ket » si main.tex est une ancienne version).
+\providecommand{\ket}[1]{|#1\rangle}
+\providecommand{\bra}[1]{\langle #1|}
+\providecommand{\braket}[2]{\langle #1|#2\rangle}
+
+% ---------------------------------------------------------------------
+\subsection{Notation de Dirac}\label{sec:dirac}
+% ---------------------------------------------------------------------
+
+Un état s'écrit comme un vecteur colonne, par exemple
+$\begin{pmatrix} a_1\\ a_2\end{pmatrix}\in\mathbb{C}^2$ : c'est un élément d'un
+espace de Hilbert de dimension~2, noté $\mathcal{H}^2$. Dirac le note simplement
+$\ket{a}$ et évite d'écrire les composantes à chaque ligne.
+
+\begin{definition}{Notation de Dirac : ket, bra et bra-ket}
+\begin{center}
+\begin{tabular}{@{}r@{\hspace{0.5em}}l@{\hspace{2em}}l@{}}
+  {\Large\color{insarouge}$\ket{a}$}
+    & $=\begin{pmatrix}a_1\\ a_2\end{pmatrix}\in\mathcal{H}^2$
+    & \textbf{ket} : vecteur colonne \\[1.6ex]
+  {\Large\color{insarouge}$\bra{a}$}
+    & $=\big(\ket{a}\big)^\dagger=\begin{pmatrix}a_1^* & a_2^*\end{pmatrix}$
+    & \textbf{bra} : vecteur ligne \\[1.6ex]
+  {\Large\color{insarouge}$\braket{a}{b}$}
+    & $=\begin{pmatrix}a_1^* & a_2^*\end{pmatrix}\begin{pmatrix}b_1\\ b_2\end{pmatrix}
+       =a_1^*b_1+a_2^*b_2$
+    & \textbf{bra-ket} : produit scalaire \\
+\end{tabular}
+\end{center}
+Le bra est le transposé \emph{conjugué} du ket. Le nom vient de l'anglais
+\emph{bracket} (crochet) : en accolant $\bra{a}$~(\emph{bra}) et $\ket{b}$~(\emph{ket})
+on obtient $\braket{a}{b}$~(\emph{bracket}), un nombre complexe.
+
+Propriétés : $\braket{b}{a}=\braket{a}{b}^*$ et
+$\braket{a}{a}=|a_1|^2+|a_2|^2\in\mathbb{R}_+$ (norme au carré).
+\end{definition}
+
+Dans l'autre ordre, le produit d'un ket par un bra est une matrice (un opérateur) :
+\[
+  \ket{a}\bra{b}
+  =\begin{pmatrix}a_1\\ a_2\end{pmatrix}\begin{pmatrix}b_1^* & b_2^*\end{pmatrix}
+  =\begin{pmatrix}a_1b_1^* & a_1b_2^*\\ a_2b_1^* & a_2b_2^*\end{pmatrix}.
+\]
+
+\begin{remarque}[Pourquoi le conjugué ?]
+Pour $\ket{a}=\dfrac{1}{\sqrt2}\begin{pmatrix}1\\ \ii\end{pmatrix}$, on a
+$\bra{a}=\dfrac{1}{\sqrt2}\begin{pmatrix}1 & -\ii\end{pmatrix}$ et
+$\braket{a}{a}=\tfrac12\,(1+1)=1$. Sans conjugaison on trouverait
+$\tfrac12\,(1+\ii^2)=0$, ce qui n'est pas une norme.
+\end{remarque}
+
+Un état physique est \emph{normalisé} :
+\[
+  \braket{\Psi}{\Psi}=1 .
+\]
+Pour une particule dans l'espace, $\ket{\Psi}$ est une fonction de $x$ (dimension
+infinie) et le produit scalaire devient une intégrale,
+$\braket{\varphi}{\psi}=\int\varphi^*\psi\,\dd x$. On retrouve la condition de
+normalisation de Born (section~\ref{sec:born}) :
+\[
+  \braket{\Psi}{\Psi} = \int_{-\infty}^{+\infty}\Psi^*\Psi\,\dd x = 1 .
+\]
+L'espace de Hilbert et le formalisme complet sont repris plus loin dans le cours.
+
+% ---------------------------------------------------------------------
+\subsection{Opérateurs quantiques}\label{sec:operateurs}
+% ---------------------------------------------------------------------
+
+À chaque grandeur physique (position, quantité de mouvement, énergie) on associe
+un \emph{opérateur} $\hat O$ : une règle qui transforme une fonction d'onde en une
+autre, $\Psi\mapsto\hat O\Psi$. Le point de départ est l'onde plane de la
+section~\ref{sec:construction} : $\Psi=\ee^{\ii(kx-\omega t)}$ vérifie
+$-\ii\hbar\,\partial_x\Psi=\hbar k\,\Psi=p\,\Psi$.
+
+\begin{definition}{Opérateur quantité de mouvement}
+\[
+  \hat p = -\ii\hbar\,\frac{\partial}{\partial x},
+  \qquad
+  \hat p\,\Psi = -\ii\hbar\,\frac{\partial\Psi}{\partial x}.
+\]
+L'onde plane est fonction propre de $\hat p$, de valeur propre $p=\hbar k$.
+\end{definition}
+
+Les autres opérateurs s'obtiennent en remplaçant $p$ par $\hat p$ dans
+l'expression classique. Avec $E_c=\tfrac12 mv^2=p^2/2m$ :
+\[
+  \hat E_c = \frac{\hat p^{\,2}}{2m}
+  = \frac{1}{2m}\Big(-\ii\hbar\frac{\partial}{\partial x}\Big)
+                \Big(-\ii\hbar\frac{\partial}{\partial x}\Big)
+  = \frac{(-\ii\hbar)^2}{2m}\,\frac{\partial^2}{\partial x^2}
+  = -\frac{\hbar^2}{2m}\,\frac{\partial^2}{\partial x^2},
+  \qquad
+  \hat v = \frac{\hat p}{m} = -\frac{\ii\hbar}{m}\,\frac{\partial}{\partial x}.
+\]
+
+\begin{center}
+\renewcommand{\arraystretch}{1.6}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Grandeur} & \textbf{Classique} & \textbf{Opérateur} \\
+\midrule
+Position & $x$ & $\hat x = x\times$ \\
+Quantité de mouvement & $p$ & $\hat p = -\ii\hbar\,\partial_x$ \\
+Vitesse & $v=\dfrac{p}{m}$ & $\hat v = -\dfrac{\ii\hbar}{m}\,\partial_x$ \\
+Énergie cinétique & $E_c=\dfrac{p^2}{2m}$ & $\hat E_c = -\dfrac{\hbar^2}{2m}\,\partial_x^2$ \\
+Énergie potentielle & $V(x)$ & $\hat V = V(x)\times$ \\
+Énergie totale & $E=E_c+V$ & $\Hop = \hat E_c+\hat V = -\dfrac{\hbar^2}{2m}\,\partial_x^2+V(x)$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+L'opérateur hamiltonien $\Hop$ représente l'énergie totale. Avec $E\to\ii\hbar\,\partial_t$,
+l'équation de Schrödinger de la section~\ref{sec:construction} n'est que la relation
+$E=E_c+V$ écrite avec des opérateurs : $\ii\hbar\,\partial_t\Psi=\Hop\Psi$.
+
+\begin{remarque}[Convention de signe]
+Le signe de $\hat p$ dépend du choix de l'onde plane $\ee^{\ii(kx-\omega t)}$. La
+convention conjuguée $\ee^{-\ii(kx-\omega t)}$ inverse les deux signes
+($\hat p=+\ii\hbar\,\partial_x$ et $E\to-\ii\hbar\,\partial_t$) sans changer les
+résultats physiques. Comme $\hat p$ intervient au carré, $\hat E_c$ est le même dans
+les deux conventions.
+\end{remarque}
+
+\begin{definition}{Valeur moyenne d'un opérateur}
+Pour une fonction d'onde normalisée $\Psi$,
+\[
+  \langle\hat O\rangle
+  = \int_{-\infty}^{+\infty}\Psi^*(x,t)\;\hat O\,\Psi(x,t)\,\dd x
+  = \bra{\Psi}\hat O\ket{\Psi}.
+\]
+C'est la moyenne des résultats obtenus en mesurant la grandeur sur un grand nombre
+de systèmes identiques, tous préparés dans l'état $\Psi$. L'opérateur agit sur
+$\Psi$ seul, à droite de $\Psi^*$. Pour la position,
+$\langle\hat x\rangle=\int x\,|\Psi|^2\,\dd x$ : c'est l'espérance de la densité
+de probabilité de Born.
+
+L'\emph{incertitude} (écart type) sur la grandeur associée à $\hat O$ mesure la
+dispersion des résultats autour de cette moyenne :
+\[
+  \sigma_O=\sqrt{\langle\hat O^{\,2}\rangle-\langle\hat O\rangle^2}\,,
+  \qquad
+  \langle\hat O^{\,2}\rangle=\int\Psi^*\,\hat O^{\,2}\,\Psi\,\dd x .
+\]
+Si $\Psi$ est une fonction propre de $\hat O$ ($\hat O\Psi=\lambda\Psi$), alors
+$\langle\hat O\rangle=\lambda$, $\langle\hat O^{\,2}\rangle=\lambda^2$ et
+$\sigma_O=0$ : la grandeur a une valeur certaine.
+\end{definition}
+
+% ---------------------------------------------------------------------
+\subsection{Solutions de l'équation de Schrödinger}\label{sec:solutions}
+% ---------------------------------------------------------------------
+
+\subsubsection{Du potentiel à la fonction d'onde}
+
+En mécanique classique, l'énergie potentielle $V(x,t)$ fixe la force
+$F=-\partial V/\partial x$, puis $\dd p/\dd t=F$ donne la trajectoire. En mécanique
+quantique, c'est l'équation de Schrödinger qui joue ce rôle : connaissant $V$, on la
+résout pour obtenir $\Psi(x,t)$.
+
+\begin{resultat}{ESDT : équation de Schrödinger dépendante du temps}
+\[
+  \ii\hbar\,\pd{\Psi(x,t)}{t} = \Hop\,\Psi(x,t),
+  \qquad
+  \Hop = -\frac{\hbar^2}{2m}\,\pdd{}{x} + V(x,t).
+\]
+\end{resultat}
+
+Si l'énergie potentielle ne dépend pas du temps, $V(x,t)=V(x)$, la force
+$F=-\dd V/\dd x$ (dérivée ordinaire) est constante dans le temps et l'énergie se
+conserve. L'équation se résout alors par séparation des variables.
+
+\subsubsection{Séparation des variables}
+
+On cherche des solutions produit d'une fonction de $x$ seul et d'une fonction de $t$
+seul :
+\[
+  \Psi(x,t)=\psi(x)\,\varphi(t).
+\]
+Dans l'ESDT, les dérivées partielles deviennent des dérivées ordinaires :
+\[
+  \ii\hbar\,\psi(x)\,\frac{\dd\varphi}{\dd t}
+  = \varphi(t)\left[-\frac{\hbar^2}{2m}\,\frac{\dd^2\psi}{\dd x^2}+V(x)\,\psi(x)\right].
+\]
+On divise par $\psi(x)\,\varphi(t)$ :
+\[
+  \underbrace{\ii\hbar\,\frac{1}{\varphi}\,\frac{\dd\varphi}{\dd t}}_{\text{ne dépend que de }t}
+  \;=\;
+  \underbrace{\frac{1}{\psi}\left[-\frac{\hbar^2}{2m}\,\frac{\dd^2\psi}{\dd x^2}+V(x)\,\psi\right]}_{\text{ne dépend que de }x}.
+\]
+Les deux membres dépendent de variables indépendantes et sont pourtant égaux pour
+tout $(x,t)$ : ils sont égaux à une même constante, notée $E$. On obtient deux
+équations.
+
+\paragraph{Partie temporelle.} $\ii\hbar\,\dd\varphi/\dd t=E\,\varphi$ donne
+\[
+  \varphi(t)=\ee^{-\ii Et/\hbar}=\ee^{-\ii\omega t},
+  \qquad \omega=\frac{E}{\hbar},
+\]
+la constante multiplicative étant absorbée dans $\psi$. On retrouve $E=\hbar\omega$ :
+la constante $E$ est bien l'énergie de la particule.
+
+\paragraph{Partie spatiale.} C'est l'ESIT ci-dessous.
+
+\begin{resultat}{ESIT : équation de Schrödinger indépendante du temps}
+\[
+  -\frac{\hbar^2}{2m}\,\frac{\dd^2\psi(x)}{\dd x^2}+V(x)\,\psi(x)=E\,\psi(x)
+  \qquad\Longleftrightarrow\qquad
+  \Hop\,\psi(x)=E\,\psi(x).
+\]
+C'est un \emph{problème aux valeurs propres} : $E$ est une valeur propre de $\Hop$
+(énergie permise) et $\psi$ la fonction propre associée. Chaque solution
+$(E_n,\psi_n)$ donne un \emph{état stationnaire}
+\[
+  \Psi_n(x,t)=\psi_n(x)\,\ee^{-\ii E_nt/\hbar}.
+\]
+\end{resultat}
+
+Dans un état stationnaire, $|\Psi_n(x,t)|^2=|\psi_n(x)|^2$ ne dépend pas du temps :
+le facteur temporel est une phase globale, non observable. Les conditions physiques
+($\psi$ continue et normalisable) ne sont satisfaites que pour certaines valeurs de
+$E$ : c'est l'origine de la quantification de l'énergie, illustrée ci-dessous.
+
+Comme l'ESDT est linéaire (hypothèse~(c) de la section~\ref{sec:construction}), toute
+superposition $\Psi=\sum_n c_n\,\Psi_n$ est aussi solution, normalisée si
+$\sum_n|c_n|^2=1$ et si les $\psi_n$ sont orthonormées. Une telle superposition
+n'est en général pas stationnaire : $|\Psi|^2$ contient des termes croisés en
+$\ee^{\ii(E_m-E_n)t/\hbar}$.
+
+\subsubsection{Exemple : puits de potentiel infini}
+
+Une particule de masse $m$ (un électron par exemple) est enfermée entre deux parois
+impénétrables, en $x=0$ et $x=a$ :
+\[
+  V(x)=
+  \begin{cases}
+    0 & \text{si } 0<x<a,\\
+    +\infty & \text{ailleurs.}
+  \end{cases}
+\]
+La particule ne peut pas se trouver hors du puits : $\psi=0$ pour $x\le0$ et
+$x\ge a$. La fonction $\psi$ est continue (mais pas sa dérivée, à cause du saut
+infini de $V$), d'où les conditions aux limites
+\[
+  \psi(0)=\psi(a)=0 .
+\]
+
+\paragraph{Opérateur hamiltonien.} Dans le puits $V=0$, donc $\Hop$ se réduit à
+l'opérateur énergie cinétique :
+\[
+  \Hop=\hat E_c=-\frac{\hbar^2}{2m}\,\frac{\dd^2}{\dd x^2}\qquad(0<x<a).
+\]
+
+\paragraph{Résolution de l'ESIT.} Avec $V=0$, l'ESIT s'écrit
+$\psi''=-k^2\psi$ avec $k=\sqrt{2mE}/\hbar$. On prend $E>0$ : pour $E\le0$, la seule
+solution vérifiant $\psi(0)=\psi(a)=0$ est $\psi\equiv0$. La solution générale est
+\[
+  \psi(x)=A\sin(kx)+B\cos(kx).
+\]
+\begin{itemize}[nosep]
+  \item $\psi(0)=0$ donne $B=0$ ;
+  \item $\psi(a)=A\sin(ka)=0$ avec $A\neq0$ (sinon $\psi\equiv0$ : pas de
+        particule) donne $ka=n\pi$, soit
+        $k_n=\dfrac{n\pi}{a}$ avec $n=1,2,3,\dots$
+        ($n=0$ donne $\psi\equiv0$, et $n<0$ redonne les mêmes états au signe près).
+\end{itemize}
+Cela revient à $\lambda_n=2\pi/k_n=2a/n$, soit $a=n\,\lambda_n/2$ : $n$ demi-longueurs
+d'onde tiennent dans le puits, comme pour une onde stationnaire.
+
+\begin{resultat}{Énergie quantifiée}
+\[
+  E_n=\frac{\hbar^2k_n^2}{2m}=\frac{n^2\pi^2\hbar^2}{2ma^2}=\frac{n^2h^2}{8ma^2}=n^2E_1,
+  \qquad n=1,2,3,\dots
+\]
+\textbf{Énergie fondamentale} (niveau $n=1$, le plus bas) :
+$\displaystyle E_1=\frac{\pi^2\hbar^2}{2ma^2}=\frac{h^2}{8ma^2}>0$.
+\end{resultat}
+
+\begin{remarque}[Lecture du résultat]
+\begin{itemize}[nosep]
+  \item Les énergies sont \emph{discrètes} : $E_{n+1}-E_n=(2n+1)E_1$. Comme
+        $E_n\propto1/a^2$, plus le puits est étroit, plus les énergies sont grandes.
+  \item $E_1\neq0$ : une particule confinée ne peut pas être au repos (énergie de
+        point zéro), conséquence du principe d'incertitude de Heisenberg.
+  \item Ordre de grandeur : pour un électron avec $a=1$~nm,
+        $E_1\approx0{,}38$~eV et $E_2=4E_1\approx1{,}5$~eV. Pour $a=1$~cm,
+        $E_1\approx4\times10^{-15}$~eV : la quantification est indétectable.
+\end{itemize}
+\end{remarque}
+
+\paragraph{Normalisation.} Le module de $\ee^{-\ii E_nt/\hbar}$ vaut 1, donc
+$|\Psi_n|^2=A^2\sin^2(n\pi x/a)$ et la condition de Born impose
+\[
+  \int_0^a|\Psi_n|^2\,\dd x
+  = A^2\int_0^a\frac{1-\cos\!\big(2n\pi x/a\big)}{2}\,\dd x
+  = A^2\,\frac{a}{2}=1
+  \quad\Longrightarrow\quad A=\sqrt{\frac{2}{a}},
+\]
+car l'intégrale du cosinus sur $n$ périodes est nulle.
+
+\begin{resultat}{États stationnaires du puits infini}
+\[
+  \Psi_n(x,t)=\sqrt{\frac{2}{a}}\;\sin\!\Big(\frac{n\pi x}{a}\Big)\,\ee^{-\ii E_nt/\hbar}
+  \quad(0<x<a),
+  \qquad
+  |\Psi_n|^2=\frac{2}{a}\,\sin^2\!\Big(\frac{n\pi x}{a}\Big).
+\]
+$\psi_n$ possède $n-1$ nœuds à l'intérieur du puits. Pour $n=1$ (état fondamental,
+d'énergie $E_1$) :
+\[
+  \Psi_1(x,t)=\sqrt{\frac{2}{a}}\;\sin\!\Big(\frac{\pi x}{a}\Big)\,\ee^{-\ii E_1t/\hbar}.
+\]
+\end{resultat}
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, x=1cm, y=0.95cm]
+  % ---------- (a) niveaux d'énergie et fonctions propres ----------
+  \begin{scope}
+    \node[above, font=\small] at (2,5.0) {(a) niveaux $E_n$ et fonctions propres $\psi_n$};
+    \draw[->] (-2.5,0) -- (-2.5,4.8) node[above] {$E$};
+    \draw[very thick, insarouge] (0,4.4) -- (0,0) -- (4,0) -- (4,4.4);
+    \node[insarouge, right, font=\small] at (4.05,3.9) {$V=+\infty$};
+    \node[insarouge, below, font=\small] at (2,0) {$V=0$};
+    \node[below, font=\small] at (0,-0.35) {$0$};
+    \node[below, font=\small] at (4,-0.35) {$a$};
+    \node[left, font=\small] at (-0.1,0.4) {$E_1$};
+    \node[left, font=\small] at (-0.1,1.6) {$E_2=4E_1$};
+    \node[left, font=\small] at (-0.1,3.6) {$E_3=9E_1$};
+    \foreach \n/\lev in {1/0.4, 2/1.6, 3/3.6} {
+      \draw[dashed, insagris!70] (0,\lev) -- (4,\lev);
+      \draw[thick, insagris, domain=0:1, samples=80]
+        plot ({4*\x}, {\lev+0.5*sin(\n*180*\x)});
+    }
+  \end{scope}
+  % ---------- (b) densités de probabilité ----------
+  \begin{scope}[xshift=7cm]
+    \node[above, font=\small] at (2,5.0) {(b) densités de probabilité $|\psi_n|^2$};
+    \draw[->] (-0.3,0) -- (4.6,0) node[right] {$x$};
+    \draw[thick, insarouge] (0,0) -- (0,4.4) (4,0) -- (4,4.4);
+    \node[below, font=\small] at (0,0) {$0$};
+    \node[below, font=\small] at (4,0) {$a$};
+    \node[below, font=\small] at (2,0) {$a/2$};
+    \foreach \n/\lev in {1/0.4, 2/1.6, 3/3.6} {
+      \draw[dashed, insagris!70] (0,\lev) -- (4,\lev);
+      \fill[insarouge!20] (0,\lev) -- plot[domain=0:1, samples=80]
+        ({4*\x}, {\lev+0.6*(sin(\n*180*\x))^2}) -- (4,\lev) -- cycle;
+      \draw[thick, insarouge, domain=0:1, samples=80]
+        plot ({4*\x}, {\lev+0.6*(sin(\n*180*\x))^2});
+    }
+    \draw[dotted, thick, insagris] (2,0) -- (2,4.4);
+    \node[above, font=\small] at (2,4.4) {$\langle\hat x\rangle=a/2$};
+  \end{scope}
+\end{tikzpicture}
+\caption{Puits de potentiel infini de largeur $a$. (a) Niveaux d'énergie
+$E_n=n^2E_1$ et fonctions propres $\psi_n$. (b) Densités de probabilité
+$|\psi_n|^2$, symétriques par rapport à $a/2$.}
+\end{figure}
+
+\subsubsection{Position moyenne dans le puits}
+
+D'après la définition de la valeur moyenne, avec $\hat x=x\times$ :
+\[
+  \langle\hat x\rangle
+  = \int_0^a\Psi_n^*(x,t)\;x\;\Psi_n(x,t)\,\dd x
+  = \frac{2}{a}\int_0^a x\,\sin^2\!\Big(\frac{n\pi x}{a}\Big)\dd x
+  = \frac{1}{a}\int_0^a x\Big(1-\cos\frac{2n\pi x}{a}\Big)\dd x .
+\]
+Le premier terme vaut $\dfrac1a\cdot\dfrac{a^2}{2}=\dfrac a2$. Pour le second, une
+intégration par parties donne
+\[
+  \int_0^a x\cos\frac{2n\pi x}{a}\,\dd x
+  =\Big[\frac{a\,x}{2n\pi}\sin\frac{2n\pi x}{a}\Big]_0^a
+   +\frac{a^2}{4n^2\pi^2}\Big[\cos\frac{2n\pi x}{a}\Big]_0^a = 0,
+\]
+puisque $\sin(2n\pi)=0$ et $\cos(2n\pi)=1$.
+
+\begin{resultat}{Position moyenne}
+\[
+  \langle\hat x\rangle=\frac{a}{2}\qquad\text{pour tout }n\text{ et à tout instant.}
+\]
+\end{resultat}
+
+Les phases $\ee^{\pm\ii E_nt/\hbar}$ se compensent dans $\Psi^*\Psi$. Le résultat se
+voit d'ailleurs sans calcul, car $|\Psi_n|^2$ est symétrique par rapport à $a/2$.
+
+\begin{remarque}[Moyenne et position la plus probable]
+Pour $n=2$, la densité de probabilité s'annule en $x=a/2$ alors que
+$\langle\hat x\rangle=a/2$ : la valeur moyenne n'est pas la position la plus
+probable, et la particule n'est jamais trouvée là.
+\end{remarque}
+
+\paragraph{Incertitude sur l'énergie.} Comme $\Hop\Psi_n=E_n\Psi_n$, on a aussi
+$\Hop^{2}\Psi_n=E_n^2\Psi_n$, donc $\langle\Hop\rangle=E_n$, $\langle\Hop^{2}\rangle=E_n^2$
+et
+\[
+  \sigma_E=\sqrt{\langle\Hop^{2}\rangle-\langle\Hop\rangle^2}=\sqrt{E_n^2-E_n^2}=0 .
+\]
+Dans un état propre (stationnaire) l'énergie est parfaitement déterminée, alors que la
+position ne l'est pas. Que se passe-t-il si la particule n'est pas dans un état propre ?
+C'est l'objet de la section~\ref{sec:superposition}.
+
+% ---------------------------------------------------------------------
+\subsection{Bilan : opérateurs et puits infini}
+% ---------------------------------------------------------------------
+
+\begin{center}
+\small\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Notion} & \textbf{Formule} \\
+\midrule
+Bra-ket & $\braket{a}{b}=a_1^*b_1+a_2^*b_2$, \quad
+          $\braket{\Psi}{\Psi}=\displaystyle\int\Psi^*\Psi\,\dd x=1$ \\
+Opérateurs & $\hat p=-\ii\hbar\,\partial_x$, \quad
+             $\hat E_c=\dfrac{\hat p^{\,2}}{2m}=-\dfrac{\hbar^2}{2m}\,\partial_x^2$, \quad
+             $\Hop=\hat E_c+V(x)$ \\
+Valeur moyenne, incertitude & $\langle\hat O\rangle=\displaystyle\int\Psi^*\,\hat O\,\Psi\,\dd x$,
+          \quad $\sigma_O=\sqrt{\langle\hat O^{\,2}\rangle-\langle\hat O\rangle^2}$ \\
+ESDT & $\ii\hbar\,\partial_t\Psi=\Hop\,\Psi$ \\
+Séparation ($V=V(x)$) & $\Psi=\psi(x)\,\ee^{-\ii Et/\hbar}$, \quad ESIT : $\Hop\,\psi=E\,\psi$ \\
+Puits infini & $\psi_n=\sqrt{2/a}\,\sin(n\pi x/a)$, \quad
+               $E_n=\dfrac{n^2\pi^2\hbar^2}{2ma^2}$, \quad $E_1=\dfrac{\pi^2\hbar^2}{2ma^2}$ \\
+Moyennes dans $\Psi_n$ & $\langle\hat x\rangle=a/2$, \quad $\langle\Hop\rangle=E_n$, \quad $\sigma_E=0$ \\
+\bottomrule
+\end{tabular}
+\end{center}

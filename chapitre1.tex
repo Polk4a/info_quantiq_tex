@@ -1,0 +1,415 @@
+% =====================================================================
+%  Chapitre 1 : Fondements physiques de la mécanique quantique
+%  Fichier importé par main.tex avec \include{chapitre1}.
+%  Il ne contient ni préambule ni \begin{document} : les environnements
+%  (definition, resultat, remarque), les macros (\ii, \ee, \dd, \pd, \pdd,
+%  \Hop) et les couleurs (insarouge, insagris) sont définis dans main.tex.
+% =====================================================================
+
+% =====================================================================
+\section{Fondements physiques de la mécanique quantique}\label{sec:fondements}
+% =====================================================================
+
+\begin{remarque}[Plan général du cours]
+\begin{enumerate}[nosep]
+  \item Mécanique quantique (ce chapitre) ;
+  \item Espace de Hilbert $\mathcal{H}$ ;
+  \item Notation de Dirac ;
+  \item Espace produit tensoriel ;
+  \item États quantiques, intrication quantique, états de Bell.
+\end{enumerate}
+\end{remarque}
+
+% ---------------------------------------------------------------------
+\subsection{Dualité onde--corpuscule}
+% ---------------------------------------------------------------------
+
+\subsubsection{Einstein : la lumière est faite de photons}
+
+À la fin du \textsc{xix}\textsuperscript{e} siècle, l'effet photo-électrique
+(émission d'électrons par un métal éclairé) contredit la théorie purement
+ondulatoire de la lumière : l'émission dépend de la \emph{fréquence} de la
+lumière, et non de son intensité. En 1905, Einstein l'explique en supposant que
+la lumière est formée de quanta d'énergie, les \emph{photons}. Un électron n'est
+éjecté que si l'énergie du photon dépasse le travail d'extraction $W$ du métal :
+$E_{c,\max} = hf - W$. Une onde lumineuse se comporte donc aussi comme une
+particule.
+
+\begin{definition}{Photon (Planck--Einstein)}
+\[
+  E = hf = h\nu = \hbar\omega ,
+  \qquad
+  p = \frac{h}{\lambda} = \hbar k ,
+\]
+avec $h \approx 6{,}63\times10^{-34}\ \mathrm{J\cdot s}$ (constante de Planck),
+$\hbar = \dfrac{h}{2\pi}$, $\omega = 2\pi f$ (pulsation) et
+$k = \dfrac{2\pi}{\lambda}$ (nombre d'onde).
+\end{definition}
+
+\subsubsection{de Broglie : la matière est une onde}
+
+En 1924, de Broglie inverse le raisonnement : si une onde peut se comporter
+comme une particule, une \emph{particule matérielle} peut se comporter comme une
+onde. À une particule de masse $m$ et de vitesse $v$, donc de quantité de
+mouvement $p = mv$, on associe une \emph{onde de matière}.
+
+\begin{definition}{Relations de de Broglie}
+\[
+  \lambda = \frac{h}{p} = \frac{h}{mv} ,
+  \qquad
+  f = \frac{E}{h}
+  \qquad\Longleftrightarrow\qquad
+  p = \hbar k ,\quad E = \hbar\omega .
+\]
+\end{definition}
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, thick]
+% --- Ligne 1 : Einstein (onde -> particule)
+\begin{scope}[yshift=2.3cm]
+  \draw[insarouge, domain=0:2.4, samples=100] plot (\x, {0.35*sin(360*\x/0.8)});
+  \node at (1.2,-0.8) {\small onde lumineuse};
+  \draw[<->] (3.0,0) -- (5.4,0)
+    node[midway, above] {\small Einstein}
+    node[midway, below] {\small $E = hf = \hbar\omega$};
+  \shade[ball color=insarouge!85] (6.8,0) circle (0.3);
+  \node at (6.8,0) {\small $\gamma$};
+  \node at (6.8,-0.8) {\small photon};
+\end{scope}
+% --- Ligne 2 : de Broglie (particule -> onde)
+\begin{scope}
+  \shade[ball color=insagris!80] (0.3,0) circle (0.3);
+  \draw[->] (0.7,0) -- (2.0,0) node[midway, above] {\small $p = mv$};
+  \node at (1.0,-0.8) {\small particule};
+  \draw[<->] (3.0,0) -- (5.4,0)
+    node[midway, above] {\small de Broglie}
+    node[midway, below] {\small $\lambda = h/p$};
+  \draw[insagris, domain=0:2.4, samples=100, shift={(6.0,0)}]
+    plot (\x, {0.35*sin(360*\x/0.8)});
+  \node at (7.2,-0.8) {\small onde de matière};
+\end{scope}
+\end{tikzpicture}
+\caption{Dualité onde--corpuscule : Einstein associe une particule à l'onde
+lumineuse, de Broglie associe une onde à la particule matérielle.}
+\end{figure}
+
+\begin{remarque}[Ordres de grandeur]
+\begin{itemize}[nosep]
+  \item Balle de $0{,}1$ kg à $10$ m/s : $\lambda = \dfrac{6{,}63\times10^{-34}}{0{,}1\times 10}
+        \approx 6{,}6\times10^{-34}$ m, inobservable.
+  \item Électron accéléré sous $100$ V : $p=\sqrt{2m_e\,eU}$ donne
+        $\lambda \approx 0{,}12$ nm, de l'ordre de la distance entre atomes d'un cristal.
+        La diffraction d'électrons par un cristal (Davisson--Germer, 1927) confirme
+        l'existence de l'onde de matière.
+\end{itemize}
+\end{remarque}
+
+\subsubsection{Le problème posé à Schrödinger}
+
+Si toute particule est associée à une onde, existe-t-il une \emph{équation
+d'onde} qui gouverne cette onde de matière ? C'est la question à laquelle
+répond l'équation de Schrödinger (1926).
+
+% ---------------------------------------------------------------------
+\subsection{Rappel : l'onde classique}
+% ---------------------------------------------------------------------
+
+Une onde plane progressive sinusoïdale se propageant selon $x$ s'écrit
+\[
+  y(x,t) = A\cos(kx - \omega t),
+\]
+où $A$ est l'amplitude, $k = 2\pi/\lambda$ le nombre d'onde, $\omega = 2\pi f$ la
+pulsation et $v = \omega/k = \lambda f$ la vitesse de phase (un maximum vérifie
+$kx-\omega t = \text{cste}$, donc $\dd x/\dd t = \omega/k$).
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth]
+  \draw[->] (-0.3,0) -- (8.7,0) node[right] {$x$};
+  \draw[->] (0,-1.6) -- (0,2.0) node[above] {$y$};
+  \draw[thick, insagris, domain=0:8.4, samples=200]
+    plot (\x, {cos(360*\x/4)});
+  \draw[thick, dashed, insarouge, domain=0:8.4, samples=200]
+    plot (\x, {cos(360*(\x-0.9)/4)});
+  \draw[dotted] (0,1) -- (4,1);
+  \node[left] at (0,1) {$A$};
+  \node[left] at (0,-1) {$-A$};
+  \draw[dotted] (4,1) -- (4,1.55);
+  \draw[<->] (0,1.45) -- (4,1.45) node[midway, above] {$\lambda$};
+  \draw[->, insarouge] (6,-1.2) -- (6.9,-1.2)
+    node[midway, below] {\small $v\,\Delta t$};
+  \draw[thick, insagris] (6.0,1.75) -- (6.6,1.75)
+    node[right, black] {\small $t$};
+  \draw[thick, dashed, insarouge] (7.4,1.75) -- (8.0,1.75)
+    node[right, black] {\small $t+\Delta t$};
+\end{tikzpicture}
+\caption{Onde plane progressive $y(x,t)=A\cos(kx-\omega t)$ à deux instants :
+le profil se translate de $v\,\Delta t$.}
+\end{figure}
+
+Elle vérifie l'\emph{équation des ondes}
+\[
+  \pdd{y}{x} = \frac{1}{v^2}\,\pdd{y}{t}
+  \qquad\text{(courbure $\leftrightarrow$ accélération).}
+\]
+En effet,
+\[
+  \pdd{y}{x} = -Ak^2\cos(kx-\omega t) = -k^2\,y ,
+  \qquad
+  \pdd{y}{t} = -A\omega^2\cos(kx-\omega t) = -\omega^2\,y ,
+\]
+donc $-k^2 y = -\dfrac{\omega^2}{v^2}\,y$, soit $v = \dfrac{\omega}{k}$.
+
+\begin{remarque}
+Cette équation est du second ordre en temps et $y$ est réelle. L'équation de
+Schrödinger sera du \emph{premier} ordre en temps, avec une fonction d'onde
+\emph{complexe}.
+\end{remarque}
+
+% ---------------------------------------------------------------------
+\subsection{Construction de l'équation de Schrödinger}
+% ---------------------------------------------------------------------
+
+\subsubsection{Particule libre et particule dans un potentiel}
+
+La force qui s'exerce sur la particule dérive de son énergie potentielle
+$V(x,t)$ : $F = -\partial V/\partial x$, et $\dd p/\dd t = F$.
+
+\begin{itemize}
+  \item \textbf{Particule libre} ($V = V_0$ constante) : $F = 0$, donc $p$ est
+        constante, ainsi que $\lambda = h/p$ et $f = E/h$. On s'attend à une onde
+        plane sinusoïdale $\Psi(x,t)\propto\cos(kx-\omega t)$.
+  \item \textbf{Particule dans un champ de potentiel} : $F \neq 0$, donc $p$
+        varie, et $\lambda$ varie dans l'espace. Si $E$ est conservée,
+        $p(x)=\sqrt{2m\,(E-V(x))}$, donc $\lambda(x)=h\big/\sqrt{2m\,(E-V(x))}$.
+\end{itemize}
+
+\begin{figure}[!ht]
+\centering
+\begin{minipage}{0.48\textwidth}
+\centering
+\begin{tikzpicture}[>=Stealth, scale=0.7]
+  \draw[->] (0,0) -- (6.4,0) node[right] {\small $x$};
+  \draw[thick, insarouge] (0,0.5) -- (6,0.5);
+  \node[insarouge, above] at (5.2,0.5) {\small $V_0$};
+  \draw[thick, insagris, domain=0:6, samples=200]
+    plot (\x, {1.9+0.6*cos(360*\x/1.5)});
+  \node at (3,-0.7) {\small $F=0$ : $p$ et $\lambda$ constants};
+\end{tikzpicture}
+\end{minipage}\hfill
+\begin{minipage}{0.48\textwidth}
+\centering
+\begin{tikzpicture}[>=Stealth, scale=0.7]
+  \draw[->] (0,0) -- (6.4,0) node[right] {\small $x$};
+  \draw[thick, insarouge, domain=0:6, samples=60]
+    plot (\x, {1.2*exp(-0.5*\x)+0.1});
+  \node[insarouge, above] at (4.8,0.3) {\small $V(x)$};
+  \draw[thick, insagris, domain=0:6, samples=300]
+    plot (\x, {1.9+0.6*cos(360*(0.5*\x+0.07*\x*\x))});
+  \node at (3,-0.7) {\small $F\neq0$ : $p$ et $\lambda$ varient};
+\end{tikzpicture}
+\end{minipage}
+\caption{À gauche : particule libre, onde sinusoïdale de $\lambda$ constante.
+À droite : particule dans un potentiel décroissant, l'énergie cinétique augmente
+et $\lambda$ diminue.}
+\end{figure}
+
+\subsubsection{Hypothèses raisonnables}
+
+On cherche une équation vérifiant les quatre hypothèses suivantes.
+
+\begin{enumerate}[label=(\alph*)]
+  \item \textbf{Compatibilité avec Einstein--de Broglie :}
+        $\lambda = h/p$ et $f = E/h$, soit $p = \hbar k$ et $E = \hbar\omega$.
+  \item \textbf{Compatibilité avec l'énergie totale :}
+        $E = E_c + E_p = \tfrac12 mv^2 + V = (mv)^2/2m + V = p^2/2m + V$.
+        Avec $p = \hbar k$ et $E = \hbar\omega$ :
+        \begin{equation}\label{eq:R}
+          \hbar\omega = \frac{\hbar^2k^2}{2m} + V(x,t).
+        \end{equation}
+  \item \textbf{Linéarité :} si $\Psi_1$ et $\Psi_2$ sont solutions, alors
+        $\Psi = c_1\Psi_1 + c_2\Psi_2$ l'est aussi. C'est le principe de
+        superposition, source des interférences constructives et destructives.
+  \item \textbf{Particule libre :} si $V = V_0$, la solution est une onde plane
+        progressive sinusoïdale.
+\end{enumerate}
+
+\subsubsection{Forme de l'équation}
+
+D'après (b), l'équation doit relier $E \leftrightarrow \omega$ (une dérivée
+première en temps), $p^2 \leftrightarrow k^2$ (une dérivée seconde en espace) et
+$V$ (un terme $V\Psi$). D'après (c), elle est linéaire en $\Psi$. On cherche donc
+\begin{equation}\label{eq:forme}
+  \alpha\,\pd{\Psi}{t} = \beta\,\pdd{\Psi}{x} + V(x,t)\,\Psi ,
+\end{equation}
+où $\alpha$ et $\beta$ sont des constantes à déterminer.
+
+\subsubsection{Un cosinus réel ne convient pas}
+
+Prenons une particule libre ($V=V_0$) et $\Psi = \cos\theta$ avec
+$\theta = kx-\omega t$. Alors
+\[
+  \pd{\Psi}{t} = \omega\sin\theta,
+  \qquad
+  \pdd{\Psi}{x} = -k^2\cos\theta ,
+\]
+et l'équation~\eqref{eq:forme} devient
+\[
+  \alpha\omega\,\sin\theta + (\beta k^2 - V_0)\cos\theta = 0
+  \qquad \forall\,(x,t).
+\]
+Comme $\sin\theta$ et $\cos\theta$ sont indépendants, il faut
+$\alpha\omega = 0$ et $\beta k^2 = V_0$. Or $\alpha = 0$ supprime la dérivée
+temporelle : l'équation est triviale. On ne peut donc pas travailler avec des
+fonctions réelles.
+
+\subsubsection{Passage aux nombres complexes}
+
+Cherchons $\Psi = \cos\theta + \gamma\sin\theta$ avec $\gamma\in\mathbb{C}$
+constant. Alors
+\[
+  \pd{\Psi}{t} = \omega\,(\sin\theta - \gamma\cos\theta),
+  \qquad
+  \pdd{\Psi}{x} = -k^2\,\Psi .
+\]
+L'équation~\eqref{eq:forme} s'écrit
+\[
+  \alpha\omega\,(\sin\theta - \gamma\cos\theta) = (V_0 - \beta k^2)(\cos\theta + \gamma\sin\theta).
+\]
+On identifie les coefficients de $\cos\theta$ et de $\sin\theta$ :
+\begin{align}
+  \cos\theta &:\quad -\alpha\omega\gamma = V_0 - \beta k^2, \label{eq:cos}\\
+  \sin\theta &:\quad \alpha\omega = \gamma\,(V_0 - \beta k^2). \label{eq:sin}
+\end{align}
+En reportant~\eqref{eq:cos} dans~\eqref{eq:sin}, on obtient
+$\alpha\omega = -\gamma^2\alpha\omega$, donc
+\[
+  \gamma^2 = -1 \quad\Longrightarrow\quad \gamma = \pm\ii .
+\]
+Les nombres complexes s'imposent. Avec le choix usuel $\gamma = +\ii$,
+\[
+  \Psi(x,t) = \cos(kx-\omega t) + \ii\sin(kx-\omega t) = \ee^{\,\ii(kx-\omega t)} .
+\]
+La relation~\eqref{eq:cos} devient $(-\ii\alpha)\,\omega = V_0 - \beta k^2$. Elle
+doit coïncider avec~\eqref{eq:R} écrite sous la forme
+$\hbar\,\omega = V_0 + \tfrac{\hbar^2}{2m}\,k^2$. Par identification,
+\[
+  -\ii\alpha = \hbar \;\Longrightarrow\; \alpha = \ii\hbar,
+  \qquad
+  -\beta = \frac{\hbar^2}{2m} \;\Longrightarrow\; \beta = -\frac{\hbar^2}{2m}.
+\]
+
+\begin{resultat}{Équation de Schrödinger dépendante du temps (1D)}
+\[
+  \ii\hbar\,\pd{\Psi(x,t)}{t}
+  = -\frac{\hbar^2}{2m}\,\pdd{\Psi(x,t)}{x} + V(x,t)\,\Psi(x,t)
+\]
+En 3D, avec $\nabla^2 = \dfrac{\partial^2}{\partial x^2}+\dfrac{\partial^2}{\partial y^2}+\dfrac{\partial^2}{\partial z^2}$ :
+\[
+  \ii\hbar\,\pd{\Psi(\mathbf{r},t)}{t} = \Hop\,\Psi(\mathbf{r},t),
+  \qquad
+  \Hop = -\frac{\hbar^2}{2m}\,\nabla^2 + V(\mathbf{r},t),
+\]
+où $\Hop$ est l'\emph{opérateur hamiltonien} (énergie totale).
+\end{resultat}
+
+\begin{remarque}[Portée de la construction]
+Ce n'est pas une démonstration : on a construit l'équation la plus simple
+compatible avec (a)--(d) pour un potentiel constant, puis on postule qu'elle
+reste valable pour $V(x,t)$ quelconque. Sa validité repose sur l'accord avec
+l'expérience. Le choix $\gamma=-\ii$ conduirait à la convention complexe
+conjuguée ($\alpha = -\ii\hbar$), physiquement équivalente.
+\end{remarque}
+
+\begin{remarque}[Lien avec les opérateurs]
+Sur l'onde plane $\ee^{\ii(kx-\omega t)}$ :
+$\ii\hbar\,\partial_t\Psi = \hbar\omega\,\Psi = E\,\Psi$ et
+$-\ii\hbar\,\partial_x\Psi = \hbar k\,\Psi = p\,\Psi$. L'équation de Schrödinger
+traduit donc $E = \frac{p^2}{2m} + V$ avec $E\to\ii\hbar\,\partial_t$ et
+$p\to-\ii\hbar\,\partial_x$ : c'est le point de départ du chapitre sur les
+opérateurs quantiques.
+\end{remarque}
+
+% ---------------------------------------------------------------------
+\subsection{Interprétation de Max Born}
+% ---------------------------------------------------------------------
+
+La fonction d'onde $\Psi:\mathbb{R}\times\mathbb{R}\to\mathbb{C}$ est à valeurs
+complexes : elle n'est ni observable, ni mesurable directement. En revanche, son
+module au carré est un réel positif, donc mesurable :
+\[
+  |\Psi(x,t)|^2 = \Psi^*(x,t)\,\Psi(x,t) \in \mathbb{R}_+ .
+\]
+
+\begin{definition}{Interprétation de Born (1926)}
+$|\Psi(x,t)|^2$ est la \emph{densité de probabilité de présence} de la particule
+en $x$ à l'instant $t$ :
+\[
+  \dd P\big([x,x+\dd x],t\big) = |\Psi(x,t)|^2\,\dd x ,
+  \qquad
+  P(a<x<b) = \int_a^b \Psi^*\Psi\,\dd x .
+\]
+En 3D : $\dd P = |\Psi(\mathbf{r},t)|^2\,\dd^3 r$.
+\end{definition}
+
+La particule se trouve forcément quelque part, d'où la \emph{condition de
+normalisation}
+\[
+  \int_{-\infty}^{+\infty} |\Psi(x,t)|^2\,\dd x = 1 .
+\]
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth]
+  \draw[->] (-3.3,0) -- (3.6,0) node[right] {$x$};
+  \draw[->] (0,0) -- (0,2.5) node[above] {$|\Psi(x,t)|^2$};
+  \fill[insarouge!20] (0.3,0) -- plot[domain=0.3:1.6, samples=40]
+    (\x, {2*exp(-(\x)*(\x)/1.2)}) -- (1.6,0) -- cycle;
+  \draw[thick, insagris, domain=-3:3, samples=120]
+    plot (\x, {2*exp(-(\x)*(\x)/1.2)});
+  \draw[dashed] (0.3,0) -- (0.3,1.86);
+  \draw[dashed] (1.6,0) -- (1.6,0.24);
+  \node[below] at (0.3,0) {$a$};
+  \node[below] at (1.6,0) {$b$};
+  \node[anchor=west, align=left] at (1.9,1.7)
+    {\small $P(a<x<b)$\\[1mm] \small $=\displaystyle\int_a^b|\Psi|^2\,\dd x$};
+  \draw[->] (2.3,1.2) -- (1.15,0.45);
+\end{tikzpicture}
+\caption{Densité de probabilité de présence ; la probabilité de trouver la
+particule entre $a$ et $b$ est l'aire colorée.}
+\end{figure}
+
+\begin{remarque}
+\begin{itemize}[nosep]
+  \item Multiplier $\Psi$ par une phase globale $\ee^{\ii\varphi}$ ne change pas
+        $|\Psi|^2$ : la phase globale n'est pas observable.
+  \item L'onde plane $\ee^{\ii(kx-\omega t)}$ a $|\Psi|^2 = 1$ partout : elle
+        n'est pas normalisable, la particule serait équiprobable à l'infini. Un
+        état physique est une \emph{superposition} d'ondes planes (paquet
+        d'ondes), possible grâce à la linéarité (c).
+  \item Avec la notation de Dirac (chapitres suivants), $|\Psi\rangle$ désigne
+        l'état et la normalisation s'écrit $\int\Psi^*\Psi\,\dd x = \langle\Psi|\Psi\rangle = 1$.
+\end{itemize}
+\end{remarque}
+
+% ---------------------------------------------------------------------
+\subsection{Récapitulatif}
+% ---------------------------------------------------------------------
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Relation} & \textbf{Formule} \\
+\midrule
+Planck--Einstein & $E = hf = \hbar\omega$ \\
+de Broglie & $\lambda = \dfrac{h}{p}$, \quad $p = \hbar k$ \\
+Énergie totale & $E = \dfrac{p^2}{2m} + V(x,t)$ \\
+Onde plane complexe & $\Psi = \ee^{\,\ii(kx-\omega t)}$ \\
+Schrödinger (dépendante du temps) & $\ii\hbar\,\partial_t\Psi = \Hop\Psi$, \quad
+   $\Hop = -\dfrac{\hbar^2}{2m}\partial_x^2 + V$ \\
+Born & $\dd P = |\Psi|^2\,\dd x$, \quad $\displaystyle\int_{-\infty}^{+\infty}|\Psi|^2\,\dd x = 1$ \\
+\bottomrule
+\end{tabular}
+\end{center}

@@ -1,0 +1,239 @@
+% =====================================================================
+%  Chapitre 5 : portes quantiques à un qubit
+%  Fichier importé par main.tex avec \include{chapitre5}.
+%  Comme chapitre4.tex, il ouvre une NOUVELLE SECTION (numéro 3).
+%  La suite (plusieurs qubits, intrication) est dans chapitre6.tex.
+%  Pour le rattacher à la section précédente, remplacer \section par
+%  \subsection et chaque \subsection par \subsubsection.
+%  Pas de préambule : environnements (definition, resultat, remarque),
+%  macros (\ii, \ee, \dd, \ket, \bra, \braket) et couleurs (insarouge,
+%  insagris) sont définis dans main.tex.
+% =====================================================================
+
+% Macros de Dirac (déjà définies dans main.tex récent ; ce bloc évite l'erreur
+% « Undefined control sequence \ket » si main.tex est une ancienne version).
+\providecommand{\ket}[1]{|#1\rangle}
+\providecommand{\bra}[1]{\langle #1|}
+\providecommand{\braket}[2]{\langle #1|#2\rangle}
+
+% =====================================================================
+\section{Portes quantiques à un qubit}\label{sec:portes}
+% =====================================================================
+
+Un calcul quantique transforme des états. Cette section décrit les opérations sur un
+seul qubit, appelées \emph{portes} ; le chapitre suivant passe à plusieurs qubits.
+
+\begin{definition}{Porte quantique}
+Une porte à un qubit est un opérateur $U$ (matrice $2\times2$) \emph{unitaire} :
+$U^\dagger U=\mathrm{Id}$. Elle transforme $\ket{\Psi}\to U\ket{\Psi}$, conserve la norme
+($\bra{\Psi}U^\dagger U\ket{\Psi}=\braket{\Psi}{\Psi}=1$) et est réversible
+($U^{-1}=U^\dagger$). Sur la sphère de Bloch (section~\ref{sec:bloch}), c'est une
+\emph{rotation}.
+\end{definition}
+
+% ---------------------------------------------------------------------
+\subsection{Portes de Pauli}\label{sec:pauli}
+% ---------------------------------------------------------------------
+
+Les matrices de Pauli de la section~\ref{sec:op-dirac} sont trois portes.
+
+\begin{definition}{Portes $X$, $Y$, $Z$}
+\begin{center}
+\renewcommand{\arraystretch}{1}
+\begin{tabular}{@{}lccl@{}}
+\textbf{Porte} & \textbf{Matrice} & \textbf{Ket-bra} & \textbf{Nom} \\[0.8ex]
+$X=\sigma_x$ & $\begin{pmatrix}0 & 1\\ 1 & 0\end{pmatrix}$
+  & $\ket{0}\bra{1}+\ket{1}\bra{0}$ & bit flip \\[2.2ex]
+$Y=\sigma_y$ & $\begin{pmatrix}0 & -\ii\\ \ii & 0\end{pmatrix}$
+  & $-\ii\ket{0}\bra{1}+\ii\ket{1}\bra{0}$ &  \\[2.2ex]
+$Z=\sigma_z$ & $\begin{pmatrix}1 & 0\\ 0 & -1\end{pmatrix}$
+  & $\ket{0}\bra{0}-\ket{1}\bra{1}$ & phase flip \\
+\end{tabular}
+\end{center}
+\end{definition}
+
+\paragraph{Porte $X$ (inverseur).} Avec $\braket{0}{0}=\braket{1}{1}=1$ et
+$\braket{0}{1}=\braket{1}{0}=0$ :
+\begin{align*}
+  X\ket{0}&=\ket{0}\braket{1}{0}+\ket{1}\braket{0}{0}=0\cdot\ket{0}+1\cdot\ket{1}=\ket{1},\\
+  X\ket{1}&=\ket{0}\braket{1}{1}+\ket{1}\braket{0}{1}=1\cdot\ket{0}+0\cdot\ket{1}=\ket{0}.
+\end{align*}
+$X$ échange $\ket{0}$ et $\ket{1}$ : c'est le NOT quantique (\emph{bit flip}). Sur la
+sphère de Bloch, c'est une rotation de $\pi$ autour de l'axe $x$ : le pôle nord devient
+le pôle sud. Les états de l'axe $x$ ne bougent pas : $X\ket{+}=\ket{+}$ et
+$X\ket{-}=-\ket{-}$.
+
+\paragraph{Porte $Z$ (changement de phase).}
+\begin{align*}
+  Z\ket{0}&=\ket{0}\braket{0}{0}-\ket{1}\braket{1}{0}=\ket{0},\\
+  Z\ket{1}&=\ket{0}\braket{0}{1}-\ket{1}\braket{1}{1}=-\ket{1},
+\end{align*}
+donc $Z$ change le signe de la composante sur $\ket{1}$ (\emph{phase flip}). Sur les
+états de la base $X$, par linéarité :
+\begin{align*}
+  Z\ket{+}&=\tfrac{1}{\sqrt2}\big(Z\ket{0}+Z\ket{1}\big)=\tfrac{1}{\sqrt2}\big(\ket{0}-\ket{1}\big)=\ket{-},\\
+  Z\ket{-}&=\tfrac{1}{\sqrt2}\big(Z\ket{0}-Z\ket{1}\big)=\tfrac{1}{\sqrt2}\big(\ket{0}+\ket{1}\big)=\ket{+}.
+\end{align*}
+Sous forme matricielle, $Z\ket{+}=\begin{pmatrix}1 & 0\\ 0 & -1\end{pmatrix}
+\frac{1}{\sqrt2}\begin{pmatrix}1\\ 1\end{pmatrix}=\frac{1}{\sqrt2}\begin{pmatrix}1\\ -1\end{pmatrix}=\ket{-}$.
+$Z$ est une rotation de $\pi$ autour de l'axe $z$ : elle laisse $\ket{0}$ et $\ket{1}$ en
+place et échange $\ket{+}$ et $\ket{-}$.
+
+\paragraph{Porte $Y$.} Avec $Y=-\ii\ket{0}\bra{1}+\ii\ket{1}\bra{0}$ :
+\begin{align*}
+  Y\ket{0}&=-\ii\ket{0}\braket{1}{0}+\ii\ket{1}\braket{0}{0}=\ii\ket{1},\\
+  Y\ket{1}&=-\ii\ket{0}\braket{1}{1}+\ii\ket{1}\braket{0}{1}=-\ii\ket{0}.
+\end{align*}
+Sur les états de la base $X$ :
+\begin{align*}
+  Y\ket{+}&=\tfrac{1}{\sqrt2}\big(\ii\ket{1}-\ii\ket{0}\big)=-\ii\,\tfrac{1}{\sqrt2}\big(\ket{0}-\ket{1}\big)=-\ii\ket{-},\\
+  Y\ket{-}&=\tfrac{1}{\sqrt2}\big(\ii\ket{1}+\ii\ket{0}\big)=\ii\,\tfrac{1}{\sqrt2}\big(\ket{0}+\ket{1}\big)=\ii\ket{+}.
+\end{align*}
+Un facteur global ($-\ii$ ou $\ii$) ne change pas l'état physique : $Y$ échange bien
+$\ket{+}$ et $\ket{-}$. Sur les états de l'axe $y$ :
+\begin{align*}
+  Y\ket{{+}\ii}&=\tfrac{1}{\sqrt2}\big(Y\ket{0}+\ii Y\ket{1}\big)
+   =\tfrac{1}{\sqrt2}\big(\ii\ket{1}+\ket{0}\big)=\ket{{+}\ii},\\
+  Y\ket{{-}\ii}&=\tfrac{1}{\sqrt2}\big(Y\ket{0}-\ii Y\ket{1}\big)
+   =\tfrac{1}{\sqrt2}\big(\ii\ket{1}-\ket{0}\big)=-\ket{{-}\ii}.
+\end{align*}
+$Y$ est une rotation de $\pi$ autour de l'axe $y$.
+
+\begin{remarque}[Chaque Pauli fixe son axe]
+$Z\ket{0}=\ket{0}$, $Z\ket{1}=-\ket{1}$ ; $X\ket{\pm}=\pm\ket{\pm}$ ; $Y\ket{{\pm}\ii}=\pm\ket{{\pm}\ii}$.
+Les bases $Z$, $X$, $Y$ de la section~\ref{sec:bloch} sont les bases propres de
+$Z$, $X$, $Y$. Une porte de Pauli laisse donc son propre axe invariant et retourne les
+deux autres ; c'est pourquoi les exemples utilisent les états des deux autres axes.
+\end{remarque}
+
+% ---------------------------------------------------------------------
+\subsection{Porte de Hadamard}\label{sec:hadamard}
+% ---------------------------------------------------------------------
+
+\begin{definition}{Porte de Hadamard}
+\[
+  H=\frac{1}{\sqrt2}\begin{pmatrix}1 & 1\\ 1 & -1\end{pmatrix}
+  =\ket{+}\bra{0}+\ket{-}\bra{1}.
+\]
+\end{definition}
+
+\begin{align*}
+  H\ket{0}&=\frac{1}{\sqrt2}\begin{pmatrix}1 & 1\\ 1 & -1\end{pmatrix}\begin{pmatrix}1\\ 0\end{pmatrix}
+    =\frac{1}{\sqrt2}\begin{pmatrix}1\\ 1\end{pmatrix}=\ket{+},\\[0.6ex]
+  H\ket{1}&=\frac{1}{\sqrt2}\begin{pmatrix}1 & 1\\ 1 & -1\end{pmatrix}\begin{pmatrix}0\\ 1\end{pmatrix}
+    =\frac{1}{\sqrt2}\begin{pmatrix}1\\ -1\end{pmatrix}=\ket{-},\\[0.6ex]
+  H\ket{+}&=\frac{1}{2}\begin{pmatrix}1 & 1\\ 1 & -1\end{pmatrix}\begin{pmatrix}1\\ 1\end{pmatrix}
+    =\frac{1}{2}\begin{pmatrix}2\\ 0\end{pmatrix}=\ket{0},\qquad
+  H\ket{-}=\frac{1}{2}\begin{pmatrix}0\\ 2\end{pmatrix}=\ket{1}.
+\end{align*}
+Comme $H\ket{+}=\ket{0}$ et $H\ket{-}=\ket{1}$, on a $H^2=\mathrm{Id}$ ($H$ est son propre
+inverse). Sur la sphère de Bloch, $H$ est une rotation de $\pi$ autour de l'axe
+$(x+z)/\sqrt2$ : elle échange l'axe $x$ et l'axe $z$.
+
+\begin{remarque}[À quoi sert $H$ ?]
+\begin{itemize}[nosep]
+  \item Elle \emph{crée une superposition} à partir d'un état de base :
+        $H\ket{0}=\ket{+}$ donne $P(0)=P(1)=\frac12$. C'est la première étape de
+        la plupart des algorithmes quantiques.
+  \item Elle \emph{change de base} : elle envoie la base $Z$ sur la base $X$ et
+        inversement. Mesurer dans la base $X$ revient à appliquer $H$ puis à mesurer
+        dans la base $Z$.
+  \item Elle est réversible ($H^2=\mathrm{Id}$).
+\end{itemize}
+\end{remarque}
+
+% ---------------------------------------------------------------------
+\subsection{Portes de phase}\label{sec:phase}
+% ---------------------------------------------------------------------
+
+\begin{definition}{Portes de phase $P_\theta$, $S$ et $T$}
+\[
+  P_\theta=\begin{pmatrix}1 & 0\\ 0 & \ee^{\ii\theta}\end{pmatrix}
+  =\ket{0}\bra{0}+\ee^{\ii\theta}\ket{1}\bra{1},
+  \qquad
+  S=P_{\pi/2}=\begin{pmatrix}1 & 0\\ 0 & \ii\end{pmatrix},
+  \qquad
+  T=P_{\pi/4}=\begin{pmatrix}1 & 0\\ 0 & \dfrac{1+\ii}{\sqrt2}\end{pmatrix}.
+\]
+\end{definition}
+
+Ici $\ee^{\ii\pi/2}=\ii$ et $\ee^{\ii\pi/4}=\cos\frac\pi4+\ii\sin\frac\pi4=\frac{1+\ii}{\sqrt2}$.
+$P_\theta$ laisse $\ket{0}$ inchangé et multiplie $\ket{1}$ par $\ee^{\ii\theta}$ :
+\[
+  P_\theta\big(\alpha\ket{0}+\beta\ket{1}\big)=\alpha\ket{0}+\ee^{\ii\theta}\beta\ket{1}.
+\]
+Dans la paramétrisation de Bloch, $\varphi\to\varphi+\theta$ : $P_\theta$ est une rotation
+d'angle $\theta$ autour de l'axe $z$. On retrouve $P_\pi=Z$, et $S^2=Z$, $T^2=S$.
+
+\paragraph{Exemples.}
+\begin{align*}
+  S\ket{+}&=\tfrac{1}{\sqrt2}\big(\ket{0}+\ii\ket{1}\big)=\ket{{+}\ii},\\
+  S\ket{{+}\ii}&=\tfrac{1}{\sqrt2}\big(\ket{0}+\ii\cdot\ii\ket{1}\big)=\tfrac{1}{\sqrt2}\big(\ket{0}-\ket{1}\big)=\ket{-},\\
+  T\ket{+}&=\tfrac{1}{\sqrt2}\begin{pmatrix}1 & 0\\ 0 & \frac{1+\ii}{\sqrt2}\end{pmatrix}\begin{pmatrix}1\\ 1\end{pmatrix}
+    =\tfrac{1}{\sqrt2}\begin{pmatrix}1\\ \frac{1+\ii}{\sqrt2}\end{pmatrix}
+    =\tfrac{1}{\sqrt2}\big(\ket{0}+\ee^{\ii\pi/4}\ket{1}\big)\quad(\theta=\tfrac\pi2,\ \varphi=\tfrac\pi4).
+\end{align*}
+$S$ tourne donc $\ket{+}$ d'un quart de tour autour de $z$ (de l'axe $x$ à l'axe $y$),
+puis d'un second quart de tour jusqu'à $\ket{-}$ ; $T$ fait un huitième de tour.
+
+% ---------------------------------------------------------------------
+\subsection{Récapitulatif : portes et sphère de Bloch}
+% ---------------------------------------------------------------------
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[x={(-1.63cm,-0.56cm)}, y={(1.63cm,-0.56cm)}, z={(0cm,2.16cm)}, >=Stealth, scale=0.9]
+  % sphère et grands cercles
+  \shade[ball color=insagris!15, opacity=0.55] (0,0,0) circle[radius=2.3cm];
+  \begin{scope}[insagris!75, thin]
+    \draw[domain=-45:135, samples=60, variable=\t] plot ({cos(\t)},{sin(\t)},0);
+    \draw[domain=135:315, samples=60, variable=\t, dashed] plot ({cos(\t)},{sin(\t)},0);
+    \draw[domain=-62.7:117.3, samples=60, variable=\t] plot ({cos(\t)},0,{sin(\t)});
+    \draw[domain=117.3:297.3, samples=60, variable=\t, dashed] plot ({cos(\t)},0,{sin(\t)});
+    \draw[domain=-62.7:117.3, samples=60, variable=\t] plot (0,{cos(\t)},{sin(\t)});
+    \draw[domain=117.3:297.3, samples=60, variable=\t, dashed] plot (0,{cos(\t)},{sin(\t)});
+  \end{scope}
+  % axes x, y, z (portes X, Y, Z)
+  \draw[insagris, dashed] (0,0,0) -- (-1,0,0);
+  \draw[insagris, dashed] (0,0,0) -- (0,-1,0);
+  \draw[insagris, dashed] (0,0,0) -- (0,0,-1);
+  \draw[insagris] (-1,0,0) -- (-1.3,0,0);
+  \draw[insagris] (0,-1,0) -- (0,-1.3,0);
+  \draw[insagris] (0,0,-1) -- (0,0,-1.3);
+  \draw[insagris, -{Stealth[length=2.2mm]}] (0,0,0) -- (1.3,0,0);
+  \draw[insagris, -{Stealth[length=2.2mm]}] (0,0,0) -- (0,1.3,0);
+  \draw[insagris, -{Stealth[length=2.2mm]}] (0,0,0) -- (0,0,1.3);
+  \node[anchor=east]  at (1.33,0,0) {$x$};
+  \node[anchor=west]  at (0,1.33,0) {$y$};
+  \node[anchor=south] at (0,0,1.33) {$z$};
+  % axe de la porte H : (x+z)/sqrt(2)
+  \draw[insarouge, dashed] (0,0,0) -- (-0.707,0,-0.707);
+  \draw[insarouge, very thick, -{Stealth[length=2.6mm]}] (0,0,0) -- (0.98,0,0.98);
+  \node[insarouge, anchor=south east] at (0.98,0,0.98) {axe de $H$};
+  % rotation autour de z (portes de phase)
+  \draw[insarouge, thick, -{Stealth[length=2.2mm]}, domain=15:105, samples=30, variable=\t]
+    plot ({1.15*cos(\t)},{1.15*sin(\t)},0);
+  \node[insarouge, anchor=north west, font=\small] at ({1.15*cos(60)},{1.15*sin(60)},0) {$P_\theta$};
+\end{tikzpicture}
+\caption{Portes et rotations sur la sphère de Bloch. Les portes $X$, $Y$, $Z$ sont des
+rotations de $\pi$ autour des axes $x$, $y$, $z$ ; $H$ est une rotation de $\pi$ autour de
+l'axe $(x+z)/\sqrt2$ (rouge) ; $P_\theta$ (donc $Z$, $S$, $T$) tourne d'un angle $\theta$
+autour de $z$.}
+\label{fig:portes}
+\end{figure}
+
+\begin{center}
+\renewcommand{\arraystretch}{1}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Porte} & \textbf{Matrice} & \textbf{Effet sur la base} & \textbf{Rotation de Bloch} \\
+\midrule
+$X$ & $\begin{pmatrix}0 & 1\\ 1 & 0\end{pmatrix}$ & $\ket{0}\leftrightarrow\ket{1}$ & $\pi$ autour de $x$ \\[2.2ex]
+$Y$ & $\begin{pmatrix}0 & -\ii\\ \ii & 0\end{pmatrix}$ & $\ket{0}\to\ii\ket{1},\ \ket{1}\to-\ii\ket{0}$ & $\pi$ autour de $y$ \\[2.2ex]
+$Z$ & $\begin{pmatrix}1 & 0\\ 0 & -1\end{pmatrix}$ & $\ket{1}\to-\ket{1},\ \ket{\pm}\leftrightarrow\ket{\mp}$ & $\pi$ autour de $z$ \\[2.2ex]
+$H$ & $\dfrac{1}{\sqrt2}\begin{pmatrix}1 & 1\\ 1 & -1\end{pmatrix}$ & $\ket{0}\leftrightarrow\ket{+},\ \ket{1}\leftrightarrow\ket{-}$ & $\pi$ autour de $\frac{x+z}{\sqrt2}$ \\[2.2ex]
+$S$ & $\begin{pmatrix}1 & 0\\ 0 & \ii\end{pmatrix}$ & $\ket{1}\to\ii\ket{1}$ & $\frac\pi2$ autour de $z$ \\[2.2ex]
+$T$ & $\begin{pmatrix}1 & 0\\ 0 & \frac{1+\ii}{\sqrt2}\end{pmatrix}$ & $\ket{1}\to\ee^{\ii\pi/4}\ket{1}$ & $\frac\pi4$ autour de $z$ \\
+\bottomrule
+\end{tabular}
+\end{center}

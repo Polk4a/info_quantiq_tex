@@ -1,0 +1,358 @@
+% =====================================================================
+%  Chapitre 4 : opérateurs, matrice de densité, sphère de Bloch
+%  Fichier importé par main.tex avec \include{chapitre4}.
+%  Contrairement à chapitre2.tex et chapitre3.tex (qui prolongent la
+%  section 1), ce fichier ouvre une NOUVELLE SECTION (numéro 2).
+%  Pour le rattacher à la section 1, remplacer la ligne \section{...}
+%  par \subsection{...} et les \subsection par des \subsubsection.
+%  Pas de préambule : environnements (definition, resultat, remarque),
+%  macros (\ii, \ee, \dd, \ket, \bra, \braket) et couleurs (insarouge,
+%  insagris) sont définis dans main.tex.
+% =====================================================================
+
+% Macros de Dirac (déjà définies dans main.tex récent ; ce bloc évite l'erreur
+% « Undefined control sequence \ket » si main.tex est une ancienne version).
+\providecommand{\ket}[1]{|#1\rangle}
+\providecommand{\bra}[1]{\langle #1|}
+\providecommand{\braket}[2]{\langle #1|#2\rangle}
+
+% =====================================================================
+\section{Opérateurs, matrice de densité et sphère de Bloch}\label{sec:densite}
+% =====================================================================
+
+Jusqu'ici un qubit est décrit par un vecteur $\ket{\Psi}$. Cette section ajoute trois
+outils : l'écriture d'un opérateur avec des « ket-bra », la \emph{matrice de densité},
+qui décrit aussi les états dont on ne connaît que des probabilités, et la
+\emph{sphère de Bloch}, qui permet de visualiser un qubit.
+
+% ---------------------------------------------------------------------
+\subsection{Opérateurs en notation de Dirac}\label{sec:op-dirac}
+% ---------------------------------------------------------------------
+
+Les projecteurs $\hat P_0=\ket{0}\bra{0}$ et $\hat P_1=\ket{1}\bra{1}$
+(section~\ref{sec:projecteurs}) sont des cas particuliers : tout opérateur $A$
+s'écrit comme une somme de ket-bra.
+
+\begin{definition}{Décomposition d'un opérateur sur la base $\{\ket{0},\ket{1}\}$}
+\[
+  A=\begin{pmatrix}A_{00} & A_{01}\\ A_{10} & A_{11}\end{pmatrix}
+  =A_{00}\ket{0}\bra{0}+A_{01}\ket{0}\bra{1}+A_{10}\ket{1}\bra{0}+A_{11}\ket{1}\bra{1},
+  \qquad A_{ij}=\bra{i}A\ket{j}.
+\]
+\end{definition}
+
+Chaque ket-bra est une matrice qui ne contient qu'un seul $1$, à la ligne $i$ et à la
+colonne $j$ :
+\[
+  \ket{0}\bra{1}=\begin{pmatrix}1\\ 0\end{pmatrix}\begin{pmatrix}0 & 1\end{pmatrix}
+  =\begin{pmatrix}0 & 1\\ 0 & 0\end{pmatrix},
+  \qquad
+  \ket{1}\bra{0}=\begin{pmatrix}0\\ 1\end{pmatrix}\begin{pmatrix}1 & 0\end{pmatrix}
+  =\begin{pmatrix}0 & 0\\ 1 & 0\end{pmatrix}.
+\]
+
+\paragraph{Exemples.} Les trois matrices de Pauli s'écrivent
+\begin{align*}
+  X&=\ket{0}\bra{1}+\ket{1}\bra{0}=\begin{pmatrix}0 & 1\\ 1 & 0\end{pmatrix},\\
+  Y&=-\ii\ket{0}\bra{1}+\ii\ket{1}\bra{0}=\begin{pmatrix}0 & -\ii\\ \ii & 0\end{pmatrix},\\
+  Z&=\ket{0}\bra{0}-\ket{1}\bra{1}=\begin{pmatrix}1 & 0\\ 0 & -1\end{pmatrix}.
+\end{align*}
+Leur action se lit directement sur l'écriture ket-bra, grâce à
+$\braket{0}{0}=\braket{1}{1}=1$ et $\braket{0}{1}=0$ :
+$X\ket{0}=\ket{0}\braket{1}{0}+\ket{1}\braket{0}{0}=\ket{1}$ (et de même $X\ket{1}=\ket{0}$) :
+$X$ échange $\ket{0}$ et $\ket{1}$ ; $Z\ket{0}=\ket{0}$ et $Z\ket{1}=-\ket{1}$.
+
+% ---------------------------------------------------------------------
+\subsection{Matrice de densité}\label{sec:rho}
+% ---------------------------------------------------------------------
+
+\begin{definition}{Matrice de densité d'un état pur}
+Pour $\ket{\Psi}=\alpha\ket{0}+\beta\ket{1}$ avec $|\alpha|^2+|\beta|^2=1$ :
+\[
+  \rho=\ket{\Psi}\bra{\Psi}
+  =\begin{pmatrix}\alpha\\ \beta\end{pmatrix}\begin{pmatrix}\alpha^* & \beta^*\end{pmatrix}
+  =\begin{pmatrix}|\alpha|^2 & \alpha\beta^*\\ \alpha^*\beta & |\beta|^2\end{pmatrix}.
+\]
+\end{definition}
+
+La diagonale contient les probabilités de mesure ($\rho_{00}=|\alpha|^2=P(0)$,
+$\rho_{11}=|\beta|^2=P(1)$, ce sont les \emph{populations}) ; les termes hors diagonale
+(les \emph{cohérences}) contiennent la phase relative entre $\alpha$ et $\beta$.
+Une phase globale $\ket{\Psi}\to\ee^{\ii\gamma}\ket{\Psi}$ disparaît de $\rho$ :
+$\ee^{\ii\gamma}\ee^{-\ii\gamma}=1$.
+
+\begin{resultat}{Propriétés d'une matrice de densité $\rho$}
+Notons $\lambda_i$ les valeurs propres de $\rho$.
+\begin{enumerate}[nosep]
+  \item $\operatorname{Tr}\rho=1=\displaystyle\sum_i\lambda_i$ ;
+  \item $\rho$ est \emph{hermitienne} : $\rho^\dagger=\rho$ (transposée conjuguée) ;
+  \item $\rho$ est \emph{positive} : $\bra{\Phi}\rho\ket{\Phi}\geq0$ pour tout
+        $\ket{\Phi}$, ce qui équivaut à $\lambda_i\geq0$.
+\end{enumerate}
+\end{resultat}
+
+Vérification pour $\rho=\ket{\Psi}\bra{\Psi}$ :
+$\operatorname{Tr}\rho=|\alpha|^2+|\beta|^2=1$ ; $(\ket{\Psi}\bra{\Psi})^\dagger
+=\ket{\Psi}\bra{\Psi}$ ; et $\bra{\Phi}\rho\ket{\Phi}=\braket{\Phi}{\Psi}\braket{\Psi}{\Phi}
+=|\braket{\Psi}{\Phi}|^2\geq0$.
+
+\begin{remarque}[Hermitienne, pas seulement symétrique]
+Il faut $\rho^\dagger=\rho$ et non $\rho^{\mathsf T}=\rho$ : la seconde égalité n'est vraie
+que si $\rho$ est réelle. Ainsi $\ket{\Psi'}\bra{\Psi'}$ avec un facteur $\ii$ (exemple
+ci-dessous) est hermitienne mais pas symétrique.
+\end{remarque}
+
+\paragraph{Exemples.} Pour $\ket{\Psi}=\frac{1}{\sqrt5}\ket{0}+\frac{2}{\sqrt5}\ket{1}$ et
+pour $\ket{\Psi'}=\frac{1}{\sqrt5}\ket{0}+\frac{2\ii}{\sqrt5}\ket{1}$
+(section~\ref{sec:projecteurs}) :
+\[
+  \rho=\begin{pmatrix}\dfrac15 & \dfrac25\\[0.6ex] \dfrac25 & \dfrac45\end{pmatrix},
+  \qquad
+  \rho'=\begin{pmatrix}\dfrac15 & -\dfrac{2\ii}{5}\\[0.6ex] \dfrac{2\ii}{5} & \dfrac45\end{pmatrix}.
+\]
+Les diagonales sont identiques (mêmes probabilités $\frac15$ et $\frac45$), seules les
+cohérences diffèrent : la matrice de densité voit la phase relative que la mesure en
+base $Z$ ne voit pas.
+
+\begin{remarque}[Probabilités et valeurs moyennes avec $\rho$]
+$P(i)=\bra{i}\rho\ket{i}=\rho_{ii}$ et $\langle A\rangle=\bra{\Psi}A\ket{\Psi}
+=\operatorname{Tr}(\rho A)$. Ces deux formules restent valables pour les états mixtes
+de la section suivante.
+\end{remarque}
+
+% ---------------------------------------------------------------------
+\subsection{État pur ou état mixte}\label{sec:pur-mixte}
+% ---------------------------------------------------------------------
+
+Comme $\sum_i\lambda_i=1$ et $0\leq\lambda_i\leq1$, on a
+$\operatorname{Tr}\rho^2=\sum_i\lambda_i^2\leq1$, avec égalité si et seulement si une
+seule valeur propre vaut $1$ (les autres sont nulles).
+
+\begin{definition}{Pur ou mixte}
+\begin{itemize}[nosep]
+  \item $\rho$ est \emph{pur} si $\operatorname{Tr}\rho^2=1$ : il existe $a$ avec
+        $\lambda_a=1$ et $\lambda_b=0$ pour $b\neq a$. Alors $\rho=\ket{\Psi}\bra{\Psi}$
+        et $\rho^2=\rho$.
+  \item $\rho$ est \emph{mixte} si $\operatorname{Tr}\rho^2<1$ : c'est un mélange
+        statistique $\rho=\sum_ip_i\ket{\Psi_i}\bra{\Psi_i}$ d'états purs, chacun avec la
+        probabilité $p_i$ ($\sum_ip_i=1$). On ne sait pas dans lequel des $\ket{\Psi_i}$
+        se trouve le système.
+\end{itemize}
+\end{definition}
+
+\begin{center}
+\begin{tabular}{@{}lccl@{}}
+\toprule
+\textbf{Matrice de densité} & $\operatorname{Tr}\rho$ & $\operatorname{Tr}\rho^2$ & \textbf{Nature} \\
+\midrule
+$\ket{0}\bra{0}=\begin{pmatrix}1 & 0\\ 0 & 0\end{pmatrix}$ & $1$ & $1$ & pur \\[1.6ex]
+$\dfrac12\begin{pmatrix}1 & -1\\ -1 & 1\end{pmatrix}=\ket{-}\bra{-}$ & $1$ & $1$ & pur \\[1.6ex]
+$\dfrac12\begin{pmatrix}1 & 0\\ 0 & 1\end{pmatrix}=\dfrac{\mathrm{Id}}{2}$ & $1$ & $\dfrac12$ & mixte \\[1.6ex]
+$\begin{pmatrix}\frac34 & 0\\ 0 & \frac14\end{pmatrix}$ & $1$ & $\dfrac58$ & mixte \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Détails. Pour la deuxième ligne :
+$\dfrac12\begin{pmatrix}1 & -1\\ -1 & 1\end{pmatrix}
+=\dfrac12\big[\ket{0}\bra{0}-\ket{0}\bra{1}-\ket{1}\bra{0}+\ket{1}\bra{1}\big]$,
+qui est bien $\ket{-}\bra{-}$ avec $\ket{-}=\frac{1}{\sqrt2}(\ket{0}-\ket{1})$ ; comme
+$\rho^2=\frac14\begin{pmatrix}2 & -2\\ -2 & 2\end{pmatrix}=\rho$, on a
+$\operatorname{Tr}\rho^2=1$. Pour la troisième : $\rho^2=\frac14\mathrm{Id}$, donc
+$\operatorname{Tr}\rho^2=\frac12$. Pour la quatrième :
+$\operatorname{Tr}\rho^2=\frac{9}{16}+\frac1{16}=\frac58$.
+
+\begin{remarque}[Mélange $\neq$ superposition]
+$\rho_{\text{mél}}=\frac12\ket{0}\bra{0}+\frac12\ket{1}\bra{1}=\mathrm{Id}/2$ (le système
+est $\ket{0}$ ou $\ket{1}$, une fois sur deux) n'est pas l'état pur
+$\ket{+}\bra{+}=\frac12\begin{pmatrix}1 & 1\\ 1 & 1\end{pmatrix}$ (superposition
+cohérente). Les deux donnent $P(0)=P(1)=\frac12$, mais une mesure dans la base
+$\{\ket{+},\ket{-}\}$ les distingue : $\bra{+}\rho_{\text{mél}}\ket{+}=\frac12$, alors que
+$\bra{+}\big(\ket{+}\bra{+}\big)\ket{+}=1$. Ce sont les termes hors diagonale qui font la
+différence.
+\end{remarque}
+
+% ---------------------------------------------------------------------
+\subsection{Théorème de décomposition spectrale}\label{sec:spectral}
+% ---------------------------------------------------------------------
+
+\begin{resultat}{Décomposition spectrale}
+Pour toute matrice de densité $\rho$, il existe une base orthonormée $\{\ket{i}\}$ telle que
+\[
+  \rho=\sum_i\lambda_i\ket{i}\bra{i},
+  \qquad\lambda_i\geq0,\qquad\sum_i\lambda_i=1 .
+\]
+\end{resultat}
+
+C'est la diagonalisation d'une matrice hermitienne : les $\lambda_i$ sont réelles, elles
+sont positives car $\rho$ l'est, et de somme $1$ car $\operatorname{Tr}\rho=1$. Les
+$\ket{i}$ sont les vecteurs propres ; les $\lambda_i$ se lisent donc comme des
+probabilités : tout état est un mélange d'états purs \emph{orthogonaux}. Un état pur n'a
+qu'un seul terme.
+
+\paragraph{Exemple.} Soit
+\[
+  \rho=\begin{pmatrix}\dfrac12 & \dfrac14\\[0.6ex] \dfrac14 & \dfrac12\end{pmatrix}.
+\]
+Ses valeurs propres sont $\frac12+\frac14=\frac34$ et $\frac12-\frac14=\frac14$, de
+vecteurs propres $\ket{\pm}=\frac{1}{\sqrt2}(\ket{0}\pm\ket{1})$, donc
+\[
+  \rho=\frac34\ket{+}\bra{+}+\frac14\ket{-}\bra{-},
+  \qquad \operatorname{Tr}\rho^2=\frac9{16}+\frac1{16}=\frac58<1 :
+\]
+$\rho$ est mixte.
+Si une valeur propre est dégénérée (comme pour $\mathrm{Id}/2$), la base $\{\ket{i}\}$
+n'est pas unique.
+
+% ---------------------------------------------------------------------
+\subsection{Sphère de Bloch}\label{sec:bloch}
+% ---------------------------------------------------------------------
+
+Un état pur $\alpha\ket{0}+\beta\ket{1}$ contient deux complexes, soit quatre réels. La
+normalisation en retire un, la phase globale (inobservable) un autre : il reste
+\emph{deux} paramètres réels, ce qui définit un point sur une sphère.
+
+\begin{definition}{Paramétrisation de Bloch}
+\[
+  \ket{\Psi}=\cos\frac{\theta}{2}\,\ket{0}+\ee^{\ii\varphi}\sin\frac{\theta}{2}\,\ket{1},
+  \qquad \theta\in[0,\pi],\quad\varphi\in[0,2\pi[ .
+\]
+La normalisation est automatique : $\cos^2\frac\theta2+|\ee^{\ii\varphi}|^2\sin^2\frac\theta2=1$
+car $|\ee^{\ii\varphi}|=1$. L'état est représenté par le point de la sphère unité de
+coordonnées
+\[
+  \vec r=(\sin\theta\cos\varphi,\ \sin\theta\sin\varphi,\ \cos\theta).
+\]
+\end{definition}
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[x={(-1.63cm,-0.56cm)}, y={(1.63cm,-0.56cm)}, z={(0cm,2.16cm)}, >=Stealth]
+  % angles de l'état représenté (modifiables)
+  \pgfmathsetmacro{\thb}{55}
+  \pgfmathsetmacro{\phb}{80}
+  \pgfmathsetmacro{\rx}{sin(\thb)*cos(\phb)}
+  \pgfmathsetmacro{\ry}{sin(\thb)*sin(\phb)}
+  \pgfmathsetmacro{\rz}{cos(\thb)}
+
+  % sphère
+  \shade[ball color=insagris!15, opacity=0.55] (0,0,0) circle[radius=2.3cm];
+
+  % grands cercles : partie cachée en pointillés, partie visible en trait plein
+  \begin{scope}[insagris!75, thin]
+    \draw[domain=-45:135, samples=60, variable=\t] plot ({cos(\t)},{sin(\t)},0);
+    \draw[domain=135:315, samples=60, variable=\t, dashed] plot ({cos(\t)},{sin(\t)},0);
+    \draw[domain=-62.7:117.3, samples=60, variable=\t] plot ({cos(\t)},0,{sin(\t)});
+    \draw[domain=117.3:297.3, samples=60, variable=\t, dashed] plot ({cos(\t)},0,{sin(\t)});
+    \draw[domain=-62.7:117.3, samples=60, variable=\t] plot (0,{cos(\t)},{sin(\t)});
+    \draw[domain=117.3:297.3, samples=60, variable=\t, dashed] plot (0,{cos(\t)},{sin(\t)});
+  \end{scope}
+
+  % axes : moitié négative (cachée) en pointillés
+  \draw[insagris, dashed] (0,0,0) -- (-1,0,0);
+  \draw[insagris, dashed] (0,0,0) -- (0,-1,0);
+  \draw[insarouge, dashed] (0,0,0) -- (0,0,-1);
+  \draw[insagris] (-1,0,0) -- (-1.3,0,0);
+  \draw[insagris] (0,-1,0) -- (0,-1.3,0);
+  \draw[insarouge] (0,0,-1) -- (0,0,-1.3);
+  \draw[insagris, -{Stealth[length=2.2mm]}] (0,0,0) -- (1.3,0,0);
+  \draw[insagris, -{Stealth[length=2.2mm]}] (0,0,0) -- (0,1.3,0);
+  \draw[insarouge, -{Stealth[length=2.2mm]}] (0,0,0) -- (0,0,1.3);
+
+  % les six états remarquables
+  \foreach \ax/\ay/\az in {1/0/0, -1/0/0, 0/1/0, 0/-1/0, 0/0/1, 0/0/-1}
+    \fill[insagris!80!black] (\ax,\ay,\az) circle[radius=1.3pt];
+  \node[insarouge, anchor=south] at (0,0,1.33) {$\ket{0}$};
+  \node[insarouge, anchor=north] at (0,0,-1.33) {$\ket{1}$};
+  \node[anchor=east]  at (1.33,0,0)  {$\ket{+}$};
+  \node[anchor=west]  at (-1.33,0,0) {$\ket{-}$};
+  \node[anchor=west]  at (0,1.33,0)  {$\ket{{+}\ii}$};
+  \node[anchor=east]  at (0,-1.33,0) {$\ket{{-}\ii}$};
+
+  % état |Psi> : vecteur, projections, angles
+  \draw[dashed, insarouge!70] (0,0,0) -- (\rx,\ry,0) -- (\rx,\ry,\rz);
+  \draw[very thick, insarouge, -{Stealth[length=3mm]}] (0,0,0) -- (\rx,\ry,\rz);
+  \fill[insarouge] (\rx,\ry,\rz) circle[radius=1.6pt];
+  \node[insarouge, anchor=south] at (\rx,\ry,\rz) {$\ket{\Psi}$};
+  \draw[insarouge, domain=0:\thb, samples=25, variable=\t]
+    plot ({0.32*sin(\t)*cos(\phb)},{0.32*sin(\t)*sin(\phb)},{0.32*cos(\t)});
+  \draw[insarouge, domain=0:\phb, samples=40, variable=\t]
+    plot ({0.4*cos(\t)},{0.4*sin(\t)},0);
+  \node[insarouge, font=\small] at ({0.55*sin(\thb/2)*cos(\phb)},{0.55*sin(\thb/2)*sin(\phb)},{0.55*cos(\thb/2)}) {$\theta$};
+  \node[insarouge, font=\small] at ({0.75*cos(\phb/2)},{0.75*sin(\phb/2)},0) {$\varphi$};
+\end{tikzpicture}
+\caption{Sphère de Bloch. Le pôle nord est $\ket{0}$, le pôle sud $\ket{1}$ (axe $z$, base $Z$) ;
+$\ket{\pm}$ sont sur l'axe $x$ (base $X$) et $\ket{{\pm}\ii}$ sur l'axe $y$ (base $Y$).
+$\theta$ est l'angle avec l'axe $z$, $\varphi$ l'angle de la projection sur le plan
+équatorial avec l'axe $x$.}
+\label{fig:bloch}
+\end{figure}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{État} & $\theta$ & $\varphi$ & $\vec r$ & \textbf{Base} \\
+\midrule
+$\ket{0}$ & $0$ & --- & $(0,0,1)$ & $Z$ \\
+$\ket{1}$ & $\pi$ & --- & $(0,0,-1)$ & $Z$ \\
+$\ket{+}=\frac{1}{\sqrt2}(\ket{0}+\ket{1})$ & $\frac\pi2$ & $0$ & $(1,0,0)$ & $X$ \\
+$\ket{-}=\frac{1}{\sqrt2}(\ket{0}-\ket{1})$ & $\frac\pi2$ & $\pi$ & $(-1,0,0)$ & $X$ \\
+$\ket{{+}\ii}=\frac{1}{\sqrt2}(\ket{0}+\ii\ket{1})$ & $\frac\pi2$ & $\frac\pi2$ & $(0,1,0)$ & $Y$ \\
+$\ket{{-}\ii}=\frac{1}{\sqrt2}(\ket{0}-\ii\ket{1})$ & $\frac\pi2$ & $-\frac\pi2$ & $(0,-1,0)$ & $Y$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Aux pôles ($\theta=0$ ou $\pi$) l'angle $\varphi$ n'a pas de sens : il ne reste qu'un
+facteur global.
+
+\begin{resultat}{Lecture de la sphère}
+\begin{itemize}[nosep]
+  \item \textbf{Mesure en base $Z$} : $P(0)=\cos^2\frac\theta2=\frac{1+r_z}{2}$ et
+        $P(1)=\sin^2\frac\theta2=\frac{1-r_z}{2}$. L'angle $\varphi$ n'y intervient pas
+        (c'est la phase relative).
+  \item \textbf{États orthogonaux} $\Leftrightarrow$ \textbf{points antipodaux} :
+        $\ket{0}\perp\ket{1}$, $\ket{+}\perp\ket{-}$, $\ket{{+}\ii}\perp\ket{{-}\ii}$.
+        Une base orthonormée est donc un diamètre de la sphère.
+  \item \textbf{Composantes} : $r_x=\langle X\rangle$, $r_y=\langle Y\rangle$,
+        $r_z=\langle Z\rangle$ (moyennes des matrices de Pauli de la
+        section~\ref{sec:op-dirac}).
+\end{itemize}
+\end{resultat}
+
+\paragraph{Boule de Bloch.} Avec $\vec r=(r_x,r_y,r_z)$, la matrice de densité s'écrit
+\[
+  \rho=\frac12\begin{pmatrix}1+r_z & r_x-\ii r_y\\ r_x+\ii r_y & 1-r_z\end{pmatrix},
+  \qquad
+  \operatorname{Tr}\rho^2=\frac{1+|\vec r|^2}{2}.
+\]
+Un état pur ($\operatorname{Tr}\rho^2=1$) vérifie $|\vec r|=1$ : il est \emph{sur} la
+sphère. Un état mixte a $|\vec r|<1$ : il est \emph{à l'intérieur} de la boule, et
+$\mathrm{Id}/2$ en est le centre ($\vec r=\vec0$, $\operatorname{Tr}\rho^2=\frac12$). Les
+exemples de la section précédente donnent $\vec r=(\frac12,0,0)$ pour
+$\frac34\ket{+}\bra{+}+\frac14\ket{-}\bra{-}$ et $\vec r=(0,0,\frac12)$ pour
+$\mathrm{diag}(\frac34,\frac14)$.
+
+% ---------------------------------------------------------------------
+\subsection{Récapitulatif du chapitre}
+% ---------------------------------------------------------------------
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Notion} & \textbf{Formule} \\
+\midrule
+Opérateur & $A=\displaystyle\sum_{i,j}A_{ij}\ket{i}\bra{j}$, \quad $A_{ij}=\bra{i}A\ket{j}$ \\
+Matrice de densité (pur) & $\rho=\ket{\Psi}\bra{\Psi}={\renewcommand{\arraystretch}{1}\begin{pmatrix}|\alpha|^2 & \alpha\beta^*\\ \alpha^*\beta & |\beta|^2\end{pmatrix}}$ \\
+Propriétés & $\operatorname{Tr}\rho=1$, \quad $\rho^\dagger=\rho$, \quad $\rho\geq0$ \\
+Valeur moyenne & $\langle A\rangle=\operatorname{Tr}(\rho A)$, \quad $P(i)=\rho_{ii}$ \\
+Pur / mixte & $\operatorname{Tr}\rho^2=1$ / $\operatorname{Tr}\rho^2<1$ \\
+Spectral & $\rho=\displaystyle\sum_i\lambda_i\ket{i}\bra{i}$, \quad $\lambda_i\geq0$, \quad $\sum_i\lambda_i=1$ \\
+Sphère de Bloch & $\ket{\Psi}=\cos\frac\theta2\ket{0}+\ee^{\ii\varphi}\sin\frac\theta2\ket{1}$ \\
+Vecteur de Bloch & $\vec r=(\sin\theta\cos\varphi,\ \sin\theta\sin\varphi,\ \cos\theta)$, \quad
+                   $|\vec r|=1$ (pur), $<1$ (mixte) \\
+\bottomrule
+\end{tabular}
+\end{center}

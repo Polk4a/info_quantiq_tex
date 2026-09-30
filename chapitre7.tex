@@ -1,0 +1,1217 @@
+% =====================================================================
+%  Chapitre 7 : portes multi-qubits, circuits quantiques et téléportation
+%  Fichier importé par main.tex avec \include{chapitre7}.
+%  Comme chapitre4.tex, chapitre5.tex et chapitre6.tex, il ouvre une NOUVELLE
+%  SECTION (numéro 5). Pour le rattacher à la section précédente, remplacer
+%  \section par \subsection et chaque \subsection par \subsubsection.
+%  Pas de préambule : environnements (definition, resultat, remarque),
+%  macros (\ii, \ee, \dd, \ket, \bra, \braket) et couleurs (insarouge,
+%  insagris) sont définis dans main.tex. Les symboles de circuits (contrôle,
+%  cible, croix, mesure) sont définis juste après avec \tikzset.
+% =====================================================================
+
+% Macros de Dirac (déjà définies dans main.tex récent ; ce bloc évite l'erreur
+% « Undefined control sequence \ket » si main.tex est une ancienne version).
+\providecommand{\ket}[1]{|#1\rangle}
+\providecommand{\bra}[1]{\langle #1|}
+\providecommand{\braket}[2]{\langle #1|#2\rangle}
+
+% Symboles de circuits pour les figures de ce chapitre.
+\tikzset{
+  ctl/.pic   = {\fill[insarouge] (0,0) circle (2.6pt);},
+  cible/.pic = {\draw[insarouge, thick, fill=white] (0,0) circle (0.28);
+                \draw[insarouge, thick] (-0.28,0) -- (0.28,0);
+                \draw[insarouge, thick] (0,-0.28) -- (0,0.28);},
+  croix/.pic = {\draw[insarouge, thick] (-0.17,-0.17) -- (0.17,0.17);
+                \draw[insarouge, thick] (-0.17,0.17) -- (0.17,-0.17);},
+  mesure/.pic = {\draw[thick, fill=white] (-0.3,-0.27) rectangle (0.3,0.27);
+                 \draw[thick] (-0.19,-0.13) arc[start angle=155, end angle=25, radius=0.21];
+                 \draw[thick, -{Stealth[length=1.3mm]}] (0,-0.17) -- (0.14,0.12);},
+  porte/.style = {draw=insarouge, fill=insarouge!8, minimum size=7mm, thick},
+}
+
+% =====================================================================
+\section{Portes multi-qubits, circuits et téléportation}\label{sec:circuits}
+% =====================================================================
+
+La section précédente a décrit les états de deux qubits. On étudie ici les portes qui
+agissent sur plusieurs qubits : le CNOT et le SWAP, puis les portes contrôlées à deux et à
+trois qubits (contrôlé-$U$, Fredkin, Toffoli). On assemble ensuite des portes dans un
+circuit qui fabrique un état de Bell, on mesure l'information contenue dans un tel état,
+on distingue les états purs des états mélangés, et on démontre le protocole de
+téléportation. Tous les calculs sont détaillés.
+
+\begin{remarque}[Convention pour les circuits]
+Dans un circuit, le temps va de gauche à droite et chaque qubit a un fil. Les fils sont
+dessinés dans l'ordre \emph{inverse} de l'écriture des kets : le fil du \emph{haut} porte le
+\emph{dernier} chiffre du ket, le fil du \emph{bas} le premier. Par exemple, si le qubit $A$
+est dessiné au-dessus du qubit $B$, le ket s'écrit $\ket{b,a}=\ket{b}_B\otimes\ket{a}_A$.
+La figure~\ref{fig:bell} de la section précédente suit la même convention.
+\end{remarque}
+
+% ---------------------------------------------------------------------
+\subsection{Porte CNOT}\label{sec:cnot}
+% ---------------------------------------------------------------------
+
+\begin{definition}{Porte CNOT (NOT contrôlé)}
+La porte CNOT agit sur deux qubits : le qubit $A$ est le \emph{contrôle}, le qubit $B$ est la
+\emph{cible}. La cible est inversée (porte $X$) si le contrôle vaut $1$ et reste inchangée
+s'il vaut $0$. Avec le système écrit $(B,A)$, soit $\ket{b,a}=\ket{b}_B\otimes\ket{a}_A$ :
+\[
+  \mathrm{CNOT}\,\ket{b,a}=\ket{b\oplus a,\,a},
+  \qquad
+  \mathrm{CNOT}=I\otimes\ket{0}\bra{0}+X\otimes\ket{1}\bra{1},
+\]
+où $\oplus$ est l'addition modulo $2$ ($0\oplus0=1\oplus1=0$ et $0\oplus1=1\oplus0=1$).
+\end{definition}
+
+Sur le circuit de la figure~\ref{fig:cnot}, le point noir posé sur le fil de $A$ marque le
+contrôle et le symbole $\oplus$ posé sur le fil de $B$ marque la cible.
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, font=\small]
+  \draw (0,1.2) -- (6,1.2);
+  \draw (0,0) -- (6,0);
+  \node[anchor=east] at (0,1.2) {$\ket{a}_A$};
+  \node[anchor=east] at (0,0) {$\ket{b}_B$};
+  \node[anchor=west] at (6,1.2) {$\ket{a}_A$};
+  \node[anchor=west] at (6,0) {$\ket{b\oplus a}_B$};
+  \draw[insarouge, thick] (3,1.2) -- (3,0);
+  \pic at (3,1.2) {ctl};
+  \pic at (3,0) {cible};
+  \node[anchor=south, text=insagris] at (3,1.5) {qubit de contrôle};
+  \node[anchor=north, text=insagris] at (3,-0.5) {qubit cible};
+\end{tikzpicture}
+\caption{Porte CNOT : le fil du haut ($A$) est le contrôle, le fil du bas ($B$) est la
+cible. Le ket s'écrit $\ket{b,a}$ (le fil du haut donne le dernier chiffre).}
+\label{fig:cnot}
+\end{figure}
+
+\subsubsection{Table de vérité}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}cccc@{}}
+\toprule
+Entrée $\ket{b,a}$ & Contrôle $a$ & Sortie $\ket{b\oplus a,a}$ & Effet sur la cible $B$ \\
+\midrule
+$\ket{00}$ & $0$ & $\ket{00}$ & aucun \\
+$\ket{01}$ & $1$ & $\ket{11}$ & $0\to1$ \\
+$\ket{10}$ & $0$ & $\ket{10}$ & aucun \\
+$\ket{11}$ & $1$ & $\ket{01}$ & $1\to0$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Matrice du CNOT}
+
+La $j$-ième colonne d'une matrice $4\times4$ est l'image du $j$-ième vecteur de base
+($\ket{00},\ket{01},\ket{10},\ket{11}$, dans cet ordre). La table donne :
+\begin{align*}
+  \mathrm{CNOT}\ket{00}&=\ket{00}=\begin{pmatrix}1\\0\\0\\0\end{pmatrix},&
+  \mathrm{CNOT}\ket{01}&=\ket{11}=\begin{pmatrix}0\\0\\0\\1\end{pmatrix},\\[1.5ex]
+  \mathrm{CNOT}\ket{10}&=\ket{10}=\begin{pmatrix}0\\0\\1\\0\end{pmatrix},&
+  \mathrm{CNOT}\ket{11}&=\ket{01}=\begin{pmatrix}0\\1\\0\\0\end{pmatrix},
+\end{align*}
+d'où, en juxtaposant ces quatre colonnes,
+\[
+  \mathrm{CNOT}=\begin{pmatrix}
+    1 & 0 & 0 & 0\\ 0 & 0 & 0 & 1\\ 0 & 0 & 1 & 0\\ 0 & 1 & 0 & 0
+  \end{pmatrix}.
+\]
+
+On retrouve cette matrice avec la formule $I\otimes\ket{0}\bra{0}+X\otimes\ket{1}\bra{1}$ et
+la règle $A\otimes B=(A_{ij}B)$ (section~\ref{sec:op2}), où
+$\ket{0}\bra{0}=\begin{pmatrix}1&0\\0&0\end{pmatrix}$ et
+$\ket{1}\bra{1}=\begin{pmatrix}0&0\\0&1\end{pmatrix}$ :
+\[
+  I\otimes\ket{0}\bra{0}=\begin{pmatrix}1&0&0&0\\0&0&0&0\\0&0&1&0\\0&0&0&0\end{pmatrix},
+  \qquad
+  X\otimes\ket{1}\bra{1}=\begin{pmatrix}0&0&0&0\\0&0&0&1\\0&0&0&0\\0&1&0&0\end{pmatrix},
+\]
+et la somme de ces deux matrices est la matrice du CNOT.
+
+\subsubsection{Action sur un état quelconque}
+
+Pour $\ket{\Psi}=c_{00}\ket{00}+c_{01}\ket{01}+c_{10}\ket{10}+c_{11}\ket{11}$ :
+\[
+  \mathrm{CNOT}\begin{pmatrix}c_{00}\\c_{01}\\c_{10}\\c_{11}\end{pmatrix}
+  =\begin{pmatrix}
+    1\cdot c_{00}+0\cdot c_{01}+0\cdot c_{10}+0\cdot c_{11}\\
+    0\cdot c_{00}+0\cdot c_{01}+0\cdot c_{10}+1\cdot c_{11}\\
+    0\cdot c_{00}+0\cdot c_{01}+1\cdot c_{10}+0\cdot c_{11}\\
+    0\cdot c_{00}+1\cdot c_{01}+0\cdot c_{10}+0\cdot c_{11}
+  \end{pmatrix}
+  =\begin{pmatrix}c_{00}\\c_{11}\\c_{10}\\c_{01}\end{pmatrix}.
+\]
+Le CNOT échange les amplitudes de $\ket{01}$ et de $\ket{11}$, c'est-à-dire des deux états
+dont le contrôle vaut $1$, et laisse les autres.
+
+\paragraph{Exemple : contrôle en superposition.} Soit $\ket{0}_B\otimes\ket{+}_A
+=\frac{1}{\sqrt2}\big(\ket{00}+\ket{01}\big)=\frac{1}{\sqrt2}(1,1,0,0)^{\mathsf T}$,
+un état séparable. Alors
+\[
+  \mathrm{CNOT}\,\frac{1}{\sqrt2}\begin{pmatrix}1\\1\\0\\0\end{pmatrix}
+  =\frac{1}{\sqrt2}\begin{pmatrix}1\\0\\0\\1\end{pmatrix}
+  =\frac{1}{\sqrt2}\big(\ket{00}+\ket{11}\big)=\ket{\Phi^+}.
+\]
+Le résultat est intriqué ($D=c_{00}c_{11}-c_{01}c_{10}=\frac12\neq0$ ; section~\ref{sec:separable}) :
+un CNOT dont le contrôle est en superposition crée de l'intrication.
+
+\paragraph{Réversibilité.} Deux CNOT successifs redonnent l'état initial :
+$\ket{b,a}\to\ket{b\oplus a,a}\to\ket{b\oplus a\oplus a,a}=\ket{b,a}$, donc
+$\mathrm{CNOT}^2=\mathrm{Id}$. La matrice est réelle et symétrique, donc
+$\mathrm{CNOT}^\dagger\mathrm{CNOT}=\mathrm{CNOT}^2=\mathrm{Id}$ : elle est bien unitaire.
+
+\begin{remarque}[Contrôle en dernier ou en premier]
+La matrice dépend de l'ordre d'écriture du ket. Notons $\mathrm{CNOT}_{21}$ le CNOT dont le
+contrôle est le \emph{second} chiffre du ket (c'est la matrice ci-dessus) et
+$\mathrm{CNOT}_{12}$ celui dont le contrôle est le \emph{premier} chiffre, utilisé à la
+section précédente :
+\[
+  \mathrm{CNOT}_{12}=\ket{0}\bra{0}\otimes I+\ket{1}\bra{1}\otimes X
+  =\begin{pmatrix}1&0&0&0\\0&1&0&0\\0&0&0&1\\0&0&1&0\end{pmatrix}.
+\]
+Un même circuit (contrôle $A$, cible $B$) a donc deux matrices, selon que l'on écrit
+$A$ en dernier ($\mathrm{CNOT}_{21}$) ou en premier ($\mathrm{CNOT}_{12}$). Les deux sont
+reliées par le SWAP (section suivante).
+\end{remarque}
+
+% ---------------------------------------------------------------------
+\subsection{Porte SWAP}\label{sec:swap}
+% ---------------------------------------------------------------------
+
+\begin{definition}{Porte SWAP (échange)}
+La porte SWAP échange les états des deux qubits :
+\[
+  \mathrm{SWAP}\big(\ket{\psi}\otimes\ket{\phi}\big)=\ket{\phi}\otimes\ket{\psi}.
+\]
+Sur les états de base, $\mathrm{SWAP}\ket{a,b}=\ket{b,a}$ ; on prolonge par linéarité.
+\end{definition}
+
+Son symbole est formé de deux croix reliées par un trait vertical
+(figure~\ref{fig:swap}).
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, font=\small]
+  \draw (0,1.2) -- (6,1.2);
+  \draw (0,0) -- (6,0);
+  \node[anchor=east] at (0,1.2) {$\ket{a}$};
+  \node[anchor=east] at (0,0) {$\ket{b}$};
+  \node[anchor=west] at (6,1.2) {$\ket{b}$};
+  \node[anchor=west] at (6,0) {$\ket{a}$};
+  \draw[insarouge, thick] (3,1.2) -- (3,0);
+  \pic at (3,1.2) {croix};
+  \pic at (3,0) {croix};
+\end{tikzpicture}
+\caption{Porte SWAP : les deux qubits échangent leurs états.}
+\label{fig:swap}
+\end{figure}
+
+\subsubsection{Table et matrice}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}cc@{}}
+\toprule
+Entrée & Sortie \\
+\midrule
+$\ket{00}$ & $\ket{00}$ \\
+$\ket{01}$ & $\ket{10}$ \\
+$\ket{10}$ & $\ket{01}$ \\
+$\ket{11}$ & $\ket{11}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Les images des quatre vecteurs de base sont les colonnes de la matrice :
+\[
+  \mathrm{SWAP}\ket{00}=\begin{pmatrix}1\\0\\0\\0\end{pmatrix},\quad
+  \mathrm{SWAP}\ket{01}=\begin{pmatrix}0\\0\\1\\0\end{pmatrix},\quad
+  \mathrm{SWAP}\ket{10}=\begin{pmatrix}0\\1\\0\\0\end{pmatrix},\quad
+  \mathrm{SWAP}\ket{11}=\begin{pmatrix}0\\0\\0\\1\end{pmatrix},
+\]
+\[
+  \mathrm{SWAP}=\begin{pmatrix}
+    1 & 0 & 0 & 0\\ 0 & 0 & 1 & 0\\ 0 & 1 & 0 & 0\\ 0 & 0 & 0 & 1
+  \end{pmatrix}.
+\]
+Appliquée à $\ket{01}=(0,1,0,0)^{\mathsf T}$, cette matrice sélectionne sa deuxième colonne :
+\[
+  \begin{pmatrix}
+    1 & 0 & 0 & 0\\ 0 & 0 & 1 & 0\\ 0 & 1 & 0 & 0\\ 0 & 0 & 0 & 1
+  \end{pmatrix}
+  \begin{pmatrix}0\\1\\0\\0\end{pmatrix}
+  =\begin{pmatrix}0\\0\\1\\0\end{pmatrix}=\ket{10}.
+\]
+Sur un état quelconque, $\mathrm{SWAP}\,(c_{00},c_{01},c_{10},c_{11})^{\mathsf T}
+=(c_{00},c_{10},c_{01},c_{11})^{\mathsf T}$ : les amplitudes de $\ket{01}$ et $\ket{10}$
+sont échangées.
+
+\subsubsection{Accord avec la définition}
+
+Pour deux états $\ket{\psi}=(a_0,a_1)^{\mathsf T}$ et $\ket{\phi}=(b_0,b_1)^{\mathsf T}$ :
+\[
+  \mathrm{SWAP}\,(\ket{\psi}\otimes\ket{\phi})
+  =\mathrm{SWAP}\begin{pmatrix}a_0b_0\\a_0b_1\\a_1b_0\\a_1b_1\end{pmatrix}
+  =\begin{pmatrix}a_0b_0\\a_1b_0\\a_0b_1\\a_1b_1\end{pmatrix}
+  =\begin{pmatrix}b_0\\b_1\end{pmatrix}\otimes\begin{pmatrix}a_0\\a_1\end{pmatrix}
+  =\ket{\phi}\otimes\ket{\psi},
+\]
+ce qui est bien la définition. La porte s'écrit aussi avec des projecteurs :
+\[
+  \mathrm{SWAP}=\sum_{a,b\in\{0,1\}}\ket{a}\bra{b}\otimes\ket{b}\bra{a}.
+\]
+En effet, pour $\ket{c}\otimes\ket{d}$ on trouve
+$\sum_{a,b}\ket{a}\braket{b}{c}\otimes\ket{b}\braket{a}{d}$, et seul le terme $b=c$, $a=d$
+est non nul : le résultat est $\ket{d}\otimes\ket{c}$.
+
+\paragraph{Exemples.}
+\begin{itemize}[nosep]
+  \item Deux états différents : $\mathrm{SWAP}\big(\ket{0}\otimes\ket{+}\big)
+        =\mathrm{SWAP}\,\frac{1}{\sqrt2}(1,1,0,0)^{\mathsf T}=\frac{1}{\sqrt2}(1,0,1,0)^{\mathsf T}
+        =\ket{+}\otimes\ket{0}$.
+  \item L'état $\ket{\psi}=\frac{1}{\sqrt2}\ket{00}+\frac{1}{\sqrt2}\ket{11}$ ne change pas :
+        $\mathrm{SWAP}\ket{\psi}=\frac{1}{\sqrt2}\ket{00}+\frac{1}{\sqrt2}\ket{11}=\ket{\psi}$,
+        car $\ket{00}$ et $\ket{11}$ sont invariants. De même
+        $\mathrm{SWAP}\ket{\Phi^-}=\ket{\Phi^-}$ et $\mathrm{SWAP}\ket{\Psi^+}=\ket{\Psi^+}$, alors que
+        $\mathrm{SWAP}\ket{\Psi^-}=\frac{1}{\sqrt2}(\ket{10}-\ket{01})=-\ket{\Psi^-}$.
+\end{itemize}
+
+\paragraph{Propriétés.} Échanger deux fois redonne l'état de départ :
+$\mathrm{SWAP}^2=\mathrm{Id}$ ; la matrice est réelle et symétrique, donc
+$\mathrm{SWAP}^\dagger\mathrm{SWAP}=\mathrm{SWAP}^2=\mathrm{Id}$ : elle est unitaire.
+
+\subsubsection{Lien avec le CNOT}
+
+\begin{resultat}{SWAP échange les rôles de contrôle et de cible}
+\[
+  \mathrm{CNOT}_{21}=\mathrm{SWAP}\;\mathrm{CNOT}_{12}\;\mathrm{SWAP}.
+\]
+\end{resultat}
+
+\emph{Sur les états de base.}
+$\mathrm{SWAP}\,\mathrm{CNOT}_{12}\,\mathrm{SWAP}\ket{b,a}
+=\mathrm{SWAP}\,\mathrm{CNOT}_{12}\ket{a,b}
+=\mathrm{SWAP}\ket{a,\,a\oplus b}=\ket{a\oplus b,\,a}=\mathrm{CNOT}_{21}\ket{b,a}$.
+
+\emph{Par les matrices.} Multiplier à gauche par $\mathrm{SWAP}$ échange les lignes $2$ et
+$3$, multiplier à droite l'échange les colonnes $2$ et $3$ :
+\[
+  \mathrm{SWAP}\,\mathrm{CNOT}_{12}
+  =\begin{pmatrix}1&0&0&0\\0&0&0&1\\0&1&0&0\\0&0&1&0\end{pmatrix},
+  \qquad
+  \mathrm{SWAP}\,\mathrm{CNOT}_{12}\,\mathrm{SWAP}
+  =\begin{pmatrix}1&0&0&0\\0&0&0&1\\0&0&1&0\\0&1&0&0\end{pmatrix}=\mathrm{CNOT}_{21}.
+\]
+
+\begin{remarque}[SWAP avec trois CNOT]
+$\mathrm{SWAP}=\mathrm{CNOT}_{12}\,\mathrm{CNOT}_{21}\,\mathrm{CNOT}_{12}$. En effet, sur
+$\ket{a,b}$ (on applique les portes de droite à gauche) :
+\[
+  \ket{a,b}\ \xrightarrow{\ \mathrm{CNOT}_{12}\ }\ \ket{a,\,a\oplus b}
+  \ \xrightarrow{\ \mathrm{CNOT}_{21}\ }\ \ket{a\oplus(a\oplus b),\,a\oplus b}=\ket{b,\,a\oplus b}
+  \ \xrightarrow{\ \mathrm{CNOT}_{12}\ }\ \ket{b,\,b\oplus(a\oplus b)}=\ket{b,a}.
+\]
+Les deux membres coïncident sur les états de base, donc sur tous les états par linéarité.
+\end{remarque}
+
+% ---------------------------------------------------------------------
+\subsection{Un circuit quantique : le générateur d'états de Bell}\label{sec:circuit-bell}
+% ---------------------------------------------------------------------
+
+On assemble une porte de Hadamard et un CNOT. Le système est $(A,B)$ avec le ket
+$\ket{a,b}=\ket{a}_A\otimes\ket{b}_B$ ; d'après la convention de la section, $B$ est dessiné
+en haut et $A$ en bas (figure~\ref{fig:circuit-bell}). Le circuit a deux étapes :
+\begin{enumerate}[nosep]
+  \item la porte $I\otimes H$ : identité sur $A$, Hadamard sur $B$ ;
+  \item un CNOT de contrôle $B$ et de cible $A$ (la matrice $\mathrm{CNOT}_{21}$ de la
+        section~\ref{sec:cnot}, puisque le contrôle est le second chiffre).
+\end{enumerate}
+Les traits pointillés délimitent les états $\ket{\Pi_0}$, $\ket{\Pi_1}$ et $\ket{\Pi_2}$ :
+avant les portes, après $I\otimes H$, après le CNOT.
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, font=\small]
+  % fils : B en haut, A en bas
+  \draw (0,1.4) -- (7.6,1.4);
+  \draw (0,0) -- (7.6,0);
+  \node[anchor=east] at (0,1.4) {$\ket{0}_B$};
+  \node[anchor=east] at (0,0) {$\ket{0}_A$};
+  % première étape : H sur B, identité (pointillée) sur A
+  \node[porte] at (2.2,1.4) {$H$};
+  \node[draw=insagris, dashed, fill=white, minimum size=7mm] at (2.2,0) {$I$};
+  % CNOT : contrôle B (haut), cible A (bas)
+  \draw[insarouge, thick] (5,1.4) -- (5,0);
+  \pic at (5,1.4) {ctl};
+  \pic at (5,0) {cible};
+  % accolade de sortie
+  \draw[insagris, thick] (7.75,1.6) -- (7.9,1.6) -- (7.9,-0.2) -- (7.75,-0.2);
+  \node[anchor=west] at (7.9,0.7) {$\ket{\beta^{00}}_{AB}$};
+  % états intermédiaires
+  \foreach \x in {0.7,3.6,6.4}
+    \draw[dashed, insagris!70] (\x,1.9) -- (\x,-0.7);
+  \node[anchor=north, font=\footnotesize] at (0.7,-0.7) {$\ket{\Pi_0}=\ket{00}$};
+  \node[anchor=north, font=\footnotesize] at (3.6,-0.7) {$\ket{\Pi_1}=\ket{0}\otimes\ket{+}$};
+  \node[anchor=north, font=\footnotesize] at (6.4,-0.7) {$\ket{\Pi_2}=\ket{\beta^{00}}$};
+\end{tikzpicture}
+\caption{Générateur d'états de Bell : $I\otimes H$, puis un CNOT de contrôle $B$ (fil du haut)
+et de cible $A$ (fil du bas). L'entrée représentée est $\ket{00}$.}
+\label{fig:circuit-bell}
+\end{figure}
+
+\subsubsection{Entrée \texorpdfstring{$\ket{00}$}{|00>} : calcul pas à pas}
+
+\begin{align*}
+  \ket{\Pi_0}&=\ket{0}_A\otimes\ket{0}_B=\ket{00},\\[1ex]
+  \ket{\Pi_1}&=(I\otimes H)\ket{\Pi_0}=I\ket{0}_A\otimes H\ket{0}_B=\ket{0}\otimes\ket{+}
+    =\frac{\ket{00}+\ket{01}}{\sqrt2},\\[1ex]
+  \ket{\Pi_2}&=\mathrm{CNOT}\ket{\Pi_1}=\frac{\mathrm{CNOT}\ket{00}+\mathrm{CNOT}\ket{01}}{\sqrt2}
+    =\frac{\ket{00}+\ket{11}}{\sqrt2}=\ket{\beta^{00}}=\ket{\Phi^+}.
+\end{align*}
+Dans $\ket{\Pi_1}$, le premier chiffre est celui de $A$ et le second celui de $B$. Le CNOT a
+pour contrôle $B$ : $\ket{00}$ ($B=0$) ne change pas, $\ket{01}$ ($B=1$) devient $\ket{11}$
+puisque $A$ est inversé. Le résultat est un \emph{état de Bell}.
+
+Avec les matrices, la règle $A\otimes B=(A_{ij}B)$ donne
+\[
+  I\otimes H=\begin{pmatrix}1\cdot H&0\\0&1\cdot H\end{pmatrix}
+  =\frac{1}{\sqrt2}\begin{pmatrix}1&1&0&0\\1&-1&0&0\\0&0&1&1\\0&0&1&-1\end{pmatrix}.
+\]
+Sa première colonne est $\ket{\Pi_1}=\frac{1}{\sqrt2}(1,1,0,0)^{\mathsf T}$ (image de $\ket{00}$).
+Le CNOT échange les amplitudes de $\ket{01}$ et de $\ket{11}$ (section~\ref{sec:cnot}), donc
+\[
+  \ket{\Pi_2}=\mathrm{CNOT}\,\frac{1}{\sqrt2}\begin{pmatrix}1\\1\\0\\0\end{pmatrix}
+  =\frac{1}{\sqrt2}\begin{pmatrix}1\\0\\0\\1\end{pmatrix}.
+\]
+
+\subsubsection{Les quatre entrées}
+
+Prenons $B$ dans l'état $\ket{x}$ et $A$ dans l'état $\ket{y}$, avec $x,y\in\{0,1\}$. Alors
+$\ket{\Pi_0}=\ket{y}_A\otimes\ket{x}_B=\ket{y,x}$. Comme
+$H\ket{x}=\frac{1}{\sqrt2}\big(\ket{0}+(-1)^x\ket{1}\big)$ (c'est $\ket{+}$ pour $x=0$ et
+$\ket{-}$ pour $x=1$),
+\[
+  \ket{\Pi_1}=\ket{y}\otimes H\ket{x}=\frac{1}{\sqrt2}\Big(\ket{y,0}+(-1)^x\ket{y,1}\Big).
+\]
+Le CNOT (contrôle $B$) ne change pas $\ket{y,0}$ et transforme $\ket{y,1}$ en
+$\ket{\bar y,1}$, avec $\bar y=1-y$ :
+\[
+  \ket{\Pi_2}=\ket{\beta^{xy}}=\frac{1}{\sqrt2}\Big(\ket{y,0}+(-1)^x\ket{\bar y,1}\Big).
+\]
+Le premier indice de $\ket{\beta^{xy}}$ est l'entrée de $B$ (le qubit qui reçoit $H$), le
+second celle de $A$ (la cible). Les quatre cas :
+
+\begin{center}
+\renewcommand{\arraystretch}{1.7}
+\begin{tabular}{@{}ccccc@{}}
+\toprule
+$(B,A)=(x,y)$ & $\ket{\Pi_0}=\ket{y,x}$ & $\ket{\Pi_1}$ & $\ket{\Pi_2}=\ket{\beta^{xy}}$ & Nom \\
+\midrule
+$(0,0)$ & $\ket{00}$ & $\frac{1}{\sqrt2}(\ket{00}+\ket{01})$ & $\frac{1}{\sqrt2}(\ket{00}+\ket{11})$ & $\ket{\Phi^+}$ \\
+$(1,0)$ & $\ket{01}$ & $\frac{1}{\sqrt2}(\ket{00}-\ket{01})$ & $\frac{1}{\sqrt2}(\ket{00}-\ket{11})$ & $\ket{\Phi^-}$ \\
+$(0,1)$ & $\ket{10}$ & $\frac{1}{\sqrt2}(\ket{10}+\ket{11})$ & $\frac{1}{\sqrt2}(\ket{10}+\ket{01})$ & $\ket{\Psi^+}$ \\
+$(1,1)$ & $\ket{11}$ & $\frac{1}{\sqrt2}(\ket{10}-\ket{11})$ & $\frac{1}{\sqrt2}(\ket{10}-\ket{01})$ & $-\ket{\Psi^-}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+Détail de la dernière ligne : $\ket{\Pi_1}=\ket{1}\otimes\ket{-}=\frac{1}{\sqrt2}(\ket{10}-\ket{11})$ ;
+le CNOT laisse $\ket{10}$ et envoie $\ket{11}$ sur $\ket{01}$, d'où
+$\frac{1}{\sqrt2}(\ket{10}-\ket{01})=-\frac{1}{\sqrt2}(\ket{01}-\ket{10})=-\ket{\Psi^-}$.
+
+\paragraph{Forme matricielle.} $\mathrm{CNOT}_{21}$ échange les lignes $2$ et $4$ de
+$I\otimes H$ (il échange les amplitudes de $\ket{01}$ et $\ket{11}$), donc
+\[
+  \mathrm{CNOT}_{21}\,(I\otimes H)=\frac{1}{\sqrt2}\begin{pmatrix}
+    1 & 1 & 0 & 0\\ 0 & 0 & 1 & -1\\ 0 & 0 & 1 & 1\\ 1 & -1 & 0 & 0
+  \end{pmatrix}.
+\]
+Ses colonnes sont les images de $\ket{00},\ket{01},\ket{10},\ket{11}$, c'est-à-dire de
+$(B,A)=(0,0),(1,0),(0,1),(1,1)$ : ce sont $\ket{\beta^{00}}$, $\ket{\beta^{10}}$,
+$\ket{\beta^{01}}$, $\ket{\beta^{11}}$, soit $\ket{\Phi^+}$, $\ket{\Phi^-}$, $\ket{\Psi^+}$
+et $-\ket{\Psi^-}$.
+
+\begin{remarque}[Comparaison avec la section précédente]
+Le circuit de la figure~\ref{fig:bell} applique $H$ au \emph{premier} chiffre et prend celui-ci
+pour contrôle ; ici $H$ et le contrôle portent sur le \emph{dernier} chiffre. Les deux
+circuits se déduisent l'un de l'autre en échangeant les deux fils (conjugaison par le SWAP,
+section~\ref{sec:swap}). Les quatre états de Bell obtenus sont les mêmes, avec les mêmes
+indices, sauf le dernier : $-\ket{\Psi^-}$ ici, $+\ket{\Psi^-}$ là-bas. Ce signe est une phase
+globale, sans effet sur les mesures (elle disparaît de $\rho$, section~\ref{sec:rho}).
+\end{remarque}
+
+\subsubsection{Matrice de densité de l'état de sortie}
+
+Pour $\ket{\Psi}=\ket{\beta^{00}}=\frac{1}{\sqrt2}\ket{00}+\frac{1}{\sqrt2}\ket{11}$ :
+\[
+  \rho_{AB}=\ket{\Psi}\bra{\Psi}
+  =\begin{pmatrix}\frac{1}{\sqrt2}\\0\\0\\\frac{1}{\sqrt2}\end{pmatrix}
+   \begin{pmatrix}\frac{1}{\sqrt2}&0&0&\frac{1}{\sqrt2}\end{pmatrix}
+  =\frac12\begin{pmatrix}1&0&0&1\\0&0&0&0\\0&0&0&0\\1&0&0&1\end{pmatrix}.
+\]
+Sous forme de ket-bra :
+$\rho_{AB}=\frac12\big(\ket{00}\bra{00}+\ket{00}\bra{11}+\ket{11}\bra{00}+\ket{11}\bra{11}\big)$.
+On vérifie $\operatorname{Tr}\rho_{AB}=\frac12(1+1)=1$ et
+\[
+  \rho_{AB}^2=\frac14\begin{pmatrix}2&0&0&2\\0&0&0&0\\0&0&0&0\\2&0&0&2\end{pmatrix}=\rho_{AB},
+\]
+donc $\operatorname{Tr}\rho_{AB}^2=1$ : le couple $(A,B)$ est dans un état \emph{pur}.
+
+% ---------------------------------------------------------------------
+\subsection{Information : variables aléatoires et états quantiques}\label{sec:info}
+% ---------------------------------------------------------------------
+
+\begin{definition}{Entropie, information mutuelle, entropie conditionnelle}
+Soit $A$ une variable aléatoire de loi $p(a)$. Son \emph{entropie de Shannon}, en bits, est
+\[
+  H(A)=-\sum_a p(a)\log_2p(a)\qquad(\text{avec }0\log_20=0).
+\]
+Elle mesure l'incertitude moyenne sur $A$ : une pièce équilibrée a $H=1$ bit. Pour un couple
+$(A,B)$ de loi $p(a,b)$, $H(A,B)=-\sum_{a,b}p(a,b)\log_2p(a,b)$, et
+\begin{align*}
+  I(A;B)&=H(A)+H(B)-H(A,B) &&\text{(information mutuelle)},\\
+  H(A|B)&=H(A,B)-H(B)=H(A)-I(A;B) &&\text{(entropie conditionnelle)}.
+\end{align*}
+\end{definition}
+
+Les deux écritures de $H(A|B)$ sont égales : la définition de $I(A;B)$ donne
+$H(A,B)=H(A)+H(B)-I(A;B)$, donc $H(A,B)-H(B)=H(A)-I(A;B)$. L'information mutuelle $I(A;B)$
+mesure ce que la connaissance de $B$ apprend sur $A$ ; $H(A|B)$ est l'incertitude qui reste sur
+$A$ quand on connaît $B$.
+
+\subsubsection{Deux variables aléatoires indépendantes}
+
+Alice et Bob lancent chacun une pièce équilibrée, sans lien entre les deux lancers :
+$p(a,b)=\frac14$ pour les quatre couples. Chaque pièce donne $0$ ou $1$ avec la probabilité $\frac12$, donc
+\begin{align*}
+  H(A)&=-\Big(\tfrac12\log_2\tfrac12+\tfrac12\log_2\tfrac12\Big)=1\text{ bit},\\
+  H(B)&=1\text{ bit (même calcul)},\\
+  H(A,B)&=-4\cdot\tfrac14\log_2\tfrac14=2\text{ bits},\\
+  I(A;B)&=H(A)+H(B)-H(A,B)=1+1-2=0,\\
+  H(A|B)&=H(A)-I(A;B)=1-0=H(A)=1\text{ bit}.
+\end{align*}
+Connaître $B$ n'apprend rien sur $A$.
+
+\subsubsection{Deux variables solidaires}
+
+Les deux pièces tombent toujours du même côté : $p(0,0)=p(1,1)=\frac12$ et
+$p(0,1)=p(1,0)=0$. Les lois de chaque pièce sont inchangées ($p(a{=}0)=p(0,0)+p(0,1)=\frac12$,
+etc.), donc $H(A)=H(B)=1$ bit, mais
+\begin{align*}
+  H(A,B)&=-2\cdot\tfrac12\log_2\tfrac12-2\cdot0\log_20=1\text{ bit},\\
+  I(A;B)&=1+1-1=1\text{ bit},\qquad H(A|B)=1-1=0.
+\end{align*}
+Connaître $B$ détermine $A$ : plus aucune incertitude ne reste.
+
+\subsubsection{Deux qubits dans un état de Bell}
+
+Pour un système quantique, on remplace la loi de probabilité par la matrice de densité.
+
+\begin{definition}{Trace partielle et entropie de von Neumann}
+L'état du seul qubit $A$ d'un système $(A,B)$ de matrice de densité $\rho_{AB}$ est obtenu en
+\emph{traçant sur $B$} : $\rho_A=\operatorname{Tr}_B(\rho_{AB})$. La trace partielle est
+linéaire et remplace la partie $B$ de chaque terme par sa trace :
+\[
+  \operatorname{Tr}_B\big(\ket{a}\bra{a'}\otimes\ket{b}\bra{b'}\big)=\ket{a}\bra{a'}\;\braket{b'}{b}.
+\]
+L'\emph{entropie de von Neumann} d'un état $\rho$, de valeurs propres $\lambda_i$, est
+$S(\rho)=-\operatorname{Tr}(\rho\log_2\rho)=-\sum_i\lambda_i\log_2\lambda_i$. En quantique,
+$H(A)=S(\rho_A)$, $H(B)=S(\rho_B)$ et $H(A,B)=S(\rho_{AB})$ ; les définitions de
+$I(A;B)$ et de $H(A|B)$ sont les mêmes.
+\end{definition}
+
+On part de l'état de Bell
+$\rho_{AB}=\frac12\big(\ket{00}\bra{00}+\ket{00}\bra{11}+\ket{11}\bra{00}+\ket{11}\bra{11}\big)$
+produit par le circuit de la section~\ref{sec:circuit-bell}. Chaque terme est un produit
+d'opérateurs à un qubit :
+$\ket{00}\bra{11}=\ket{0}\bra{1}\otimes\ket{0}\bra{1}$, etc. Alors
+\begin{align*}
+  \rho_A=\operatorname{Tr}_B(\rho_{AB})
+  &=\tfrac12\Big(\ket{0}\bra{0}\,\braket{0}{0}+\ket{0}\bra{1}\,\braket{1}{0}
+      +\ket{1}\bra{0}\,\braket{0}{1}+\ket{1}\bra{1}\,\braket{1}{1}\Big)\\
+  &=\tfrac12\Big(\ket{0}\bra{0}\cdot1+\ket{0}\bra{1}\cdot0+\ket{1}\bra{0}\cdot0+\ket{1}\bra{1}\cdot1\Big)\\
+  &=\tfrac12\big(\ket{0}\bra{0}+\ket{1}\bra{1}\big)=\tfrac12\,\mathrm{Id}
+  =\begin{pmatrix}\frac12&0\\0&\frac12\end{pmatrix}.
+\end{align*}
+La formule des composantes de la section~\ref{sec:separable},
+$(\rho_A)_{ij}=\rho_{(i0),(j0)}+\rho_{(i1),(j1)}$, donne le même résultat. En traçant sur $A$
+au lieu de $B$, la règle est $\operatorname{Tr}_A(\ket{a}\bra{a'}\otimes\ket{b}\bra{b'})
+=\braket{a'}{a}\,\ket{b}\bra{b'}$, et on trouve de même $\rho_B=\frac12\mathrm{Id}$.
+
+Calcul des entropies :
+\begin{itemize}[nosep]
+  \item $\rho_{AB}$ est pur : ses valeurs propres sont $1,0,0,0$, donc
+        $H(A,B)=S(\rho_{AB})=-1\cdot\log_21=0$ ;
+  \item $\rho_A$ et $\rho_B$ ont pour valeurs propres $\frac12,\frac12$, donc
+        $H(A)=H(B)=-\big(\frac12\log_2\frac12+\frac12\log_2\frac12\big)=1$ bit.
+\end{itemize}
+D'où
+\begin{align*}
+  I(A;B)&=H(A)+H(B)-H(A,B)=1+1-0=2\text{ bits},\\
+  H(A|B)&=H(A,B)-H(B)=0-1=-1\text{ bit}\qquad(=H(A)-I(A;B)=1-2).
+\end{align*}
+
+\begin{remarque}[Une entropie conditionnelle négative]
+Pour des variables classiques, $p(a,b)\leq p(b)$, donc $-\log_2p(a,b)\geq-\log_2p(b)$ et
+$H(A,B)\geq H(B)$ : on a toujours $H(A|B)\geq0$, et $I(A;B)\leq H(A)$. Ici $H(A|B)=-1$ et
+$I(A;B)=2>H(A)$ : ces valeurs n'ont pas d'équivalent classique, c'est une signature de
+l'intrication. Le résultat est surprenant mais mathématiquement correct.
+\end{remarque}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+ & indépendantes & solidaires & état de Bell \\
+\midrule
+$H(A)$ & $1$ & $1$ & $1$ \\
+$H(B)$ & $1$ & $1$ & $1$ \\
+$H(A,B)$ & $2$ & $1$ & $0$ \\
+$I(A;B)$ & $0$ & $1$ & $2$ \\
+$H(A|B)$ & $1$ & $0$ & $-1$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+(en bits ; les deux premières colonnes sont classiques, la troisième est quantique).
+
+% ---------------------------------------------------------------------
+\subsection{Système pur et système mélangé}\label{sec:pur-melange}
+% ---------------------------------------------------------------------
+
+Rappel (section~\ref{sec:pur-mixte}) : si $\lambda_i$ sont les valeurs propres de la matrice de
+densité $\rho$, alors $\operatorname{Tr}\rho^2=\sum_i\lambda_i^2\leq1$. Le système est
+\emph{pur} si $\operatorname{Tr}\rho^2=1$ (alors $\rho=\ket{\psi}\bra{\psi}$ et $\rho^2=\rho$),
+et \emph{mélangé} si $\operatorname{Tr}\rho^2<1$. Pour un qubit,
+$\operatorname{Tr}\rho^2=\frac{1+|\vec r|^2}{2}$ (section~\ref{sec:bloch}) est compris entre
+$\frac12$ et $1$.
+
+\subsubsection{Un système pur : exercice}
+
+\emph{Énoncé.} Soit $\ket{\psi}=\frac{1}{\sqrt2}\ket{0}+\frac{1}{\sqrt2}\ket{1}$.
+\begin{enumerate}[label=\alph*), nosep]
+  \item Calculer la matrice de densité $\rho$.
+  \item Calculer la pureté du système quantique.
+  \item Calculer $\langle\sigma_x\rangle$ et $\langle\sigma_z\rangle$.
+  \item Écrire $\ket{\psi}$ dans la base $X$.
+\end{enumerate}
+
+\paragraph{a) Matrice de densité.} $\rho=\ket{\psi}\bra{\psi}$ est le produit d'un vecteur
+colonne par un vecteur ligne (les amplitudes sont réelles) :
+\[
+  \rho=\begin{pmatrix}\frac{1}{\sqrt2}\\[0.4ex]\frac{1}{\sqrt2}\end{pmatrix}
+       \begin{pmatrix}\frac{1}{\sqrt2}&\frac{1}{\sqrt2}\end{pmatrix}
+  =\begin{pmatrix}\frac12&\frac12\\[0.4ex]\frac12&\frac12\end{pmatrix}.
+\]
+
+\paragraph{b) Pureté.}
+\[
+  \rho^2=\begin{pmatrix}\frac12&\frac12\\[0.4ex]\frac12&\frac12\end{pmatrix}
+         \begin{pmatrix}\frac12&\frac12\\[0.4ex]\frac12&\frac12\end{pmatrix}
+  =\begin{pmatrix}\frac14+\frac14&\frac14+\frac14\\[0.4ex]\frac14+\frac14&\frac14+\frac14\end{pmatrix}
+  =\begin{pmatrix}\frac12&\frac12\\[0.4ex]\frac12&\frac12\end{pmatrix}=\rho,
+\]
+donc $\operatorname{Tr}\rho^2=\operatorname{Tr}\rho=\frac12+\frac12=1$ : le système est \emph{pur}.
+
+\paragraph{c) Valeurs moyennes.} Avec $\sigma_x=X=\begin{pmatrix}0&1\\1&0\end{pmatrix}$ et
+$\sigma_z=Z=\begin{pmatrix}1&0\\0&-1\end{pmatrix}$ (section~\ref{sec:op-dirac}), la valeur
+moyenne est $\langle\sigma\rangle=\operatorname{Tr}(\rho\,\sigma)$ (section~\ref{sec:rho}).
+\begin{align*}
+  \rho\,\sigma_x&=\begin{pmatrix}\frac12&\frac12\\[0.4ex]\frac12&\frac12\end{pmatrix}
+     \begin{pmatrix}0&1\\1&0\end{pmatrix}
+     =\begin{pmatrix}\frac12&\frac12\\[0.4ex]\frac12&\frac12\end{pmatrix},
+     &\langle\sigma_x\rangle&=\operatorname{Tr}(\rho\,\sigma_x)=\tfrac12+\tfrac12=1,\\[1.5ex]
+  \rho\,\sigma_z&=\begin{pmatrix}\frac12&\frac12\\[0.4ex]\frac12&\frac12\end{pmatrix}
+     \begin{pmatrix}1&0\\0&-1\end{pmatrix}
+     =\begin{pmatrix}\frac12&-\frac12\\[0.4ex]\frac12&-\frac12\end{pmatrix},
+     &\langle\sigma_z\rangle&=\operatorname{Tr}(\rho\,\sigma_z)=\tfrac12-\tfrac12=0.
+\end{align*}
+On retrouve $\langle\sigma_z\rangle$ avec les probabilités de mesure : dans la base $Z$,
+$\sigma_z$ vaut $+1$ pour $\ket{0}$ et $-1$ pour $\ket{1}$, et
+$|\braket{0}{\psi}|^2=|\braket{1}{\psi}|^2=\frac12$, donc
+$\langle\sigma_z\rangle=\frac12\times(+1)+\frac12\times(-1)=0$.
+
+\paragraph{d) Écriture dans la base $X$.} La base $X$ est $\{\ket{+},\ket{-}\}$, orthonormée, donc
+$\ket{+}\bra{+}+\ket{-}\bra{-}=\mathrm{Id}$ et
+$\ket{\psi}=\ket{+}\braket{+}{\psi}+\ket{-}\braket{-}{\psi}$, avec
+\[
+  \braket{+}{\psi}=\tfrac{1}{\sqrt2}\Big(\tfrac{1}{\sqrt2}+\tfrac{1}{\sqrt2}\Big)=1,
+  \qquad
+  \braket{-}{\psi}=\tfrac{1}{\sqrt2}\Big(\tfrac{1}{\sqrt2}-\tfrac{1}{\sqrt2}\Big)=0 .
+\]
+Donc $\ket{\psi}=1\cdot\ket{+}+0\cdot\ket{-}=\ket{+}$ : dans la base $X$, l'état n'a qu'une
+seule composante. Comme $\sigma_x\ket{+}=+\ket{+}$ et $\sigma_x\ket{-}=-\ket{-}$, une
+mesure de $\sigma_x$ donne $+1$ avec certitude, et
+$\langle\sigma_x\rangle=1\cdot(+1)+0\cdot(-1)=1$ : c'est le résultat de la question c).
+Le vecteur de Bloch de $\ket{+}$ est $(\langle\sigma_x\rangle,\langle\sigma_y\rangle,\langle\sigma_z\rangle)=(1,0,0)$,
+de norme $1$ : l'état est sur la sphère, en accord avec $\operatorname{Tr}\rho^2=\frac{1+1}{2}=1$.
+
+\subsubsection{Un système mélangé : un qubit de la paire de Bell}
+
+À la section~\ref{sec:info}, la trace sur $B$ de l'état de Bell a donné
+$\rho_A=\frac12\mathrm{Id}=\begin{pmatrix}\frac12&0\\0&\frac12\end{pmatrix}$. Alors
+\[
+  \rho_A^2=\begin{pmatrix}\frac14&0\\0&\frac14\end{pmatrix},
+  \qquad
+  \operatorname{Tr}\big(\rho_A^2\big)=\frac14+\frac14=\frac12<1 :
+\]
+le qubit $A$ est dans un état \emph{mélangé}, et c'est le plus mélangé possible pour un qubit
+(centre de la boule de Bloch, $\vec r=\vec0$). Pourtant le couple $(A,B)$ est pur
+($\operatorname{Tr}\rho_{AB}^2=1$) : on connaît parfaitement l'état du couple, mais pas celui d'un
+qubit pris seul. L'information est entièrement dans les corrélations entre $A$ et $B$, et
+$S(\rho_A)=1$ bit.
+
+\subsubsection{Un système mélangé : le mélange statistique de Bob}
+
+Bob prépare un qubit dans l'état $\ket{0}$ avec la probabilité $p_1=\frac34$ (75\,\%) et dans
+l'état $\ket{1}$ avec la probabilité $p_2=\frac14$ (25\,\%), sans que l'on sache lequel des deux a
+été préparé. Ce n'est pas un état pur $\ket{\psi}$ : on décrit le système par la matrice de
+densité $\rho=\sum_ip_i\ket{\psi_i}\bra{\psi_i}$ (section~\ref{sec:pur-mixte}) :
+\[
+  \rho=\underbrace{\tfrac34}_{p_1}\ket{0}\bra{0}+\underbrace{\tfrac14}_{p_2}\ket{1}\bra{1}
+  =\begin{pmatrix}\frac34&0\\0&\frac14\end{pmatrix}.
+\]
+Alors
+\[
+  \rho^2=\begin{pmatrix}\frac{9}{16}&0\\0&\frac{1}{16}\end{pmatrix},
+  \qquad
+  \operatorname{Tr}\big(\rho^2\big)=\frac{9}{16}+\frac{1}{16}=\frac{10}{16}=\frac58<1 :
+\]
+le système est \emph{mélangé}.
+
+Les valeurs moyennes sont les moyennes pondérées sur la préparation :
+$\langle\sigma_z\rangle=\operatorname{Tr}(\rho\,\sigma_z)=\frac34-\frac14=\frac12
+=p_1\cdot(+1)+p_2\cdot(-1)$, et $\langle\sigma_x\rangle=\operatorname{Tr}(\rho\,\sigma_x)=0$
+(les termes hors diagonale de $\rho$ sont nuls). Le vecteur de Bloch est $(0,0,\frac12)$,
+à l'intérieur de la boule, et $\operatorname{Tr}\rho^2=\frac{1+1/4}{2}=\frac58$. Son entropie
+est $S(\rho)=-\frac34\log_2\frac34-\frac14\log_2\frac14=2-\frac34\log_23\approx0{,}811$ bit.
+
+\begin{remarque}[Mélange et superposition]
+Considérons l'état pur $\ket{\psi'}=\frac{\sqrt3}{2}\ket{0}+\frac12\ket{1}$, qui a les mêmes
+probabilités en base $Z$ ($P(0)=\frac34$, $P(1)=\frac14$). Sa matrice de densité est
+\[
+  \rho'=\begin{pmatrix}\frac34&\frac{\sqrt3}{4}\\[0.4ex]\frac{\sqrt3}{4}&\frac14\end{pmatrix},
+  \qquad
+  \operatorname{Tr}\rho'^2=\frac{9}{16}+\frac1{16}+2\cdot\frac{3}{16}=1,
+  \qquad
+  \langle\sigma_x\rangle=2\cdot\frac{\sqrt3}{4}=\frac{\sqrt3}{2}.
+\]
+Le mélange de Bob a la même diagonale mais aucun terme hors diagonale ($\operatorname{Tr}\rho^2=\frac58$,
+$\langle\sigma_x\rangle=0$) : une superposition n'est pas un tirage au hasard entre $\ket{0}$ et
+$\ket{1}$. De plus, pour un état pur il existe une mesure au résultat certain (ici $\sigma_x$ pour
+$\ket{+}$) ; pour le mélange de Bob, la meilleure probabilité d'obtenir un même résultat est
+$75\,\%$ (mesure en base $Z$, résultat $\ket{0}$).
+\end{remarque}
+
+\subsubsection{Bilan}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{@{}lcccl@{}}
+\toprule
+\textbf{Système} & $\rho$ & $\operatorname{Tr}\rho^2$ & $S(\rho)$ & \textbf{Nature} \\
+\midrule
+$\ket{\psi}=\ket{+}$ & ${\renewcommand{\arraystretch}{1}\begin{pmatrix}\frac12&\frac12\\\frac12&\frac12\end{pmatrix}}$ & $1$ & $0$ & pur \\[2ex]
+Qubit $A$ d'une paire de Bell & ${\renewcommand{\arraystretch}{1}\begin{pmatrix}\frac12&0\\0&\frac12\end{pmatrix}}$ & $\frac12$ & $1$ bit & mélangé \\[2ex]
+Source de Bob (75\,\%/25\,\%) & ${\renewcommand{\arraystretch}{1}\begin{pmatrix}\frac34&0\\0&\frac14\end{pmatrix}}$ & $\frac58$ & $\approx0{,}811$ bit & mélangé \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ---------------------------------------------------------------------
+\subsection{Algorithme quantique : la téléportation}\label{sec:teleportation}
+% ---------------------------------------------------------------------
+
+\emph{Problème.} Alice détient un qubit $Q$ dans un état qu'elle ne connaît pas,
+$\ket{\varphi}=\alpha\ket{0}+\beta\ket{1}$ avec $|\alpha|^2+|\beta|^2=1$, et elle veut que Bob
+obtienne cet état sur l'un de ses qubits. Elle ne peut pas mesurer $Q$ pour connaître
+$\alpha$ et $\beta$ (une mesure ne donne qu'un bit et détruit l'état), elle ne peut pas le
+copier (théorème de non-clonage) et elle n'envoie pas le qubit lui-même.
+
+\begin{definition}{Protocole de téléportation quantique}
+\textbf{Ressources.}
+\begin{itemize}[nosep]
+  \item Un \emph{e-bit} : Alice et Bob partagent une paire de qubits $(A,B)$ dans l'état de Bell
+        $\ket{\Phi^+}_{BA}=\frac{1}{\sqrt2}\big(\ket{00}+\ket{11}\big)$ ; Alice détient $A$,
+        Bob détient $B$.
+  \item Le qubit $Q$ à téléporter, chez Alice.
+  \item Un canal classique (deux bits).
+\end{itemize}
+Le système est écrit $(B,A,Q)$ : $\ket{b,a,q}=\ket{b}_B\otimes\ket{a}_A\otimes\ket{q}_Q$.
+
+\textbf{Étapes.}
+\begin{enumerate}[nosep]
+  \item Alice applique un CNOT de contrôle $Q$ et de cible $A$.
+  \item Alice applique une porte $H$ sur $Q$.
+  \item Alice mesure $A$ et $Q$ dans la base de calcul, obtient deux bits $(a,q)$ et les envoie
+        à Bob.
+  \item Bob applique $X$ si $a=1$, puis $Z$ si $q=1$, à son qubit $B$.
+\end{enumerate}
+\end{definition}
+
+\begin{figure}[!ht]
+\centering
+\begin{adjustbox}{max width=\linewidth}
+\begin{tikzpicture}[>=Stealth, font=\small]
+  % fils quantiques : Q en haut, A au milieu, B en bas
+  \draw (0,2.4) -- (5.3,2.4);
+  \draw (0,1.2) -- (5.3,1.2);
+  \draw (0,0) -- (10.6,0);
+  \node[anchor=east] at (0,2.4) {$\ket{\varphi}_Q$};
+  \node[anchor=south west, text=insagris, font=\footnotesize] at (0.05,1.2) {$A$};
+  \node[anchor=south west, text=insagris, font=\footnotesize] at (0.05,0) {$B$};
+  % paire de Bell partagée
+  \draw[insagris, thick] (-0.1,1.5) -- (-0.25,1.5) -- (-0.25,-0.3) -- (-0.1,-0.3);
+  \node[anchor=east] at (-0.35,0.6) {$\ket{\Phi^+}_{BA}$};
+  % CNOT : contrôle Q, cible A
+  \draw[insarouge, thick] (2.6,2.4) -- (2.6,1.2);
+  \pic at (2.6,2.4) {ctl};
+  \pic at (2.6,1.2) {cible};
+  % Hadamard sur Q
+  \node[porte] at (4.2,2.4) {$H$};
+  % mesures d'Alice
+  \pic at (5.6,2.4) {mesure};
+  \pic at (5.6,1.2) {mesure};
+  % fils classiques (doubles)
+  \draw[double, double distance=1.2pt, insagris] (5.9,1.2) -- (7.6,1.2) -- (7.6,0.35);
+  \draw[double, double distance=1.2pt, insagris] (5.9,2.4) -- (9.6,2.4) -- (9.6,0.35);
+  \node[above, font=\footnotesize] at (6.5,1.2) {$a$};
+  \node[above, font=\footnotesize] at (6.5,2.4) {$q$};
+  % corrections de Bob
+  \node[porte] at (7.6,0) {$X$};
+  \node[porte] at (9.6,0) {$Z$};
+  \node[anchor=west] at (10.6,0) {$\ket{\varphi}_B$};
+  % états intermédiaires
+  \foreach \x in {1.4,3.4,4.9}
+    \draw[dashed, insagris!70] (\x,2.8) -- (\x,-0.5);
+  \node[anchor=north, font=\footnotesize] at (1.4,-0.5) {$\ket{\Pi_0}$};
+  \node[anchor=north, font=\footnotesize] at (3.4,-0.5) {$\ket{\Pi_1}$};
+  \node[anchor=north, font=\footnotesize] at (4.9,-0.5) {$\ket{\Pi_2}$};
+\end{tikzpicture}
+\end{adjustbox}
+\caption{Circuit de téléportation. Alice détient $Q$ (dans $\ket{\varphi}=\alpha\ket{0}+\beta\ket{1}$)
+et $A$, Bob détient $B$ ; $A$ et $B$ forment la paire $\ket{\Phi^+}_{BA}$. Les traits doubles
+sont des fils \emph{classiques} qui portent les résultats $a$ (mesure de $A$) et $q$ (mesure de
+$Q$) ; $X$ est appliqué si $a=1$, $Z$ si $q=1$. Le ket s'écrit $\ket{b,a,q}$ : le fil du haut
+($Q$) est le dernier chiffre.}
+\label{fig:teleportation}
+\end{figure}
+
+\subsubsection{Calcul pas à pas}
+
+\paragraph{État initial $\ket{\Pi_0}$.} Alice et Bob partagent la paire, et $Q$ est indépendant
+d'elle :
+\begin{align*}
+  \ket{\Pi_0}&=\ket{\Phi^+}_{BA}\otimes\ket{\varphi}_Q
+    =\frac{1}{\sqrt2}\big(\ket{00}+\ket{11}\big)\otimes\big(\alpha\ket{0}+\beta\ket{1}\big)\\
+  &=\frac{1}{\sqrt2}\Big(\alpha\ket{00}\ket{0}+\beta\ket{00}\ket{1}+\alpha\ket{11}\ket{0}+\beta\ket{11}\ket{1}\Big)\\
+  &=\frac{\alpha\ket{000}+\beta\ket{001}+\alpha\ket{110}+\beta\ket{111}}{\sqrt2}.
+\end{align*}
+
+\paragraph{Après le CNOT $Q\to A$ : $\ket{\Pi_1}$.} Le CNOT (contrôle $Q$, dernier chiffre ;
+cible $A$, chiffre du milieu) agit ainsi : $\ket{b,a,q}\to\ket{b,\,a\oplus q,\,q}$. Terme par terme :
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}cccc@{}}
+\toprule
+Terme & $q$ & Effet sur $A$ & Résultat \\
+\midrule
+$\alpha\ket{000}$ & $0$ & aucun & $\alpha\ket{000}$ \\
+$\beta\ket{001}$ & $1$ & $0\to1$ & $\beta\ket{011}$ \\
+$\alpha\ket{110}$ & $0$ & aucun & $\alpha\ket{110}$ \\
+$\beta\ket{111}$ & $1$ & $1\to0$ & $\beta\ket{101}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+donc
+\[
+  \ket{\Pi_1}=\frac{\alpha\ket{000}+\beta\ket{011}+\alpha\ket{110}+\beta\ket{101}}{\sqrt2}.
+\]
+On isole ensuite le dernier chiffre, celui de $Q$, qui va changer à l'étape suivante
+(le premier ket est celui du couple $\ket{b,a}$) :
+\[
+  \ket{\Pi_1}=\frac{\alpha\ket{00}\otimes\ket{0}+\beta\ket{01}\otimes\ket{1}
+    +\alpha\ket{11}\otimes\ket{0}+\beta\ket{10}\otimes\ket{1}}{\sqrt2}.
+\]
+
+\paragraph{Après la porte $H$ sur $Q$ : $\ket{\Pi_2}$.} On remplace $\ket{0}$ par
+$H\ket{0}=\ket{+}$ et $\ket{1}$ par $H\ket{1}=\ket{-}$ dans le facteur $Q$ :
+\[
+  \ket{\Pi_2}=\frac{1}{\sqrt2}\Big(\alpha\ket{00}\otimes\ket{+}+\beta\ket{01}\otimes\ket{-}
+    +\alpha\ket{11}\otimes\ket{+}+\beta\ket{10}\otimes\ket{-}\Big).
+\]
+Avec $\ket{\pm}=\frac{1}{\sqrt2}(\ket{0}\pm\ket{1})$, le préfacteur devient
+$\frac{1}{\sqrt2}\cdot\frac{1}{\sqrt2}=\frac12$ :
+\begin{align*}
+  \ket{\Pi_2}&=\frac12\Big(\alpha\ket{00}\big(\ket{0}+\ket{1}\big)+\beta\ket{01}\big(\ket{0}-\ket{1}\big)
+     +\alpha\ket{11}\big(\ket{0}+\ket{1}\big)+\beta\ket{10}\big(\ket{0}-\ket{1}\big)\Big)\\
+  &=\frac12\Big(\alpha\ket{000}+\alpha\ket{001}+\beta\ket{010}-\beta\ket{011}
+     +\alpha\ket{110}+\alpha\ket{111}+\beta\ket{100}-\beta\ket{101}\Big).
+\end{align*}
+
+\paragraph{Regroupement selon le résultat d'Alice.} Alice mesurera $A$ et $Q$, donc les deux
+derniers chiffres. On regroupe les huit termes qui ont les mêmes chiffres $(a,q)$, en mettant
+le ket de Bob en premier :
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}cll@{}}
+\toprule
+$(a,q)$ & Termes de $\ket{\Pi_2}$ (facteur $\frac12$ omis) & Ket de Bob \\
+\midrule
+$(0,0)$ & $\alpha\ket{000}+\beta\ket{100}$ & $(\alpha\ket{0}+\beta\ket{1})\ket{00}$ \\
+$(0,1)$ & $\alpha\ket{001}-\beta\ket{101}$ & $(\alpha\ket{0}-\beta\ket{1})\ket{01}$ \\
+$(1,0)$ & $\beta\ket{010}+\alpha\ket{110}$ & $(\beta\ket{0}+\alpha\ket{1})\ket{10}$ \\
+$(1,1)$ & $-\beta\ket{011}+\alpha\ket{111}$ & $(-\beta\ket{0}+\alpha\ket{1})\ket{11}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+d'où
+\[
+  \ket{\Pi_2}=\frac12\Big[\big(\alpha\ket{0}+\beta\ket{1}\big)\ket{00}
+    +\big(\alpha\ket{0}-\beta\ket{1}\big)\ket{01}
+    +\big(\beta\ket{0}+\alpha\ket{1}\big)\ket{10}
+    +\big(\alpha\ket{1}-\beta\ket{0}\big)\ket{11}\Big].
+\]
+Dans chaque terme, le ket de gauche est l'état de $B$ et le ket de droite $\ket{a,q}$ celui du
+couple $(A,Q)$ d'Alice.
+
+\subsubsection{Mesure d'Alice et corrections de Bob}
+
+Alice mesure $A$ et $Q$. Comme à la section~\ref{sec:mesure2}, la probabilité d'un résultat
+$(a,q)$ est le carré de la norme du terme correspondant, et l'état de Bob devient le ket
+associé (déjà normé). Ici
+\[
+  P(a,q)=\Big\|\tfrac12\ket{\phi_{aq}}\Big\|^2=\tfrac14\big(|\alpha|^2+|\beta|^2\big)=\tfrac14
+  \quad\text{pour les quatre résultats,}
+\]
+qui sont donc équiprobables et \emph{indépendants} de $\alpha$ et $\beta$ : les deux bits
+envoyés ne révèlent rien sur $\ket{\varphi}$. Les kets de Bob sont
+$\ket{\phi_{00}}=\alpha\ket{0}+\beta\ket{1}$, $\ket{\phi_{01}}=\alpha\ket{0}-\beta\ket{1}$,
+$\ket{\phi_{10}}=\beta\ket{0}+\alpha\ket{1}$ et $\ket{\phi_{11}}=-\beta\ket{0}+\alpha\ket{1}$.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{@{}cccll@{}}
+\toprule
+Résultat $(a,q)$ & Probabilité & État de Bob & Lien avec $\ket{\varphi}$ & Correction de Bob \\
+\midrule
+$(0,0)$ & $\frac14$ & $\alpha\ket{0}+\beta\ket{1}$ & $\ket{\varphi}$ & $I$ (rien) \\
+$(0,1)$ & $\frac14$ & $\alpha\ket{0}-\beta\ket{1}$ & $Z\ket{\varphi}$ & $Z$ \\
+$(1,0)$ & $\frac14$ & $\beta\ket{0}+\alpha\ket{1}$ & $X\ket{\varphi}$ & $X$ \\
+$(1,1)$ & $\frac14$ & $-\beta\ket{0}+\alpha\ket{1}$ & $XZ\ket{\varphi}$ & $X$ puis $Z$ (opérateur $ZX$) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Vérification des quatre corrections.} Avec $X\ket{0}=\ket{1}$, $X\ket{1}=\ket{0}$,
+$Z\ket{0}=\ket{0}$ et $Z\ket{1}=-\ket{1}$ :
+\begin{align*}
+  (0,0):\quad & I\big(\alpha\ket{0}+\beta\ket{1}\big)=\alpha\ket{0}+\beta\ket{1},\\
+  (0,1):\quad & Z\big(\alpha\ket{0}-\beta\ket{1}\big)=\alpha\ket{0}-\beta Z\ket{1}=\alpha\ket{0}+\beta\ket{1},\\
+  (1,0):\quad & X\big(\beta\ket{0}+\alpha\ket{1}\big)=\beta\ket{1}+\alpha\ket{0}=\alpha\ket{0}+\beta\ket{1},\\
+  (1,1):\quad & X\big(-\beta\ket{0}+\alpha\ket{1}\big)=-\beta\ket{1}+\alpha\ket{0}=\alpha\ket{0}-\beta\ket{1},
+     \ \text{puis}\ Z\big(\alpha\ket{0}-\beta\ket{1}\big)=\alpha\ket{0}+\beta\ket{1}.
+\end{align*}
+Dans le dernier cas, avec les matrices,
+$ZX=\begin{pmatrix}1&0\\0&-1\end{pmatrix}\begin{pmatrix}0&1\\1&0\end{pmatrix}
+=\begin{pmatrix}0&1\\-1&0\end{pmatrix}$ et
+$ZX\begin{pmatrix}-\beta\\ \alpha\end{pmatrix}=\begin{pmatrix}\alpha\\ \beta\end{pmatrix}$.
+L'ordre compte : l'état de Bob est $XZ\ket{\varphi}$ ($Z\ket{\varphi}=\alpha\ket{0}-\beta\ket{1}$,
+puis $X$ donne $\alpha\ket{1}-\beta\ket{0}$), et on l'annule avec
+$(XZ)^{-1}=Z^{-1}X^{-1}=ZX$ : on applique d'abord $X$, puis $Z$, comme dans le circuit.
+Dans les quatre cas, Bob retrouve exactement $\ket{\varphi}=\alpha\ket{0}+\beta\ket{1}$.
+
+\subsubsection{Ce que Bob sait avant de recevoir les bits}
+
+Tant que Bob ignore $(a,q)$, son qubit est dans le mélange des quatre kets $\ket{\phi_{aq}}$, chacun
+avec la probabilité $\frac14$ :
+\begin{align*}
+  \rho_B&=\frac14\sum_{a,q}\ket{\phi_{aq}}\bra{\phi_{aq}}\\
+  &=\frac14\Bigg[\begin{pmatrix}|\alpha|^2&\alpha\beta^*\\ \alpha^*\beta&|\beta|^2\end{pmatrix}
+    +\begin{pmatrix}|\alpha|^2&-\alpha\beta^*\\ -\alpha^*\beta&|\beta|^2\end{pmatrix}
+    +\begin{pmatrix}|\beta|^2&\alpha^*\beta\\ \alpha\beta^*&|\alpha|^2\end{pmatrix}
+    +\begin{pmatrix}|\beta|^2&-\alpha^*\beta\\ -\alpha\beta^*&|\alpha|^2\end{pmatrix}\Bigg]\\
+  &=\frac14\begin{pmatrix}2(|\alpha|^2+|\beta|^2)&0\\0&2(|\alpha|^2+|\beta|^2)\end{pmatrix}
+   =\frac12\begin{pmatrix}1&0\\0&1\end{pmatrix}=\frac12\,\mathrm{Id}.
+\end{align*}
+Sans les deux bits, Bob a donc un qubit complètement mélangé, qui ne dépend pas de $\alpha$ ni de
+$\beta$ : il n'a reçu aucune information sur $\ket{\varphi}$. C'est l'envoi classique de $(a,q)$
+qui permet de la retrouver, donc rien ne voyage plus vite que la lumière.
+
+\begin{remarque}[Bilan de la téléportation]
+\begin{itemize}[nosep]
+  \item Ressources : $1$ e-bit (la paire de Bell) et $2$ bits classiques pour transmettre
+        \emph{un qubit} d'état quelconque, sans qu'Alice connaisse $\alpha$ ni $\beta$.
+  \item Pas de clonage : après la mesure, $A$ et $Q$ sont dans l'état de base $\ket{a,q}$.
+        Alice n'a plus $\ket{\varphi}$ : l'état a été \emph{déplacé}, pas copié. L'intrication
+        entre $A$ et $B$ a été consommée.
+  \item Les quatre corrections $I,Z,X,ZX$ sont des portes contrôlées par des bits classiques
+        (section~\ref{sec:controlees}).
+\end{itemize}
+\end{remarque}
+
+% ---------------------------------------------------------------------
+\subsection{Portes contrôlées : contrôlé-\texorpdfstring{$U$}{U}, Fredkin et Toffoli}\label{sec:controlees}
+% ---------------------------------------------------------------------
+
+Le CNOT est le cas le plus simple d'une idée générale : appliquer une opération à un ou
+plusieurs qubits \emph{cibles} seulement si un ou plusieurs qubits de \emph{contrôle} valent $1$.
+Dans cette section, comme à la section~\ref{sec:op2}, le contrôle est le \emph{premier} chiffre
+du ket. Les qubits sont notés $x$, $y$, $z$ (le qubit $x$ est le contrôle) et
+$\ket{x,y,z}=\ket{x}\otimes\ket{y}\otimes\ket{z}$ ; d'après la convention de la section, le
+contrôle est dessiné en bas (figure~\ref{fig:controlees}). Pour éviter la confusion avec les
+matrices de Pauli, on écrit ici $\sigma_x=X$ pour la porte NOT.
+
+\begin{figure}[!ht]
+\centering
+\begin{adjustbox}{max width=\linewidth}
+\begin{tikzpicture}[>=Stealth, font=\small]
+  % (a) contrôlé-U : contrôle x en bas, cible y en haut
+  \draw (0,1.2) -- (3.4,1.2);
+  \draw (0,0) -- (3.4,0);
+  \node[anchor=east] at (0,1.2) {$y$};
+  \node[anchor=east] at (0,0) {$x$};
+  \draw[insarouge, thick] (1.7,0) -- (1.7,0.85);
+  \pic at (1.7,0) {ctl};
+  \node[porte] at (1.7,1.2) {$U$};
+  \node[anchor=north, font=\footnotesize] at (1.7,-0.5) {(a) contrôlé-$U$};
+  % (b) contrôlé-SWAP (Fredkin) : x contrôle, y et z échangés
+  \draw (5,2.4) -- (8.4,2.4);
+  \draw (5,1.2) -- (8.4,1.2);
+  \draw (5,0) -- (8.4,0);
+  \node[anchor=east] at (5,2.4) {$z$};
+  \node[anchor=east] at (5,1.2) {$y$};
+  \node[anchor=east] at (5,0) {$x$};
+  \draw[insarouge, thick] (6.7,0) -- (6.7,2.4);
+  \pic at (6.7,0) {ctl};
+  \pic at (6.7,1.2) {croix};
+  \pic at (6.7,2.4) {croix};
+  \node[anchor=north, font=\footnotesize] at (6.7,-0.5) {(b) Fredkin (C-SWAP)};
+  % (c) Toffoli (CCNOT) : x et y contrôlent, z cible
+  \draw (10,2.4) -- (13.4,2.4);
+  \draw (10,1.2) -- (13.4,1.2);
+  \draw (10,0) -- (13.4,0);
+  \node[anchor=east] at (10,2.4) {$z$};
+  \node[anchor=east] at (10,1.2) {$y$};
+  \node[anchor=east] at (10,0) {$x$};
+  \draw[insarouge, thick] (11.7,0) -- (11.7,2.4);
+  \pic at (11.7,0) {ctl};
+  \pic at (11.7,1.2) {ctl};
+  \pic at (11.7,2.4) {cible};
+  \node[anchor=north, font=\footnotesize] at (11.7,-0.5) {(c) Toffoli (CCNOT)};
+\end{tikzpicture}
+\end{adjustbox}
+\caption{Portes contrôlées. Le contrôle $x$ est le premier chiffre du ket, donc le fil du bas.
+(a) Le qubit $y$ subit $U$ si $x=1$ ; pour $U=X$ on retrouve le CNOT. (b) Si $x=1$, les qubits
+$y$ et $z$ sont échangés. (c) Si $x=y=1$, le qubit $z$ est inversé.}
+\label{fig:controlees}
+\end{figure}
+
+\subsubsection{Contrôlé-\texorpdfstring{$U$}{U}}
+
+\begin{definition}{Porte contrôlée-$U$}
+Soit $U$ une matrice unitaire $2\times2$. Sur le système $(x,y)$, de contrôle $x$ et de cible $y$,
+\[
+  \mathrm{C}U=\ket{0}\bra{0}_x\otimes I_y+\ket{1}\bra{1}_x\otimes U_y .
+\]
+Le premier terme agit quand le contrôle est $\ket{0}$ : la cible ne change pas ($I$). Le second
+agit quand le contrôle est $\ket{1}$ : la cible subit $U$.
+\end{definition}
+
+Comme $\ket{0}\bra{0}\ket{x}=\delta_{x0}\ket{0}$ et $\ket{1}\bra{1}\ket{x}=\delta_{x1}\ket{1}$,
+\[
+  \mathrm{C}U\big(\ket{x}\otimes\ket{y}\big)=\ket{x}\otimes U^x\ket{y},\qquad U^0=I,\ U^1=U .
+\]
+Par la règle $A\otimes B=(A_{ij}B)$, $\ket{0}\bra{0}\otimes I=\begin{pmatrix}I&0\\0&0\end{pmatrix}$
+et $\ket{1}\bra{1}\otimes U=\begin{pmatrix}0&0\\0&U\end{pmatrix}$ (blocs $2\times2$), donc
+\[
+  \mathrm{C}U=\begin{pmatrix}I&0\\0&U\end{pmatrix}
+  =\begin{pmatrix}1&0&0&0\\0&1&0&0\\0&0&u_{00}&u_{01}\\0&0&u_{10}&u_{11}\end{pmatrix}
+  \qquad\text{pour }U=\begin{pmatrix}u_{00}&u_{01}\\u_{10}&u_{11}\end{pmatrix}.
+\]
+Cette matrice est unitaire car $I^\dagger I=I$ et $U^\dagger U=I$.
+
+\paragraph{Le CNOT est un cas particulier.} Pour $U=\sigma_x$,
+$\mathrm{C}\sigma_x=\ket{0}\bra{0}_x\otimes I_y+\ket{1}\bra{1}_x\otimes\sigma_x$ est le CNOT de
+contrôle $x$ (premier chiffre), c'est-à-dire $\mathrm{CNOT}_{12}$ de la section~\ref{sec:cnot}.
+On calcule l'action sur les quatre états de base, avec $\braket{0}{0}=\braket{1}{1}=1$,
+$\braket{0}{1}=\braket{1}{0}=0$, $\sigma_x\ket{0}=\ket{1}$ et $\sigma_x\ket{1}=\ket{0}$ :
+\begin{align*}
+  \mathrm{C}\sigma_x\ket{00}&=\big[\ket{0}\bra{0}_x\otimes I_y\big]\ket{0}_x\ket{0}_y
+      +\big[\ket{1}\bra{1}_x\otimes\sigma_x\big]\ket{0}_x\ket{0}_y\\
+    &=\ket{0}\braket{0}{0}\otimes I\ket{0}+\ket{1}\braket{1}{0}\otimes\sigma_x\ket{0}
+     =\ket{0}\otimes\ket{0}+0=\ket{00},\\[1.2ex]
+  \mathrm{C}\sigma_x\ket{01}&=\ket{0}\braket{0}{0}\otimes I\ket{1}+\ket{1}\braket{1}{0}\otimes\sigma_x\ket{1}
+     =\ket{0}\otimes\ket{1}+0=\ket{01},\\[1.2ex]
+  \mathrm{C}\sigma_x\ket{10}&=\ket{0}\braket{0}{1}\otimes I\ket{0}+\ket{1}\braket{1}{1}\otimes\sigma_x\ket{0}
+     =0+\ket{1}\otimes\ket{1}=\ket{11},\\[1.2ex]
+  \mathrm{C}\sigma_x\ket{11}&=\ket{0}\braket{0}{1}\otimes I\ket{1}+\ket{1}\braket{1}{1}\otimes\sigma_x\ket{1}
+     =0+\ket{1}\otimes\ket{0}=\ket{10}.
+\end{align*}
+On retrouve la table du CNOT : la cible n'est inversée que si le contrôle vaut $1$.
+
+\paragraph{Un autre exemple : $U=Z$.} Ici
+\[
+  \mathrm{C}Z=\begin{pmatrix}I&0\\0&Z\end{pmatrix}=\mathrm{diag}(1,1,1,-1) :
+\]
+la porte multiplie $\ket{11}$ par $-1$ et ne touche pas les autres états de base. Elle est
+symétrique entre les deux qubits. Elle se déduit du CNOT par
+$\mathrm{C}Z=(I\otimes H)\,\mathrm{C}X\,(I\otimes H)$, où $\mathrm{C}X$ est le contrôlé-$X$.
+En effet, $I\otimes H=\mathrm{diag}(H,H)$ (deux blocs $2\times2$ égaux à $H$), et le produit de
+matrices diagonales par blocs se fait bloc par bloc :
+\[
+  (I\otimes H)\begin{pmatrix}I&0\\0&X\end{pmatrix}(I\otimes H)
+  =\begin{pmatrix}H\,I\,H&0\\0&H\,X\,H\end{pmatrix}
+  =\begin{pmatrix}I&0\\0&HXH\end{pmatrix},
+\]
+car $H^2=I$, et
+\[
+  HXH=\frac12\begin{pmatrix}1&1\\1&-1\end{pmatrix}\begin{pmatrix}0&1\\1&0\end{pmatrix}\begin{pmatrix}1&1\\1&-1\end{pmatrix}
+  =\frac12\begin{pmatrix}1&1\\1&-1\end{pmatrix}\begin{pmatrix}1&-1\\1&1\end{pmatrix}
+  =\frac12\begin{pmatrix}2&0\\0&-2\end{pmatrix}=Z
+\]
+(section~\ref{sec:hadamard} : $H$ échange les axes $x$ et $z$).
+
+\subsubsection{Contrôlé-SWAP : la porte de Fredkin}
+
+\begin{definition}{Porte de Fredkin (C-SWAP)}
+Sur trois qubits $(x,y,z)$ (espace de dimension $2^3=8$), avec $x$ pour contrôle,
+\[
+  \mathrm{C\text{-}SWAP}=\ket{0}\bra{0}_x\otimes I_y\otimes I_z+\ket{1}\bra{1}_x\otimes\mathrm{SWAP}_{yz}.
+\]
+Si $x=0$, rien ne change ; si $x=1$, les qubits $y$ et $z$ sont échangés.
+\end{definition}
+
+Calcul sur quatre états de base (avec $I\ket{ab}=\ket{ab}$ et $\mathrm{SWAP}\ket{ab}=\ket{ba}$) :
+\begin{align*}
+  \mathrm{C\text{-}SWAP}\ket{000}&=\ket{0}\braket{0}{0}\otimes I\ket{00}+\ket{1}\braket{1}{0}\otimes\mathrm{SWAP}\ket{00}
+     =\ket{0}\otimes\ket{00}+0=\ket{000},\\[1.2ex]
+  \mathrm{C\text{-}SWAP}\ket{101}&=\ket{0}\braket{0}{1}\otimes I\ket{01}+\ket{1}\braket{1}{1}\otimes\mathrm{SWAP}\ket{01}
+     =0+\ket{1}\otimes\ket{10}=\ket{110},\\[1.2ex]
+  \mathrm{C\text{-}SWAP}\ket{110}&=\ket{0}\braket{0}{1}\otimes I\ket{10}+\ket{1}\braket{1}{1}\otimes\mathrm{SWAP}\ket{10}
+     =0+\ket{1}\otimes\ket{01}=\ket{101},\\[1.2ex]
+  \mathrm{C\text{-}SWAP}\ket{010}&=\ket{0}\braket{0}{0}\otimes I\ket{10}+\ket{1}\braket{1}{0}\otimes\mathrm{SWAP}\ket{10}
+     =\ket{0}\otimes\ket{10}+0=\ket{010}.
+\end{align*}
+Les huit états de base donnent :
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}ccccccccc@{}}
+\toprule
+Entrée & $\ket{000}$ & $\ket{001}$ & $\ket{010}$ & $\ket{011}$ & $\ket{100}$ & $\ket{101}$ & $\ket{110}$ & $\ket{111}$ \\
+\midrule
+Sortie & $\ket{000}$ & $\ket{001}$ & $\ket{010}$ & $\ket{011}$ & $\ket{100}$ & $\ket{110}$ & $\ket{101}$ & $\ket{111}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+Seuls $\ket{101}$ et $\ket{110}$ changent (contrôle à $1$ et $y\neq z$) ; pour $\ket{100}$ et
+$\ket{111}$ l'échange de deux qubits égaux ne change rien. Dans la base
+$\ket{000},\ket{001},\dots,\ket{111}$ (ordre binaire), la matrice est
+$\mathrm{diag}(I_4,\mathrm{SWAP})$ (deux blocs $4\times4$) :
+\[
+  \mathrm{C\text{-}SWAP}=\begingroup\setlength{\arraycolsep}{3pt}\begin{pmatrix}
+    1&0&0&0&0&0&0&0\\
+    0&1&0&0&0&0&0&0\\
+    0&0&1&0&0&0&0&0\\
+    0&0&0&1&0&0&0&0\\
+    0&0&0&0&1&0&0&0\\
+    0&0&0&0&0&0&1&0\\
+    0&0&0&0&0&1&0&0\\
+    0&0&0&0&0&0&0&1
+  \end{pmatrix}\endgroup .
+\]
+C'est l'identité dont les lignes $6$ et $7$ sont échangées.
+
+\paragraph{Contrôle en superposition.} Avec $\ket{+}_x\otimes\ket{0}_y\otimes\ket{1}_z
+=\frac{1}{\sqrt2}\big(\ket{001}+\ket{101}\big)$ :
+\[
+  \mathrm{C\text{-}SWAP}\,\frac{1}{\sqrt2}\big(\ket{001}+\ket{101}\big)
+  =\frac{1}{\sqrt2}\big(\ket{001}+\ket{110}\big).
+\]
+Le résultat n'est pas un produit : les coefficients de $\ket{x}\otimes\ket{yz}$ forment la
+matrice (lignes $x=0,1$, colonnes $yz=00,01,10,11$)
+\[
+  \frac{1}{\sqrt2}\begin{pmatrix}0&1&0&0\\0&0&1&0\end{pmatrix},
+\]
+dont les deux lignes ne sont pas proportionnelles. Le qubit $x$ est intriqué avec la paire
+$(y,z)$.
+
+\subsubsection{Contrôlé-contrôlé-NOT : la porte de Toffoli}
+
+\begin{definition}{Porte de Toffoli (CCNOT)}
+Sur trois qubits $(x,y,z)$, avec $x$ et $y$ pour contrôles et $z$ pour cible,
+\[
+  \mathrm{CCNOT}=\ket{0}\bra{0}_x\otimes I_y\otimes I_z
+   +\ket{1}\bra{1}_x\otimes\Big[\ket{0}\bra{0}_y\otimes I_z+\ket{1}\bra{1}_y\otimes\sigma_x\Big].
+\]
+Le crochet est un CNOT (contrôle $y$, cible $z$), appliqué seulement si $x=1$ : si $x=0$, rien ;
+si $x=1$ et $y=0$, rien ; si $x=1$ et $y=1$, le qubit $z$ est inversé.
+\end{definition}
+
+Calcul de $\mathrm{CCNOT}\ket{110}$ :
+\begin{align*}
+  \mathrm{CCNOT}\ket{110}&=\ket{0}\braket{0}{1}\otimes I\ket{1}\otimes I\ket{0}
+     +\ket{1}\braket{1}{1}\otimes\Big[\ket{0}\braket{0}{1}\otimes I\ket{0}
+       +\ket{1}\braket{1}{1}\otimes\sigma_x\ket{0}\Big]\\
+  &=0+\ket{1}\otimes\Big[0+\ket{1}\otimes\ket{1}\Big]=\ket{111}.
+\end{align*}
+Pour les huit états de base, $\mathrm{CCNOT}\ket{x,y,z}=\ket{x,\,y,\,z\oplus xy}$ :
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}ccccccccc@{}}
+\toprule
+Entrée & $\ket{000}$ & $\ket{001}$ & $\ket{010}$ & $\ket{011}$ & $\ket{100}$ & $\ket{101}$ & $\ket{110}$ & $\ket{111}$ \\
+\midrule
+Sortie & $\ket{000}$ & $\ket{001}$ & $\ket{010}$ & $\ket{011}$ & $\ket{100}$ & $\ket{101}$ & $\ket{111}$ & $\ket{110}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+Seuls $\ket{110}$ et $\ket{111}$ sont échangés : la matrice est $\mathrm{diag}(I_6,X)$
+(un bloc $6\times6$ égal à l'identité, puis $X$),
+\[
+  \mathrm{CCNOT}=\begingroup\setlength{\arraycolsep}{3pt}\begin{pmatrix}
+    1&0&0&0&0&0&0&0\\
+    0&1&0&0&0&0&0&0\\
+    0&0&1&0&0&0&0&0\\
+    0&0&0&1&0&0&0&0\\
+    0&0&0&0&1&0&0&0\\
+    0&0&0&0&0&1&0&0\\
+    0&0&0&0&0&0&0&1\\
+    0&0&0&0&0&0&1&0
+  \end{pmatrix}\endgroup .
+\]
+
+\begin{remarque}[Portes réversibles]
+Les portes de Fredkin et de Toffoli sont des permutations des états de base qui échangent
+seulement deux d'entre eux : elles sont leurs propres inverses ($\mathrm{C\text{-}SWAP}^2=\mathrm{CCNOT}^2=\mathrm{Id}$)
+et unitaires. Avec $z=0$, la Toffoli calcule le ET logique $x\wedge y$ sans rien effacer :
+$\ket{x,y,0}\to\ket{x,y,xy}$ ; avec $z=1$, elle calcule le NON-ET. Elle sert à écrire tout calcul
+classique de façon réversible.
+\end{remarque}
+
+% ---------------------------------------------------------------------
+\subsection{Récapitulatif du chapitre}
+% ---------------------------------------------------------------------
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{@{}lp{12cm}@{}}
+\toprule
+\textbf{Notion} & \textbf{Formule ou résultat} \\
+\midrule
+CNOT & $\ket{b,a}\to\ket{b\oplus a,a}$ (contrôle $a$ écrit en dernier), $\mathrm{CNOT}^2=\mathrm{Id}$ \\
+SWAP & $\mathrm{SWAP}\ket{a,b}=\ket{b,a}$, \quad $\mathrm{CNOT}_{21}=\mathrm{SWAP}\,\mathrm{CNOT}_{12}\,\mathrm{SWAP}$ \\
+Circuit de Bell & $(I\otimes H)$ puis CNOT : $\ket{\beta^{xy}}=\frac{1}{\sqrt2}\big(\ket{y,0}+(-1)^x\ket{\bar y,1}\big)$, $\ket{\beta^{00}}=\ket{\Phi^+}$ \\
+Information & $I(A;B)=H(A)+H(B)-H(A,B)$, \quad $H(A|B)=H(A,B)-H(B)$ \\
+Trace partielle & $\operatorname{Tr}_B\big(\ket{a}\bra{a'}\otimes\ket{b}\bra{b'}\big)=\ket{a}\bra{a'}\braket{b'}{b}$ ; état de Bell : $\rho_A=\frac12\mathrm{Id}$ \\
+État de Bell (bits) & $H(A,B)=0$, \quad $H(A)=H(B)=1$, \quad $I(A;B)=2$, \quad $H(A|B)=-1$ \\
+Pur / mélangé & $\operatorname{Tr}\rho^2=1$ / $<1$ ; $\ket{+}$ : $1$ ; qubit d'une paire de Bell : $\frac12$ ; source de Bob : $\frac58$ \\
+Téléportation & $1$ e-bit $+\ 2$ bits classiques ; correction : $X$ si $a=1$, puis $Z$ si $q=1$ ; $P(a,q)=\frac14$ \\
+Contrôlé-$U$ & $\ket{0}\bra{0}\otimes I+\ket{1}\bra{1}\otimes U=\mathrm{diag}(I,U)$ ; $\ket{x,y}\to\ket{x}\otimes U^x\ket{y}$ \\
+Fredkin & $\ket{0}\bra{0}\otimes I\otimes I+\ket{1}\bra{1}\otimes\mathrm{SWAP}$ ; $\ket{101}\leftrightarrow\ket{110}$ \\
+Toffoli & $\ket{x,y,z}\to\ket{x,y,z\oplus xy}$ ; $\ket{110}\leftrightarrow\ket{111}$ \\
+\bottomrule
+\end{tabular}
+\end{center}

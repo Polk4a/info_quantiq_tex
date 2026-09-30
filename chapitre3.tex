@@ -1,0 +1,320 @@
+% =====================================================================
+%  Chapitre 3 : suite de la section 1 (mécanique quantique)
+%  Fichier importé par main.tex avec \include{chapitre3}.
+%  Il PROLONGE chapitre2.tex : pas de \section ici, les sous-sections
+%  1.10 à 1.13 font suite à 1.1 à 1.9 (la suite est le chapitre4.tex, section 2).
+%  Pas de préambule non plus : les
+%  environnements (definition, resultat, remarque), les macros (\ii, \ee,
+%  \dd, \Hop, \ket, \bra, \braket) et les couleurs (insarouge, insagris)
+%  sont définis dans main.tex.
+% =====================================================================
+
+% Macros de Dirac (déjà définies dans main.tex récent ; ce bloc évite l'erreur
+% « Undefined control sequence \ket » si main.tex est une ancienne version).
+\providecommand{\ket}[1]{|#1\rangle}
+\providecommand{\bra}[1]{\langle #1|}
+\providecommand{\braket}[2]{\langle #1|#2\rangle}
+
+% ---------------------------------------------------------------------
+\subsection{Superposition d'états stationnaires}\label{sec:superposition}
+% ---------------------------------------------------------------------
+
+\subsubsection{Un état qui n'est pas un état propre}
+
+Dans un état propre $\Psi_n$ du puits infini, l'énergie est certaine
+($\sigma_E=0$, section~\ref{sec:solutions}). Rien n'oblige pourtant la particule à
+être dans un état propre. Par linéarité de l'équation de Schrödinger
+(3\textsuperscript{e} hypothèse de la section~\ref{sec:construction}), toute
+combinaison de solutions est encore solution.
+
+\begin{definition}{Superposition quantique}
+\[
+  \Psi(x,t)=\sum_{i=1}^{N}c_i\,\Psi_i(x,t),
+  \qquad c_i\in\mathbb{C},
+\]
+où les $\Psi_i$ sont des états stationnaires d'énergies $E_i$ ($i$ est le nombre
+quantique de l'état $\Psi_i$). L'état n'a plus une énergie unique : il est
+\emph{probabiliste}, l'énergie mesurée pouvant valoir chacune des $E_i$.
+\end{definition}
+
+\subsubsection{Exemple : deux états du puits}
+
+À $t=0$, on prépare la particule dans l'état
+\[
+  \Psi(x,0)=A\left[\sqrt{\frac{2}{a}}\,\sin\!\Big(\frac{\pi x}{a}\Big)
+                  +\sqrt{\frac{2}{a}}\,\sin\!\Big(\frac{2\pi x}{a}\Big)\right]
+  =A\,\big[\psi_1(x)+\psi_2(x)\big].
+\]
+La normalisation $\int_0^a\Psi^*\Psi\,\dd x=1$ donne, en développant,
+\[
+  A^2\left[\int_0^a\psi_1^2\,\dd x+2\int_0^a\psi_1\psi_2\,\dd x+\int_0^a\psi_2^2\,\dd x\right]
+  =A^2\,(1+0+1)=2A^2=1
+  \quad\Longrightarrow\quad A=\frac{1}{\sqrt2}.
+\]
+Les $\psi_n$ étant normalisées, $\int\psi_n^2\,\dd x=1$. Le terme croisé s'annule :
+\[
+  \int_0^a\psi_1\psi_2\,\dd x
+  =\frac{1}{a}\int_0^a\Big[\cos\frac{\pi x}{a}-\cos\frac{3\pi x}{a}\Big]\dd x=0 .
+\]
+Chaque terme évolue avec sa propre phase (chacun est une solution stationnaire), donc
+\[
+  \Psi(x,t)=\frac{1}{\sqrt2}\Big[\psi_1(x)\,\ee^{-\ii E_1t/\hbar}
+                                 +\psi_2(x)\,\ee^{-\ii E_2t/\hbar}\Big],
+\]
+\[
+  |\Psi(x,t)|^2=\frac12\big[\psi_1^2+\psi_2^2\big]
+                +\psi_1\psi_2\,\cos\!\Big(\frac{E_2-E_1}{\hbar}\,t\Big).
+\]
+Le terme croisé oscille à la pulsation $(E_2-E_1)/\hbar$ : contrairement à un état
+stationnaire, la densité de probabilité dépend du temps.
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, x=1cm, y=1cm]
+  \draw[->] (-0.3,0) -- (6.0,0) node[right] {$x$};
+  \draw[->] (0,0) -- (0,4.2) node[above] {$|\Psi|^2$};
+  \draw[thick, insagris, dashed, domain=0:1, samples=100]
+    plot ({5*\x}, {1.0*(sin(180*\x)-sin(360*\x))^2});
+  \draw[thick, insarouge, domain=0:1, samples=100]
+    plot ({5*\x}, {1.0*(sin(180*\x)+sin(360*\x))^2});
+  \node[below] at (0,0) {$0$};
+  \node[below] at (5,0) {$a$};
+  \draw[insarouge, thick] (0.6,3.8) -- (1.2,3.8) node[right, black, font=\small] {$t=0$};
+  \draw[insagris, thick, dashed] (3.2,3.8) -- (3.8,3.8)
+    node[right, black, font=\small] {$t=T/2$};
+\end{tikzpicture}
+\caption{Densité de probabilité de $(\psi_1+\psi_2)/\sqrt2$ à $t=0$ et à une
+demi-période $T/2$ (avec $T=2\pi\hbar/(E_2-E_1)$) : le maximum passe de la gauche à
+la droite du puits. Unité verticale : $1/a$.}
+\end{figure}
+
+\subsubsection{Cas général : normalisation}
+
+Pour $\Psi=\sum_i c_i\Psi_i$, la condition $\int\Psi^*\Psi\,\dd x=1$ s'écrit
+\[
+  \int_0^a\Big[\sum_i c_i^*\Psi_i^*\Big]\Big[\sum_j c_j\Psi_j\Big]\dd x
+  =|c_1|^2\!\int\!\Psi_1^*\Psi_1\,\dd x+c_1^*c_2\!\int\!\Psi_1^*\Psi_2\,\dd x+\cdots=1 .
+\]
+Les $\Psi_i$ sont orthonormées, comme des vecteurs unitaires : le produit scalaire d'un
+vecteur avec lui-même vaut 1, celui de deux vecteurs orthogonaux vaut 0.
+
+\begin{resultat}{Orthonormalité et normalisation}
+\[
+  \int_0^a\Psi_i^*\Psi_j\,\dd x=\delta_{ij}=
+  \begin{cases}1 & \text{si } i=j,\\ 0 & \text{si } i\neq j,\end{cases}
+  \qquad\Longrightarrow\qquad
+  |c_1|^2+|c_2|^2+\cdots+|c_N|^2=\sum_{i=1}^{N}|c_i|^2=1
+\]
+\end{resultat}
+
+L'orthogonalité tient à tout instant, car les phases $\ee^{\ii(E_i-E_j)t/\hbar}$
+multiplient une intégrale nulle. En multipliant $\Psi=\sum_j c_j\Psi_j$ par $\Psi_i^*$
+et en intégrant, on obtient aussi $c_i=\int\Psi_i^*\,\Psi\,\dd x$.
+
+\subsubsection{Probabilités et énergie moyenne}
+
+L'énergie moyenne est la valeur moyenne de $\Hop$, avec $\Hop\Psi_j=E_j\Psi_j$ :
+\[
+  \langle E\rangle=\int_0^a\Psi^*\,\Hop\,\Psi\,\dd x
+  =\sum_{i,j}c_i^*c_jE_j\!\int\!\Psi_i^*\Psi_j\,\dd x
+  =\sum_{i=1}^{N}E_i\,|c_i|^2,
+\]
+et de même, avec $\Hop^{2}\Psi_j=E_j^2\Psi_j$,
+\[
+  \langle E^2\rangle=\int_0^a\Psi^*\,\Hop^{2}\,\Psi\,\dd x=\sum_{i=1}^{N}E_i^2\,|c_i|^2 ,
+  \qquad
+  \sigma_E=\sqrt{\langle E^2\rangle-\langle E\rangle^2}.
+\]
+
+\begin{resultat}{Probabilité de mesurer l'énergie $E_i$}
+\[
+  P(E_i)=|c_i|^2 ,\qquad
+  \langle E\rangle=\sum_i E_i\,P(E_i).
+\]
+$c_i$ est l'\emph{amplitude de probabilité} de l'état $\Psi_i$ et $|c_i|^2$ sa
+probabilité. Les $|c_i|^2$ ne dépendent pas du temps.
+\end{resultat}
+
+La moyenne pondérée garde un sens même si les $E_i$ sont discrets. Elle n'est
+d'ailleurs pas forcément une valeur mesurable : une mesure ne donne jamais que l'un des
+$E_i$.
+
+\paragraph{Application à l'exemple.} Avec $c_1=c_2=1/\sqrt2$ et $E_2=4E_1$ :
+$P(E_1)=P(E_2)=\tfrac12$,
+\[
+  \langle E\rangle=\frac{E_1+E_2}{2}=\frac{5}{2}\,E_1,
+  \qquad
+  \langle E^2\rangle=\frac{E_1^2+E_2^2}{2}=\frac{17}{2}\,E_1^2,
+  \qquad
+  \sigma_E=\sqrt{\frac{17}{2}-\frac{25}{4}}\;E_1=\frac{3}{2}\,E_1\neq0 .
+\]
+Ici l'énergie est incertaine, et la valeur moyenne $\tfrac52E_1$ n'est jamais obtenue :
+on mesure $E_1$ ou $E_2$, chacune avec la probabilité $1/2$.
+
+\begin{remarque}[Effondrement]
+Si la mesure donne $E_i$, l'état devient $\Psi_i$ : une seconde mesure faite
+aussitôt redonne $E_i$ avec certitude. La probabilité $|c_i|^2$ ne se lit donc que sur
+un grand nombre de systèmes identiques préparés dans le même état.
+\end{remarque}
+
+% ---------------------------------------------------------------------
+\subsection{Retour à la notation de Dirac : le qubit}\label{sec:qubit}
+% ---------------------------------------------------------------------
+
+On ne garde que deux états du puits, notés comme un bit quantique (\emph{qubit}) :
+$\ket{0}$ pour $\Psi_1$ et $\ket{1}$ pour $\Psi_2$. L'état de l'exemple s'écrit
+\[
+  \ket{\Psi}=\frac{1}{\sqrt2}\,\ket{0}+\frac{1}{\sqrt2}\,\ket{1}.
+\]
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Fonctions d'onde} & \textbf{Notation de Dirac} \\
+\midrule
+$\Psi=c_1\Psi_1+c_2\Psi_2$ & $\ket{\Psi}=c_1\ket{0}+c_2\ket{1}$ \\
+$\displaystyle\int\Psi_i^*\Psi_j\,\dd x=\delta_{ij}$ & $\braket{i}{j}=\delta_{ij}$ \\
+$\displaystyle\int\Psi^*\Psi\,\dd x=\sum_i|c_i|^2=1$ & $\braket{\Psi}{\Psi}=1$ \\
+$P(E_i)=|c_i|^2$ & $P(i)=|c_i|^2=|\braket{i}{\Psi}|^2$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Probabilité.} La probabilité que $\ket{\Psi}$ soit mesuré dans l'état
+$\ket{0}$ est
+\[
+  P(\ket{\Psi}\to\ket{0})=P(0)=\left|\frac{1}{\sqrt2}\right|^2=\frac12 .
+\]
+
+\paragraph{Normalisation.}
+\[
+  \braket{\Psi}{\Psi}
+  =\Big(\tfrac{1}{\sqrt2}\bra{0}+\tfrac{1}{\sqrt2}\bra{1}\Big)
+   \Big(\tfrac{1}{\sqrt2}\ket{0}+\tfrac{1}{\sqrt2}\ket{1}\Big)
+  =\tfrac12\braket{0}{0}+\tfrac12\braket{0}{1}+\tfrac12\braket{1}{0}+\tfrac12\braket{1}{1}
+  =\tfrac12\,(1+0+0+1)=1 .
+\]
+
+\begin{definition}{Base de calcul (base $Z$)}
+$\{\ket{0},\ket{1}\}$ est une base \emph{orthonormée} de $\mathcal{H}^2=\mathbb{C}^2$ :
+\[
+  \ket{0}=\begin{pmatrix}1\\ 0\end{pmatrix},\qquad
+  \ket{1}=\begin{pmatrix}0\\ 1\end{pmatrix},\qquad
+  \braket{0}{0}=\begin{pmatrix}1 & 0\end{pmatrix}\begin{pmatrix}1\\ 0\end{pmatrix}=1,\qquad
+  \braket{0}{1}=\begin{pmatrix}1 & 0\end{pmatrix}\begin{pmatrix}0\\ 1\end{pmatrix}=0 .
+\]
+Tout état s'écrit $\ket{\Psi}=\alpha\ket{0}+\beta\ket{1}=\begin{pmatrix}\alpha\\ \beta\end{pmatrix}$
+avec $|\alpha|^2+|\beta|^2=1$ ; alors $P(0)=|\alpha|^2$ et $P(1)=|\beta|^2$.
+\end{definition}
+
+\paragraph{Exemple.} Soit $\ket{\Psi}=\dfrac{1}{\sqrt5}\,\ket{0}+\dfrac{2}{\sqrt5}\,\ket{1}$
+dans $\mathcal{H}^2$.
+\begin{enumerate}[nosep]
+  \item \emph{$\ket{\Psi}$ est-il normalisé ?}
+        $\braket{\Psi}{\Psi}=\dfrac15+\dfrac45=1$ : oui.
+  \item $P(0)=\left|\dfrac{1}{\sqrt5}\right|^2=\dfrac15$.
+  \item $P(1)=\left|\dfrac{2}{\sqrt5}\right|^2=\dfrac45$.
+\end{enumerate}
+
+\begin{remarque}[État non normalisé]
+Si $\braket{\Psi}{\Psi}\neq1$, on divise l'état par sa norme $\sqrt{\braket{\Psi}{\Psi}}$.
+Par exemple $\ket{0}+2\ket{1}$ a pour norme au carré $1+4=5$ : l'état normalisé est
+$\frac{1}{\sqrt5}\ket{0}+\frac{2}{\sqrt5}\ket{1}$, celui de l'exemple.
+\end{remarque}
+
+% ---------------------------------------------------------------------
+\subsection{Projecteurs et mesure}\label{sec:projecteurs}
+% ---------------------------------------------------------------------
+
+Le produit d'un ket par un bra est un opérateur (section~\ref{sec:dirac}). Avec les
+états de la base de calcul, on obtient deux \emph{projecteurs}.
+
+\begin{definition}{Projecteurs sur $\ket{0}$ et sur $\ket{1}$}
+\[
+  \hat P_0=\ket{0}\bra{0}=\begin{pmatrix}1\\ 0\end{pmatrix}\begin{pmatrix}1 & 0\end{pmatrix}
+  =\begin{pmatrix}1 & 0\\ 0 & 0\end{pmatrix},
+  \qquad
+  \hat P_1=\ket{1}\bra{1}=\begin{pmatrix}0\\ 1\end{pmatrix}\begin{pmatrix}0 & 1\end{pmatrix}
+  =\begin{pmatrix}0 & 0\\ 0 & 1\end{pmatrix}.
+\]
+Ils vérifient
+\[
+  \hat P_i^{\,2}=\hat P_i,
+  \qquad
+  \hat P_0+\hat P_1=\begin{pmatrix}1 & 0\\ 0 & 1\end{pmatrix}=\mathrm{Id}
+  \quad(\text{complétude}).
+\]
+\end{definition}
+
+En effet $\hat P_0^{\,2}=\ket{0}\braket{0}{0}\bra{0}=\ket{0}\bra{0}$ car
+$\braket{0}{0}=1$. Appliqué à $\ket{\Psi}=\alpha\ket{0}+\beta\ket{1}$, $\hat P_0$
+ne garde que la composante sur $\ket{0}$ : $\hat P_0\ket{\Psi}=\alpha\ket{0}$.
+
+\begin{resultat}{Probabilité de mesure}
+\[
+  P(\ket{\Psi}\to\ket{i})=\bra{\Psi}\hat P_i\ket{\Psi}
+  =\braket{\Psi}{i}\braket{i}{\Psi}=|\braket{i}{\Psi}|^2 .
+\]
+La complétude donne bien $\sum_i P(i)=\bra{\Psi}\big(\sum_i\hat P_i\big)\ket{\Psi}=\braket{\Psi}{\Psi}=1$.
+\end{resultat}
+
+\paragraph{Exemple.} Pour $\ket{\Psi}=\dfrac{1}{\sqrt5}\ket{0}+\dfrac{2}{\sqrt5}\ket{1}
+=\begin{pmatrix}1/\sqrt5\\ 2/\sqrt5\end{pmatrix}$ :
+\[
+  \hat P_0\ket{\Psi}=\begin{pmatrix}1 & 0\\ 0 & 0\end{pmatrix}
+  \begin{pmatrix}1/\sqrt5\\ 2/\sqrt5\end{pmatrix}
+  =\begin{pmatrix}1/\sqrt5\\ 0\end{pmatrix},
+  \qquad
+  P(\ket{\Psi}\to\ket{0})=\bra{\Psi}\hat P_0\ket{\Psi}
+  =\begin{pmatrix}\frac{1}{\sqrt5} & \frac{2}{\sqrt5}\end{pmatrix}
+   \begin{pmatrix}\frac{1}{\sqrt5}\\ 0\end{pmatrix}=\frac15 ,
+\]
+\[
+  P(\ket{\Psi}\to\ket{1})=\bra{\Psi}\hat P_1\ket{\Psi}
+  =\begin{pmatrix}\frac{1}{\sqrt5} & \frac{2}{\sqrt5}\end{pmatrix}
+   \begin{pmatrix}0 & 0\\ 0 & 1\end{pmatrix}
+   \begin{pmatrix}\frac{1}{\sqrt5}\\ \frac{2}{\sqrt5}\end{pmatrix}=\frac45 .
+\]
+
+\paragraph{Effet d'une phase relative.} Soit $\ket{\Psi'}=\dfrac{1}{\sqrt5}\ket{0}
++\dfrac{2\ii}{\sqrt5}\ket{1}$. Son bra est le \emph{conjugué} :
+$\bra{\Psi'}=\begin{pmatrix}\frac{1}{\sqrt5} & -\frac{2\ii}{\sqrt5}\end{pmatrix}$, donc
+\[
+  \braket{\Psi'}{\Psi'}=\frac15+\Big(-\frac{2\ii}{\sqrt5}\Big)\Big(\frac{2\ii}{\sqrt5}\Big)
+  =\frac15+\frac45=1 ,
+\]
+et $P(0)=1/5$, $P(1)=4/5$ comme pour $\ket{\Psi}$. Les deux états sont pourtant
+différents : le facteur $\ii$ est une phase \emph{relative} entre les deux composantes,
+que la mesure dans la base $Z$ ne voit pas (contrairement à une phase globale, jamais
+observable).
+
+\begin{remarque}[Rappels]
+$\hat P^{\,2}=\hat P$ définit un projecteur ; $\braket{a}{b}=\braket{b}{a}^*$ ;
+$\hat P_i$ est hermitien : $\hat P_i^{\,\dagger}=\hat P_i$.
+\end{remarque}
+
+% ---------------------------------------------------------------------
+\subsection{Récapitulatif du chapitre}
+% ---------------------------------------------------------------------
+
+\begin{center}
+\renewcommand{\arraystretch}{1.7}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Notion} & \textbf{Formule} \\
+\midrule
+Superposition & $\Psi=\displaystyle\sum_i c_i\Psi_i$, \quad $c_i\in\mathbb{C}$ \\
+Orthonormalité & $\displaystyle\int\Psi_i^*\Psi_j\,\dd x=\delta_{ij}$ \\
+Normalisation & $\displaystyle\sum_i|c_i|^2=1$ \\
+Probabilité d'une énergie & $P(E_i)=|c_i|^2$ \\
+Énergie moyenne & $\langle E\rangle=\displaystyle\sum_iE_i|c_i|^2$ \\
+Incertitude & $\sigma_E=\sqrt{\langle E^2\rangle-\langle E\rangle^2}$, \quad
+              $\langle E^2\rangle=\displaystyle\sum_iE_i^2|c_i|^2$ \\
+Qubit & $\ket{\Psi}=\alpha\ket{0}+\beta\ket{1}$, \quad $|\alpha|^2+|\beta|^2=1$ \\
+Mesure dans la base $Z$ & $P(0)=|\alpha|^2$, \quad $P(1)=|\beta|^2$ \\
+Projecteurs & $\hat P_i=\ket{i}\bra{i}$, \quad $\hat P_i^{\,2}=\hat P_i$, \quad $\hat P_0+\hat P_1=\mathrm{Id}$ \\
+Probabilité de mesure & $P(i)=\bra{\Psi}\hat P_i\ket{\Psi}=|\braket{i}{\Psi}|^2$ \\
+\bottomrule
+\end{tabular}
+\end{center}

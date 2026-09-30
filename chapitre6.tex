@@ -1,0 +1,508 @@
+% =====================================================================
+%  Chapitre 6 : systèmes multi-qubits et intrication
+%  Fichier importé par main.tex avec \include{chapitre6}.
+%  Comme chapitre4.tex et chapitre5.tex, il ouvre une NOUVELLE SECTION
+%  (numéro 4). Pour le rattacher à la section précédente, remplacer
+%  \section par \subsection et chaque \subsection par \subsubsection.
+%  Pas de préambule : environnements (definition, resultat, remarque),
+%  macros (\ii, \ee, \dd, \ket, \bra, \braket) et couleurs (insarouge,
+%  insagris) sont définis dans main.tex.
+% =====================================================================
+
+% Macros de Dirac (déjà définies dans main.tex récent ; ce bloc évite l'erreur
+% « Undefined control sequence \ket » si main.tex est une ancienne version).
+\providecommand{\ket}[1]{|#1\rangle}
+\providecommand{\bra}[1]{\langle #1|}
+\providecommand{\braket}[2]{\langle #1|#2\rangle}
+
+% =====================================================================
+\section{Systèmes multi-qubits et intrication}\label{sec:multi}
+% =====================================================================
+
+Un ordinateur quantique utilise plusieurs qubits. Cette section décrit l'espace des états
+de deux qubits (le produit tensoriel), la mesure, la distinction entre états séparables
+et états intriqués, puis les opérateurs qui agissent sur deux qubits. Tous les calculs
+sont détaillés ; les qubits sont notés $A$ et $B$.
+
+% ---------------------------------------------------------------------
+\subsection{L'espace de deux qubits}\label{sec:tenseur}
+% ---------------------------------------------------------------------
+
+Chaque qubit vit dans $\mathcal{H}^2=\mathbb{C}^2$. L'espace du système $(A,B)$ est le
+\emph{produit tensoriel}
+\[
+  \mathcal{H}^2\otimes\mathcal{H}^2=\mathcal{H}^4=\mathbb{C}^4 ,
+\]
+de dimension $2\times2=4$. Pour $n$ qubits la dimension est $2^n$ :
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Nombre de qubits $n$ & $1$ & $2$ & $3$ & $10$ & $50$ \\
+\midrule
+Dimension $2^n$ & $2$ & $4$ & $8$ & $1024$ & $\approx1{,}1\times10^{15}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{definition}{Produit tensoriel de deux vecteurs}
+\[
+  \begin{pmatrix}a_1\\ a_2\end{pmatrix}\otimes\begin{pmatrix}b_1\\ b_2\end{pmatrix}
+  =\begin{pmatrix}a_1\begin{pmatrix}b_1\\ b_2\end{pmatrix}\\[2ex]
+                  a_2\begin{pmatrix}b_1\\ b_2\end{pmatrix}\end{pmatrix}
+  =\begin{pmatrix}a_1b_1\\ a_1b_2\\ a_2b_1\\ a_2b_2\end{pmatrix}.
+\]
+Chaque composante du premier vecteur multiplie le second vecteur en entier. On note
+$\ket{ij}_{AB}=\ket{i}_A\otimes\ket{j}_B$ : le premier chiffre est l'état de $A$, le second
+celui de $B$.
+\end{definition}
+
+\subsubsection{Les quatre états de base}
+
+On développe chacun des quatre produits avec $\ket{0}=\begin{pmatrix}1\\ 0\end{pmatrix}$
+et $\ket{1}=\begin{pmatrix}0\\ 1\end{pmatrix}$ :
+\begin{align*}
+  \ket{0}\otimes\ket{0}&=\begin{pmatrix}1\\ 0\end{pmatrix}\otimes\begin{pmatrix}1\\ 0\end{pmatrix}
+    =\begin{pmatrix}1\cdot\begin{pmatrix}1\\ 0\end{pmatrix}\\[1.5ex]0\cdot\begin{pmatrix}1\\ 0\end{pmatrix}\end{pmatrix}
+    =\begin{pmatrix}1\\ 0\\ 0\\ 0\end{pmatrix}=\ket{00},\\[1.5ex]
+  \ket{0}\otimes\ket{1}&=\begin{pmatrix}1\\ 0\end{pmatrix}\otimes\begin{pmatrix}0\\ 1\end{pmatrix}
+    =\begin{pmatrix}1\cdot\begin{pmatrix}0\\ 1\end{pmatrix}\\[1.5ex]0\cdot\begin{pmatrix}0\\ 1\end{pmatrix}\end{pmatrix}
+    =\begin{pmatrix}0\\ 1\\ 0\\ 0\end{pmatrix}=\ket{01},\\[1.5ex]
+  \ket{1}\otimes\ket{0}&=\begin{pmatrix}0\\ 1\end{pmatrix}\otimes\begin{pmatrix}1\\ 0\end{pmatrix}
+    =\begin{pmatrix}0\cdot\begin{pmatrix}1\\ 0\end{pmatrix}\\[1.5ex]1\cdot\begin{pmatrix}1\\ 0\end{pmatrix}\end{pmatrix}
+    =\begin{pmatrix}0\\ 0\\ 1\\ 0\end{pmatrix}=\ket{10},\\[1.5ex]
+  \ket{1}\otimes\ket{1}&=\begin{pmatrix}0\\ 1\end{pmatrix}\otimes\begin{pmatrix}0\\ 1\end{pmatrix}
+    =\begin{pmatrix}0\cdot\begin{pmatrix}0\\ 1\end{pmatrix}\\[1.5ex]1\cdot\begin{pmatrix}0\\ 1\end{pmatrix}\end{pmatrix}
+    =\begin{pmatrix}0\\ 0\\ 0\\ 1\end{pmatrix}=\ket{11}.
+\end{align*}
+Le vecteur $\ket{ij}$ a son $1$ en position $2i+j$ (en comptant à partir de $0$) : c'est
+la lecture de $ij$ en binaire. Les quatre vecteurs forment la base de calcul de
+$\mathcal{H}^4$.
+
+\subsubsection{Produit scalaire et orthonormalité}
+
+\begin{resultat}{Produit scalaire d'un produit tensoriel}
+\[
+  \big(\bra{a}\otimes\bra{b}\big)\big(\ket{c}\otimes\ket{d}\big)=\braket{a}{c}\,\braket{b}{d}.
+\]
+\end{resultat}
+
+\emph{Démonstration.} Les composantes de $\ket{a}\otimes\ket{b}$ sont $a_ib_j$, celles de
+$\ket{c}\otimes\ket{d}$ sont $c_id_j$. Le produit scalaire est
+$\sum_{i,j}(a_ib_j)^*c_id_j=\big(\sum_ia_i^*c_i\big)\big(\sum_jb_j^*d_j\big)=\braket{a}{c}\braket{b}{d}$.
+\hfill$\square$
+
+On en déduit $\braket{ij}{kl}=\braket{i}{k}\braket{j}{l}$. Les seize produits scalaires
+des états de base sont :
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}c|cccc@{}}
+ & $\ket{00}$ & $\ket{01}$ & $\ket{10}$ & $\ket{11}$ \\
+\hline
+$\bra{00}$ & $1\cdot1=1$ & $1\cdot0=0$ & $0\cdot1=0$ & $0\cdot0=0$ \\
+$\bra{01}$ & $1\cdot0=0$ & $1\cdot1=1$ & $0\cdot0=0$ & $0\cdot1=0$ \\
+$\bra{10}$ & $0\cdot1=0$ & $0\cdot0=0$ & $1\cdot1=1$ & $1\cdot0=0$ \\
+$\bra{11}$ & $0\cdot0=0$ & $0\cdot1=0$ & $1\cdot0=0$ & $1\cdot1=1$ \\
+\end{tabular}
+\end{center}
+(chaque case est $\braket{i}{k}\cdot\braket{j}{l}$). On lit $\braket{ij}{kl}=\delta_{ik}\delta_{jl}$ :
+la base est \emph{orthonormée}.
+
+\subsubsection{Produit tensoriel d'états quelconques}
+
+Le produit tensoriel est linéaire en chaque facteur :
+$(\lambda\ket{a}+\mu\ket{a'})\otimes\ket{b}=\lambda\ket{a}\otimes\ket{b}+\mu\ket{a'}\otimes\ket{b}$,
+et de même pour le second facteur. Pour $\alpha\ket{0}+\beta\ket{1}$ et
+$\gamma\ket{0}+\delta\ket{1}$ :
+\begin{align*}
+  \big(\alpha\ket{0}+\beta\ket{1}\big)\otimes\big(\gamma\ket{0}+\delta\ket{1}\big)
+  &=\alpha\ket{0}\otimes\big(\gamma\ket{0}+\delta\ket{1}\big)
+    +\beta\ket{1}\otimes\big(\gamma\ket{0}+\delta\ket{1}\big)\\
+  &=\alpha\gamma\ket{00}+\alpha\delta\ket{01}+\beta\gamma\ket{10}+\beta\delta\ket{11}.
+\end{align*}
+Par les composantes, $\begin{pmatrix}\alpha\\ \beta\end{pmatrix}\otimes\begin{pmatrix}\gamma\\ \delta\end{pmatrix}
+=\begin{pmatrix}\alpha\gamma\\ \alpha\delta\\ \beta\gamma\\ \beta\delta\end{pmatrix}$ : c'est le même
+résultat. La norme est conservée :
+\[
+  |\alpha\gamma|^2+|\alpha\delta|^2+|\beta\gamma|^2+|\beta\delta|^2
+  =\big(|\alpha|^2+|\beta|^2\big)\big(|\gamma|^2+|\delta|^2\big)=1\cdot1=1 .
+\]
+
+\paragraph{Exemples.}
+\begin{align*}
+  \ket{+}\otimes\ket{+}&=\tfrac12\big(\ket{0}+\ket{1}\big)\otimes\big(\ket{0}+\ket{1}\big)
+    =\tfrac12\big(\ket{00}+\ket{01}+\ket{10}+\ket{11}\big)
+    =\tfrac12\begin{pmatrix}1\\ 1\\ 1\\ 1\end{pmatrix},\\[1ex]
+  \ket{+}\otimes\ket{-}&=\tfrac12\big(\ket{0}+\ket{1}\big)\otimes\big(\ket{0}-\ket{1}\big)
+    =\tfrac12\big(\ket{00}-\ket{01}+\ket{10}-\ket{11}\big)
+    =\tfrac12\begin{pmatrix}1\\ -1\\ 1\\ -1\end{pmatrix},\\[1ex]
+  \ket{0}\otimes\ket{+}&=\tfrac{1}{\sqrt2}\big(\ket{00}+\ket{01}\big)
+    =\tfrac{1}{\sqrt2}\begin{pmatrix}1\\ 1\\ 0\\ 0\end{pmatrix},\qquad
+  \ket{+}\otimes\ket{0}=\tfrac{1}{\sqrt2}\big(\ket{00}+\ket{10}\big)
+    =\tfrac{1}{\sqrt2}\begin{pmatrix}1\\ 0\\ 1\\ 0\end{pmatrix}.
+\end{align*}
+Les deux derniers vecteurs sont différents : \emph{l'ordre des facteurs compte}, le premier
+est toujours celui de $A$.
+
+% ---------------------------------------------------------------------
+\subsection{États à deux qubits et mesure}\label{sec:mesure2}
+% ---------------------------------------------------------------------
+
+Un état quelconque de $\mathcal{H}^4$ se décompose sur la base de calcul :
+\[
+  \ket{\Psi}=c_{00}\ket{00}+c_{01}\ket{01}+c_{10}\ket{10}+c_{11}\ket{11}
+  =\begin{pmatrix}c_{00}\\ c_{01}\\ c_{10}\\ c_{11}\end{pmatrix},
+  \qquad \sum_{i,j}|c_{ij}|^2=1 .
+\]
+
+\begin{resultat}{Mesure des deux qubits dans la base de calcul}
+\[
+  P(ij)=|\braket{ij}{\Psi}|^2=|c_{ij}|^2 .
+\]
+Pour un seul qubit : $P(A{=}0)=P(00)+P(01)$, $P(A{=}1)=P(10)+P(11)$,
+$P(B{=}0)=P(00)+P(10)$, $P(B{=}1)=P(01)+P(11)$.
+\end{resultat}
+
+En effet $\braket{ij}{\Psi}=\sum_{k,l}c_{kl}\braket{ij}{kl}=\sum_{k,l}c_{kl}\delta_{ik}\delta_{jl}=c_{ij}$.
+
+\paragraph{Exemple 1.} $\ket{\Psi}=\frac{1}{\sqrt2}\ket{00}+\frac{1}{\sqrt2}\ket{01}
+=\big(\tfrac{1}{\sqrt2},\tfrac{1}{\sqrt2},0,0\big)^{\mathsf T}$. Il est normalisé :
+$\frac12+\frac12+0+0=1$. Les probabilités jointes sont
+$P(00)=P(01)=\frac12$ et $P(10)=P(11)=0$. Pour chaque qubit :
+\[
+  P(A{=}0)=\tfrac12+\tfrac12=1,\quad P(A{=}1)=0+0=0,\quad
+  P(B{=}0)=\tfrac12+0=\tfrac12,\quad P(B{=}1)=\tfrac12+0=\tfrac12 .
+\]
+$A$ donne toujours $0$ ; $B$ donne $0$ ou $1$ au hasard.
+
+\paragraph{Exemple 2 (mesure de $A$ seul).} Soit
+$\ket{\Psi}=\frac12\ket{00}+\frac12\ket{01}+\frac{1}{\sqrt2}\ket{11}$. Normalisation :
+$\frac14+\frac14+0+\frac12=1$. Probabilités jointes : $P(00)=\frac14$, $P(01)=\frac14$,
+$P(10)=0$, $P(11)=\frac12$. Donc
+\[
+  P(A{=}0)=\tfrac14+\tfrac14=\tfrac12,\quad P(A{=}1)=0+\tfrac12=\tfrac12,\quad
+  P(B{=}0)=\tfrac14+0=\tfrac14,\quad P(B{=}1)=\tfrac14+\tfrac12=\tfrac34 .
+\]
+
+\begin{remarque}[Effondrement après la mesure de $A$]
+Si $A$ donne le résultat $a$, on ne garde que les termes de $\ket{\Psi}$ dont le premier
+chiffre vaut $a$, puis on renormalise :
+\[
+  \ket{\Psi}\ \to\ \frac{c_{a0}\ket{a0}+c_{a1}\ket{a1}}{\sqrt{|c_{a0}|^2+|c_{a1}|^2}},
+  \qquad\text{probabilité }|c_{a0}|^2+|c_{a1}|^2 .
+\]
+\end{remarque}
+
+Pour l'exemple 2 :
+\begin{itemize}[nosep]
+  \item $A=0$ (probabilité $\frac12$) : on garde $\frac12\ket{00}+\frac12\ket{01}$, de norme
+        au carré $\frac12$ ; renormalisé, $\frac{1}{\sqrt2}\big(\ket{00}+\ket{01}\big)
+        =\ket{0}\otimes\ket{+}$. Ensuite $B$ vaut $0$ ou $1$ avec la probabilité $\frac12$.
+  \item $A=1$ (probabilité $\frac12$) : on garde $\frac{1}{\sqrt2}\ket{11}$, de norme au carré
+        $\frac12$ ; renormalisé, $\ket{11}=\ket{1}\otimes\ket{1}$. Ensuite $B$ vaut $1$
+        avec certitude.
+\end{itemize}
+Contrôle : $P(B{=}0)=\frac12\cdot\frac12+\frac12\cdot0=\frac14$, comme calculé plus haut.
+Ici la mesure de $A$ \emph{modifie} l'état de $B$ ($\ket{+}$ ou $\ket{1}$) : c'est la
+signature d'un état intriqué (section suivante).
+
+% ---------------------------------------------------------------------
+\subsection{États séparables et états intriqués}\label{sec:separable}
+% ---------------------------------------------------------------------
+
+\begin{definition}{Séparable ou intriqué}
+Un état $\ket{\Psi}_{AB}$ est \emph{séparable} s'il s'écrit comme un produit
+$\ket{\Psi}_{AB}=\ket{\Psi}_A\otimes\ket{\Psi}_B$. Sinon il est \emph{intriqué} : on ne
+peut pas attribuer d'état propre à chaque qubit.
+\end{definition}
+
+\paragraph{Exemple séparable (exemple 1 ci-dessus).} Par linéarité du produit tensoriel :
+\begin{align*}
+  \ket{\Psi}&=\tfrac{1}{\sqrt2}\ket{00}_{AB}+\tfrac{1}{\sqrt2}\ket{01}_{AB}
+    =\tfrac{1}{\sqrt2}\Big(\ket{0}_A\otimes\ket{0}_B+\ket{0}_A\otimes\ket{1}_B\Big)\\
+  &=\ket{0}_A\otimes\Big(\tfrac{1}{\sqrt2}\big(\ket{0}+\ket{1}\big)\Big)_B
+    =\ket{0}_A\otimes\ket{+}_B ,
+\end{align*}
+donc $\ket{\Psi}_A=\ket{0}$ et $\ket{\Psi}_B=\ket{+}$. Contrôle par les composantes :
+$\begin{pmatrix}1\\ 0\end{pmatrix}\otimes\tfrac{1}{\sqrt2}\begin{pmatrix}1\\ 1\end{pmatrix}
+=\tfrac{1}{\sqrt2}\begin{pmatrix}1\cdot1\\ 1\cdot1\\ 0\cdot1\\ 0\cdot1\end{pmatrix}
+=\tfrac{1}{\sqrt2}\begin{pmatrix}1\\ 1\\ 0\\ 0\end{pmatrix}$.
+
+\subsubsection{Un critère de séparabilité}
+
+Un produit quelconque a pour coefficients $c_{00}=ac$, $c_{01}=ad$, $c_{10}=bc$,
+$c_{11}=bd$ (formule de la section~\ref{sec:tenseur}, avec $a,b$ pour $A$ et $c,d$ pour $B$), donc
+\[
+  c_{00}c_{11}=(ac)(bd)=abcd=(ad)(bc)=c_{01}c_{10}.
+\]
+
+\begin{resultat}{Test de séparabilité (deux qubits)}
+$\ket{\Psi}=\sum c_{ij}\ket{ij}$ est séparable si et seulement si
+\[
+  D=c_{00}c_{11}-c_{01}c_{10}=0 .
+\]
+\end{resultat}
+
+\emph{Démonstration.} ($\Rightarrow$) Calcul ci-dessus. ($\Leftarrow$) On regroupe les
+termes selon l'état de $A$ :
+\[
+  \ket{\Psi}=\ket{0}\otimes\big(c_{00}\ket{0}+c_{01}\ket{1}\big)+\ket{1}\otimes\big(c_{10}\ket{0}+c_{11}\ket{1}\big).
+\]
+Si $D=0$, les lignes $(c_{00},c_{01})$ et $(c_{10},c_{11})$ sont proportionnelles. Si
+$(c_{00},c_{01})\neq(0,0)$, il existe $\lambda$ avec $(c_{10},c_{11})=\lambda(c_{00},c_{01})$
+et $\ket{\Psi}=\big(\ket{0}+\lambda\ket{1}\big)\otimes\big(c_{00}\ket{0}+c_{01}\ket{1}\big)$.
+Si $(c_{00},c_{01})=(0,0)$, alors $\ket{\Psi}=\ket{1}\otimes\big(c_{10}\ket{0}+c_{11}\ket{1}\big)$.
+Dans les deux cas $\ket{\Psi}$ est un produit ; on renormalise chaque facteur.
+\hfill$\square$
+
+\subsubsection{Application à plusieurs états}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{@{}lccl@{}}
+\toprule
+\textbf{État} & $(c_{00},c_{01},c_{10},c_{11})$ & $D$ & \textbf{Nature} \\
+\midrule
+$\ket{00}$ & $(1,0,0,0)$ & $1\cdot0-0\cdot0=0$ & séparable \\
+$\ket{+}\otimes\ket{+}$ & $\frac12(1,1,1,1)$ & $\frac14-\frac14=0$ & séparable \\
+$\ket{+}\otimes\ket{-}$ & $\frac12(1,-1,1,-1)$ & $-\frac14-(-\frac14)=0$ & séparable \\
+$\frac{1}{\sqrt2}(\ket{00}+\ket{01})$ & $\frac{1}{\sqrt2}(1,1,0,0)$ & $0-\frac12\cdot0=0$ & séparable \\
+$\ket{\Phi^+}=\frac{1}{\sqrt2}(\ket{00}+\ket{11})$ & $\frac{1}{\sqrt2}(1,0,0,1)$ & $\frac12-0=\frac12$ & intriqué \\
+$\ket{\Phi^-}=\frac{1}{\sqrt2}(\ket{00}-\ket{11})$ & $\frac{1}{\sqrt2}(1,0,0,-1)$ & $-\frac12-0=-\frac12$ & intriqué \\
+$\ket{\Psi^+}=\frac{1}{\sqrt2}(\ket{01}+\ket{10})$ & $\frac{1}{\sqrt2}(0,1,1,0)$ & $0-\frac12=-\frac12$ & intriqué \\
+$\ket{\Psi^-}=\frac{1}{\sqrt2}(\ket{01}-\ket{10})$ & $\frac{1}{\sqrt2}(0,1,-1,0)$ & $0-(-\frac12)=\frac12$ & intriqué \\
+$\frac12\ket{00}+\frac12\ket{01}+\frac{1}{\sqrt2}\ket{11}$ & $(\frac12,\frac12,0,\frac{1}{\sqrt2})$ & $\frac{1}{2\sqrt2}-0$ & intriqué \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Les quatre états de Bell $\ket{\Phi^\pm}$, $\ket{\Psi^\pm}$ sont \emph{orthonormés} :
+chacun est de norme $\frac12+\frac12=1$ ; $\ket{\Phi^\pm}$ n'ont des composantes que sur
+$\ket{00}$ et $\ket{11}$, $\ket{\Psi^\pm}$ que sur $\ket{01}$ et $\ket{10}$, donc
+$\braket{\Phi^\pm}{\Psi^\pm}=0$, et
+$\braket{\Phi^+}{\Phi^-}=\frac12(1-1)=0$, $\braket{\Psi^+}{\Psi^-}=\frac12(1-1)=0$.
+Ils forment une base de $\mathcal{H}^4$ constituée uniquement d'états intriqués.
+
+\paragraph{Preuve directe que $\ket{\Phi^+}$ est intriqué.} Supposons
+$\ket{\Phi^+}=(a\ket{0}+b\ket{1})\otimes(c\ket{0}+d\ket{1})$. En identifiant les
+composantes : $ac=\frac{1}{\sqrt2}$, $ad=0$, $bc=0$, $bd=\frac{1}{\sqrt2}$. La condition
+$ad=0$ impose $a=0$ (impossible car $ac\neq0$) ou $d=0$ (impossible car $bd\neq0$).
+Contradiction : aucun produit ne convient.
+
+\paragraph{Corrélations.} Pour un produit $\ket{\Psi}_A\otimes\ket{\Psi}_B$ avec
+$\ket{\Psi}_A=a_0\ket{0}+a_1\ket{1}$ et $\ket{\Psi}_B=b_0\ket{0}+b_1\ket{1}$, on a
+$P(ij)=|a_ib_j|^2=|a_i|^2|b_j|^2=P(A{=}i)\,P(B{=}j)$ : les deux qubits sont
+\emph{indépendants}. Vérification avec $\ket{+}\otimes\ket{+}$ : $P(00)=\frac14=\frac12\cdot\frac12$.
+Pour $\ket{\Phi^+}$ : $P(00)=P(11)=\frac12$ et $P(01)=P(10)=0$, donc
+$P(A{=}0)=P(B{=}0)=\frac12$, mais
+\[
+  P(00)=\tfrac12\neq\tfrac12\cdot\tfrac12=P(A{=}0)\,P(B{=}0) .
+\]
+Les deux qubits donnent toujours le même résultat, aléatoire : ils sont corrélés.
+
+\paragraph{État d'un qubit pris seul.} On prend la matrice de densité
+$\rho=\ket{\Psi}\bra{\Psi}$ ($4\times4$, lignes et colonnes ordonnées $00,01,10,11$) et on
+trace sur $B$ : $(\rho_A)_{ij}=\rho_{(i0),(j0)}+\rho_{(i1),(j1)}$.
+
+\emph{État de Bell $\ket{\Phi^+}$.}
+\[
+  \rho=\frac12\begin{pmatrix}1 & 0 & 0 & 1\\ 0 & 0 & 0 & 0\\ 0 & 0 & 0 & 0\\ 1 & 0 & 0 & 1\end{pmatrix},
+  \qquad
+  \begin{aligned}
+    (\rho_A)_{00}&=\rho_{00,00}+\rho_{01,01}=\tfrac12+0=\tfrac12,\\
+    (\rho_A)_{01}&=\rho_{00,10}+\rho_{01,11}=0+0=0,\\
+    (\rho_A)_{11}&=\rho_{10,10}+\rho_{11,11}=0+\tfrac12=\tfrac12 .
+  \end{aligned}
+\]
+Donc $\rho_A=\frac12\mathrm{Id}$ : état \emph{mixte} ($\operatorname{Tr}\rho_A^2=\frac12$), au centre
+de la boule de Bloch (section~\ref{sec:bloch}).
+
+\emph{État séparable $\ket{0}\otimes\ket{+}$.}
+\[
+  \rho=\frac12\begin{pmatrix}1 & 1 & 0 & 0\\ 1 & 1 & 0 & 0\\ 0 & 0 & 0 & 0\\ 0 & 0 & 0 & 0\end{pmatrix},
+  \qquad
+  \begin{aligned}
+    (\rho_A)_{00}&=\rho_{00,00}+\rho_{01,01}=\tfrac12+\tfrac12=1,\\
+    (\rho_A)_{01}&=\rho_{00,10}+\rho_{01,11}=0+0=0,\\
+    (\rho_A)_{11}&=\rho_{10,10}+\rho_{11,11}=0+0=0 .
+  \end{aligned}
+\]
+Donc $\rho_A=\ket{0}\bra{0}$ : état \emph{pur}, celui du facteur $\ket{\Psi}_A$.
+
+Un qubit d'un état séparable garde son propre état pur ; un qubit d'un état de Bell est
+complètement aléatoire alors que le couple est parfaitement défini.
+
+% ---------------------------------------------------------------------
+\subsection{Opérateurs sur deux qubits}\label{sec:op2}
+% ---------------------------------------------------------------------
+
+\begin{definition}{Produit tensoriel de deux matrices}
+\[
+  A\otimes B=\begin{pmatrix}A_{11} & A_{12}\\ A_{21} & A_{22}\end{pmatrix}\otimes B
+  =\begin{pmatrix}A_{11}B & A_{12}B\\ A_{21}B & A_{22}B\end{pmatrix}
+  \qquad(\text{matrice }4\times4).
+\]
+\end{definition}
+
+\begin{resultat}{Action sur un produit}
+\[
+  (A\otimes B)\big(\ket{u}\otimes\ket{v}\big)=A\ket{u}\otimes B\ket{v}.
+\]
+\end{resultat}
+
+\emph{Démonstration.} Avec $\ket{u}=(u_1,u_2)^{\mathsf T}$, le vecteur $\ket{u}\otimes\ket{v}$ a
+pour blocs $u_k\ket{v}$ ($k=1,2$). Le bloc de lignes $i$ de $(A\otimes B)(\ket{u}\otimes\ket{v})$ est
+donc
+\[
+  \sum_kA_{ik}B\,\big(u_k\ket{v}\big)=\Big(\sum_kA_{ik}u_k\Big)B\ket{v}=(A\ket{u})_i\,B\ket{v},
+\]
+qui est le bloc $i$ de $A\ket{u}\otimes B\ket{v}$. \hfill$\square$
+
+\subsubsection{Portes agissant sur un seul des deux qubits}
+
+On note $I=\mathrm{Id}$ ($2\times2$). $X\otimes I$ agit sur $A$, $I\otimes X$ agit sur $B$ :
+\begin{align*}
+  I\otimes X&=\begin{pmatrix}1\cdot X & 0\cdot X\\ 0\cdot X & 1\cdot X\end{pmatrix}
+    =\begin{pmatrix}0 & 1 & 0 & 0\\ 1 & 0 & 0 & 0\\ 0 & 0 & 0 & 1\\ 0 & 0 & 1 & 0\end{pmatrix},\\[1ex]
+  X\otimes I&=\begin{pmatrix}0\cdot I & 1\cdot I\\ 1\cdot I & 0\cdot I\end{pmatrix}
+    =\begin{pmatrix}0 & 0 & 1 & 0\\ 0 & 0 & 0 & 1\\ 1 & 0 & 0 & 0\\ 0 & 1 & 0 & 0\end{pmatrix}.
+\end{align*}
+Sur $\ket{00}=(1,0,0,0)^{\mathsf T}$ (première colonne de la matrice) :
+$(I\otimes X)\ket{00}=(0,1,0,0)^{\mathsf T}=\ket{01}$ et
+$(X\otimes I)\ket{00}=(0,0,1,0)^{\mathsf T}=\ket{10}$. Avec la règle :
+$(I\otimes X)\ket{00}=I\ket{0}\otimes X\ket{0}=\ket{0}\otimes\ket{1}=\ket{01}$.
+
+Pour la porte de Hadamard, avec $H=\frac{1}{\sqrt2}\begin{pmatrix}1 & 1\\ 1 & -1\end{pmatrix}$ :
+\[
+  H\otimes I=\frac{1}{\sqrt2}\begin{pmatrix}1\cdot I & 1\cdot I\\ 1\cdot I & -1\cdot I\end{pmatrix}
+  =\frac{1}{\sqrt2}\begin{pmatrix}1 & 0 & 1 & 0\\ 0 & 1 & 0 & 1\\ 1 & 0 & -1 & 0\\ 0 & 1 & 0 & -1\end{pmatrix}.
+\]
+Ses colonnes donnent l'image des quatre états de base :
+\begin{align*}
+  (H\otimes I)\ket{00}&=\tfrac{1}{\sqrt2}(1,0,1,0)^{\mathsf T}=\ket{+}\otimes\ket{0},&
+  (H\otimes I)\ket{01}&=\tfrac{1}{\sqrt2}(0,1,0,1)^{\mathsf T}=\ket{+}\otimes\ket{1},\\
+  (H\otimes I)\ket{10}&=\tfrac{1}{\sqrt2}(1,0,-1,0)^{\mathsf T}=\ket{-}\otimes\ket{0},&
+  (H\otimes I)\ket{11}&=\tfrac{1}{\sqrt2}(0,1,0,-1)^{\mathsf T}=\ket{-}\otimes\ket{1}.
+\end{align*}
+
+\subsubsection{Hadamard sur les deux qubits}
+
+\[
+  H\otimes H=\frac12\begin{pmatrix}1\cdot H' & 1\cdot H'\\ 1\cdot H' & -1\cdot H'\end{pmatrix},
+  \quad H'=\begin{pmatrix}1 & 1\\ 1 & -1\end{pmatrix},
+  \qquad
+  H\otimes H=\frac12\begin{pmatrix}1 & 1 & 1 & 1\\ 1 & -1 & 1 & -1\\ 1 & 1 & -1 & -1\\ 1 & -1 & -1 & 1\end{pmatrix}.
+\]
+La première colonne donne $(H\otimes H)\ket{00}=\frac12(1,1,1,1)^{\mathsf T}=\ket{+}\otimes\ket{+}$
+(cohérent avec $H\ket{0}\otimes H\ket{0}$) : les quatre résultats $00,01,10,11$ sont
+équiprobables, chacun avec la probabilité $\frac14$. Sur $n$ qubits, $H^{\otimes n}\ket{0\ldots0}$
+donne une superposition uniforme de $2^n$ états.
+
+\subsubsection{La porte CNOT et les états de Bell}
+
+\begin{definition}{Porte CNOT (NOT contrôlé)}
+Le qubit $A$ est le \emph{contrôle}, $B$ la \emph{cible} : $B$ est inversé si $A=1$.
+\[
+  \mathrm{CNOT}=\ket{0}\bra{0}\otimes I+\ket{1}\bra{1}\otimes X
+  =\begin{pmatrix}I & 0\\ 0 & X\end{pmatrix}
+  =\begin{pmatrix}1 & 0 & 0 & 0\\ 0 & 1 & 0 & 0\\ 0 & 0 & 0 & 1\\ 0 & 0 & 1 & 0\end{pmatrix}.
+\]
+\end{definition}
+
+Sa matrice échange les composantes $10$ et $11$ :
+$\mathrm{CNOT}\ket{00}=\ket{00}$, $\mathrm{CNOT}\ket{01}=\ket{01}$,
+$\mathrm{CNOT}\ket{10}=\ket{11}$, $\mathrm{CNOT}\ket{11}=\ket{10}$, soit
+$\ket{i,j}\to\ket{i,i\oplus j}$ (addition modulo $2$).
+
+On applique $H\otimes I$ puis $\mathrm{CNOT}$ à $\ket{00}$ (figure~\ref{fig:bell}) :
+\[
+  \ket{00}\ \xrightarrow{\ H\otimes I\ }\ \tfrac{1}{\sqrt2}\begin{pmatrix}1\\ 0\\ 1\\ 0\end{pmatrix}
+  =\tfrac{1}{\sqrt2}\big(\ket{00}+\ket{10}\big)
+  \ \xrightarrow{\ \mathrm{CNOT}\ }\ \tfrac{1}{\sqrt2}\begin{pmatrix}1\\ 0\\ 0\\ 1\end{pmatrix}
+  =\tfrac{1}{\sqrt2}\big(\ket{00}+\ket{11}\big)=\ket{\Phi^+}.
+\]
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, font=\small]
+  % fils : B en haut (dernier chiffre du ket), A en bas (premier chiffre)
+  \draw (0,1) -- (8.6,1);
+  \draw (0,0) -- (8.6,0);
+  \node[anchor=east] at (0,1) {$\ket{0}_B$};
+  \node[anchor=east] at (0,0) {$\ket{0}_A$};
+  % Hadamard sur A
+  \node[draw=insarouge, fill=insarouge!8, minimum size=7mm, thick] at (2.2,0) {$H$};
+  % CNOT : contrôle sur A (bas), cible sur B (haut)
+  \draw[insarouge, thick] (5.4,0) -- (5.4,1.3);
+  \fill[insarouge] (5.4,0) circle (2.6pt);
+  \draw[insarouge, thick, fill=white] (5.4,1) circle (0.3);
+  \draw[insarouge, thick] (5.1,1) -- (5.7,1);
+  \draw[insarouge, thick] (5.4,0.7) -- (5.4,1.3);
+  % accolade de sortie
+  \draw[insagris, thick] (8.75,1.2) -- (8.9,1.2) -- (8.9,-0.2) -- (8.75,-0.2);
+  \node[anchor=west] at (8.9,0.5) {$\ket{\Phi^+}_{AB}$};
+  % états intermédiaires
+  \foreach \x in {0.6,3.8,7.2}
+    \draw[dashed, insagris!70] (\x,1.35) -- (\x,-0.95);
+  \node[anchor=north, font=\footnotesize] at (0.6,-0.95) {$\ket{00}$};
+  \node[anchor=north, font=\footnotesize] at (3.8,-0.95) {$\tfrac{1}{\sqrt2}(\ket{00}+\ket{10})$};
+  \node[anchor=north, font=\footnotesize] at (7.2,-0.95) {$\tfrac{1}{\sqrt2}(\ket{00}+\ket{11})$};
+\end{tikzpicture}
+\caption{Circuit qui produit l'état de Bell $\ket{\Phi^+}$ : une porte de Hadamard sur $A$,
+puis un CNOT ($A$ contrôle, $B$ cible). Les états intermédiaires sont indiqués sous les
+traits pointillés. Convention : les fils sont dessinés dans l'ordre inverse de l'écriture
+du ket $\ket{ij}_{AB}$, si bien que le premier chiffre (celui de $A$) est sur le fil du bas.}
+\label{fig:bell}
+\end{figure}
+
+Les quatre états de base d'entrée donnent les quatre états de Bell :
+\begin{center}
+\renewcommand{\arraystretch}{1.6}
+\begin{tabular}{@{}cccc@{}}
+\toprule
+Entrée & après $H\otimes I$ & après CNOT & Sortie \\
+\midrule
+$\ket{00}$ & $\frac{1}{\sqrt2}(\ket{00}+\ket{10})$ & $\frac{1}{\sqrt2}(\ket{00}+\ket{11})$ & $\ket{\Phi^+}$ \\
+$\ket{01}$ & $\frac{1}{\sqrt2}(\ket{01}+\ket{11})$ & $\frac{1}{\sqrt2}(\ket{01}+\ket{10})$ & $\ket{\Psi^+}$ \\
+$\ket{10}$ & $\frac{1}{\sqrt2}(\ket{00}-\ket{10})$ & $\frac{1}{\sqrt2}(\ket{00}-\ket{11})$ & $\ket{\Phi^-}$ \\
+$\ket{11}$ & $\frac{1}{\sqrt2}(\ket{01}-\ket{11})$ & $\frac{1}{\sqrt2}(\ket{01}-\ket{10})$ & $\ket{\Psi^-}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+Sous forme matricielle, le produit $\mathrm{CNOT}\cdot(H\otimes I)$ échange les lignes $3$ et $4$ de
+$H\otimes I$ :
+\[
+  \mathrm{CNOT}\,(H\otimes I)=\frac{1}{\sqrt2}\begin{pmatrix}1 & 0 & 1 & 0\\ 0 & 1 & 0 & 1\\ 0 & 1 & 0 & -1\\ 1 & 0 & -1 & 0\end{pmatrix},
+\]
+et ses quatre colonnes sont $\ket{\Phi^+}$, $\ket{\Psi^+}$, $\ket{\Phi^-}$, $\ket{\Psi^-}$.
+
+\begin{remarque}[Porte intriquante]
+Les états d'entrée $\ket{ij}$ sont séparables ($D=0$) ; les sorties sont intriquées
+($D=\pm\frac12$). Aucune porte agissant séparément sur $A$ et sur $B$ ($U_A\otimes U_B$)
+ne peut créer de l'intrication à partir d'un produit, puisque
+$(U_A\otimes U_B)(\ket{u}\otimes\ket{v})=U_A\ket{u}\otimes U_B\ket{v}$ reste un produit.
+Une porte à deux qubits comme le CNOT est indispensable.
+\end{remarque}
+
+% ---------------------------------------------------------------------
+\subsection{Récapitulatif du chapitre}
+% ---------------------------------------------------------------------
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Notion} & \textbf{Formule} \\
+\midrule
+Espace de deux qubits & $\mathcal{H}^2\otimes\mathcal{H}^2=\mathcal{H}^4$, \quad dimension $2^n$ pour $n$ qubits \\
+Produit de vecteurs & $(a_1,a_2)^{\mathsf T}\otimes(b_1,b_2)^{\mathsf T}=(a_1b_1,a_1b_2,a_2b_1,a_2b_2)^{\mathsf T}$ \\
+Base de calcul & $\ket{ij}_{AB}=\ket{i}_A\otimes\ket{j}_B$, \quad $\braket{ij}{kl}=\delta_{ik}\delta_{jl}$ \\
+État général & $\ket{\Psi}=\sum c_{ij}\ket{ij}$, \quad $\sum|c_{ij}|^2=1$, \quad $P(ij)=|c_{ij}|^2$ \\
+Séparable & $\ket{\Psi}_A\otimes\ket{\Psi}_B$ \quad $\Leftrightarrow$ \quad $c_{00}c_{11}-c_{01}c_{10}=0$ \\
+Intriqué & non séparable, \quad par exemple $\ket{\Phi^+}=\frac{1}{\sqrt2}(\ket{00}+\ket{11})$ \\
+Matrices & $A\otimes B=(A_{ij}B)$, \quad $(A\otimes B)(\ket{u}\otimes\ket{v})=A\ket{u}\otimes B\ket{v}$ \\
+CNOT & $\ket{i,j}\to\ket{i,i\oplus j}$, \quad $\mathrm{CNOT}\,(H\otimes I)\ket{00}=\ket{\Phi^+}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
