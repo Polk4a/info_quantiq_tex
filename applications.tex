@@ -1,0 +1,1320 @@
+% =====================================================================
+%  Chapitre 6 : Applications et algorithmes quantiques
+%  Fichier importé par main.tex avec \include{applications}, entre chapitre5 et
+%  chapitre6 (exercices). Il ne contient ni préambule ni \begin{document} : les
+%  environnements (definition, resultat, remarque, aretenir, savoirfaire), les
+%  macros (\ii, \ee, \dd, \ket, \bra, \braket), les symboles de circuits (ctl,
+%  cible, croix, mesure, porte) et les couleurs (insarouge, insagris) sont définis
+%  dans main.tex. Un chapitre = une \section.
+%  Le numéro d'un chapitre est donné par l'ordre des \include, pas par le nom du
+%  fichier : ce chapitre est le chapitre 6, les exercices (chapitre6.tex) le 7.
+% =====================================================================
+
+% Macros de Dirac (déjà définies dans main.tex ; ce bloc évite l'erreur
+% « Undefined control sequence \ket » si main.tex est une ancienne version).
+\providecommand{\ket}[1]{|#1\rangle}
+\providecommand{\bra}[1]{\langle #1|}
+\providecommand{\braket}[2]{\langle #1|#2\rangle}
+
+% =====================================================================
+\section{Applications et algorithmes quantiques}\label{chap:applications}
+% =====================================================================
+
+Les chapitres précédents ont construit le formalisme : qubits, portes, intrication, mesure. Ce
+chapitre montre à quoi il sert. On y voit comment un circuit exploite l'interférence pour résoudre
+certains problèmes plus vite qu'un ordinateur classique (sections~\ref{sec:interference}
+à~\ref{sec:shor}), pourquoi cela menace une partie de la cryptographie actuelle, RSA et TLS en tête
+(section~\ref{sec:crypto}), ce qu'il faut pour construire une telle machine, du cryostat aux qubits
+de chat d'Alice \& Bob (section~\ref{sec:machine}), et quelles autres applications et quels autres
+algorithmes existent (section~\ref{sec:autres}). Les circuits sont dessinés comme aux chapitres~4 et~5 :
+le fil du haut est le dernier chiffre du ket.
+
+\begin{remarque}[Chiffres d'actualité]
+Les estimations de ressources, les calendriers de migration et les records expérimentaux cités ici
+datent d'octobre 2026 et évoluent vite. Chaque chiffre est accompagné de sa source (bibliographie) ;
+les annonces d'entreprises sont signalées comme telles et les prépublications aussi.
+\end{remarque}
+
+% ---------------------------------------------------------------------
+\subsection{Calculer par interférence}\label{sec:interference}
+% ---------------------------------------------------------------------
+
+Un registre de $n$ qubits est décrit par $2^n$ amplitudes (chapitre~\ref{chap:operateurs}). Une porte
+agit sur toutes ces amplitudes à la fois, mais la mesure n'en révèle qu'un seul résultat, tiré au
+hasard avec les probabilités de Born. Dire que «~le circuit calcule toutes les valeurs en parallèle~»
+est donc trompeur. Un algorithme quantique est une \emph{chorégraphie d'interférences} : les
+amplitudes des mauvaises réponses se compensent (signes ou phases opposés), celles de la bonne
+réponse s'additionnent, et la mesure finale donne la bonne réponse avec une probabilité proche de $1$.
+
+\begin{definition}{Oracle}
+Pour $f:\{0,1\}^n\to\{0,1\}$, l'\emph{oracle} de $f$ est la porte à $n+1$ qubits
+\[
+  U_f\ket{x}\ket{y}=\ket{x}\ket{y\oplus f(x)}.
+\]
+Elle est unitaire et $U_f^2=\mathrm{Id}$ (car $y\oplus f(x)\oplus f(x)=y$). Elle se construit à partir
+d'un circuit réversible de $f$ (portes CNOT et Toffoli, section~\ref{sec:controlees}). Le coût d'un
+algorithme se mesure en \emph{nombre d'appels} à $U_f$.
+\end{definition}
+
+\begin{resultat}{Rebond de phase de l'oracle}
+Avec l'ancilla dans l'état $\ket{-}=\frac{1}{\sqrt2}(\ket0-\ket1)$ :
+\[
+  U_f\ket{x}\ket{-}=(-1)^{f(x)}\ket{x}\ket{-}.
+\]
+\end{resultat}
+
+En effet $U_f\ket{x}\ket{-}=\frac{1}{\sqrt2}\big(\ket{x}\ket{f(x)}-\ket{x}\ket{1\oplus f(x)}\big)$.
+Si $f(x)=0$ on retrouve $\ket{x}\ket{-}$ ; si $f(x)=1$, les deux termes sont échangés et le signe
+change. La valeur $f(x)$ est écrite dans la \emph{phase} de $\ket{x}$, sans toucher à l'ancilla : c'est
+le même mécanisme que le rebond de phase du CNOT (section~\ref{sec:cnot}), et la brique de tous les
+algorithmes de ce chapitre.
+
+\subsubsection{Algorithme de Deutsch}
+
+Soit $f:\{0,1\}\to\{0,1\}$. Elle est \emph{constante} si $f(0)=f(1)$ et \emph{équilibrée} si
+$f(0)\neq f(1)$. On veut savoir laquelle des deux est vraie. Classiquement, il faut évaluer $f$ deux
+fois. Le circuit de la figure~\ref{fig:deutsch} répond avec \emph{un seul} appel à $U_f$.
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, font=\small]
+  % fils : ancilla (second chiffre) en haut, requête (premier chiffre) en bas
+  \draw (0,1.5) -- (8.4,1.5);
+  \draw (0,0) -- (7.4,0);
+  \node[anchor=east] at (0,1.5) {$\ket{1}$};
+  \node[anchor=east] at (0,0) {$\ket{0}$};
+  \node[porte] at (1.3,1.5) {$H$};
+  \node[porte] at (1.3,0) {$H$};
+  \node[draw=insarouge, fill=insarouge!8, thick, minimum width=13mm, minimum height=22mm]
+    at (3.9,0.75) {$U_f$};
+  \node[porte] at (6.0,0) {$H$};
+  \pic at (7.2,0) {mesure};
+  \node[anchor=west] at (7.7,0) {$f(0)\oplus f(1)$};
+  \node[anchor=west, text=insagris, font=\footnotesize] at (8.5,1.5) {ancilla};
+  \foreach \x/\lab in {0.55/0, 2.2/1, 5.15/2, 6.75/3}
+    {\draw[dashed, insagris!70] (\x,2.1) -- (\x,-0.7);
+     \node[anchor=north, font=\footnotesize] at (\x,-0.7) {$\Pi_\lab$};}
+\end{tikzpicture}
+\caption{Circuit de Deutsch. La requête $x$ est le premier chiffre du ket (fil du bas), l'ancilla
+$y$ le second (fil du haut). La mesure du seul qubit de requête donne $f(0)\oplus f(1)$ : $0$ si $f$ est
+constante, $1$ si elle est équilibrée.}
+\label{fig:deutsch}
+\end{figure}
+
+\begin{align*}
+  \ket{\Pi_0}&=\ket{0}\ket{1},\qquad
+  \ket{\Pi_1}=(H\otimes H)\ket{\Pi_0}=\ket{+}\ket{-},\\[1ex]
+  \ket{\Pi_2}&=U_f\ket{\Pi_1}
+    =\frac{(-1)^{f(0)}\ket{0}+(-1)^{f(1)}\ket{1}}{\sqrt2}\ket{-}
+    =(-1)^{f(0)}\,\frac{\ket{0}+(-1)^{f(0)\oplus f(1)}\ket{1}}{\sqrt2}\,\ket{-},\\[1ex]
+  \ket{\Pi_3}&=(H\otimes I)\ket{\Pi_2}=(-1)^{f(0)}\,\ket{f(0)\oplus f(1)}\ket{-}.
+\end{align*}
+La deuxième ligne utilise le rebond de phase ; la troisième, $H\ket{+}=\ket0$ et $H\ket{-}=\ket1$.
+Les deux amplitudes de la requête interfèrent : elles s'additionnent si $f$ est constante (état
+$\ket{+}$, devenu $\ket{0}$) et se retranchent si $f$ est équilibrée (état $\ket{-}$, devenu $\ket{1}$).
+Le calcul ne dit pas les valeurs $f(0)$ et $f(1)$ : il extrait seulement leur parité, et c'est ce qui
+permet d'économiser un appel.
+
+\begin{remarque}[Des oracles à $n$ qubits : Deutsch--Jozsa, Bernstein--Vazirani, Simon]
+Le même schéma ($H^{\otimes n}$, oracle, $H^{\otimes n}$) généralise l'algorithme de \textcite{deutsch1985}. Pour $f$ sur $n$ bits promise
+constante ou équilibrée, \textcite{deutschjozsa1992} décident avec \emph{un} appel là où un algorithme classique
+déterministe en demande $2^{n-1}+1$. \textcite{bernstein1997} retrouvent en un appel un mot caché
+$s$ défini par $f(x)=s\cdot x$ (classiquement : $n$ appels). \textcite{simon1997} trouve un masque caché avec $O(n)$
+appels, contre $2^{\Omega(n)}$ classiquement : c'est la première séparation exponentielle, et l'idée
+de l'algorithme de Shor. Ces problèmes sont artificiels (ils portent sur une boîte noire), mais
+ils prouvent que l'interférence offre un gain réel.
+\end{remarque}
+
+% ---------------------------------------------------------------------
+\subsection{Recherche dans une liste : l'algorithme de Grover}\label{sec:grover}
+% ---------------------------------------------------------------------
+
+Un oracle $f$ vaut $1$ en un unique élément $w$ parmi $N=2^n$, et $0$ ailleurs ; on cherche $w$.
+Classiquement, il faut en moyenne $N/2$ évaluations de $f$, et $N$ dans le pire cas. \textcite{grover1996}
+le trouve avec environ $\frac\pi4\sqrt N$ appels.
+
+\begin{resultat}{Algorithme de Grover}
+On part de $\ket{s}=H^{\otimes n}\ket{0\ldots0}=\frac{1}{\sqrt N}\sum_x\ket{x}$, puis on répète $k$
+fois l'itération $G=D\,O_w$ avec
+\[
+  O_w=I-2\ket{w}\bra{w}\ \ (\text{oracle, par rebond de phase}),\qquad
+  D=2\ket{s}\bra{s}-I=H^{\otimes n}\,(2\ket{0}\bra{0}-I)\,H^{\otimes n}.
+\]
+La mesure donne $w$ avec la probabilité $\sin^2\!\big((2k+1)\theta\big)$, où $\sin\theta=\frac{1}{\sqrt N}$.
+Elle est proche de $1$ pour $k\simeq\frac\pi4\sqrt N$. Aucun algorithme quantique ne fait mieux que
+$\Omega(\sqrt N)$ appels : le gain est quadratique, et optimal.
+\end{resultat}
+
+\paragraph{Pourquoi cela marche.} Posons $\ket{s'}=\frac{1}{\sqrt{N-1}}\sum_{x\neq w}\ket{x}$. Alors
+$\ket{s}=\sin\theta\,\ket{w}+\cos\theta\,\ket{s'}$, et toute l'évolution reste dans le plan
+engendré par $\ket{w}$ et $\ket{s'}$. L'oracle change le signe de la composante sur $\ket{w}$ : c'est
+la symétrie par rapport à l'axe $\ket{s'}$. La diffusion $D=2\ket{s}\bra{s}-I$ est la symétrie par
+rapport à $\ket{s}$. Deux symétries d'axes séparés de l'angle $\theta$ composent une rotation de
+$2\theta$ (figure~\ref{fig:grover-geo}). Après $k$ itérations,
+\[
+  G^k\ket{s}=\sin\!\big((2k+1)\theta\big)\ket{w}+\cos\!\big((2k+1)\theta\big)\ket{s'}.
+\]
+On s'arrête quand $(2k+1)\theta\simeq\frac\pi2$. Contrairement à un algorithme classique, itérer plus
+longtemps n'améliore rien : on continue de tourner et on dépasse $\ket{w}$.
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, font=\small]
+  \draw[->, insagris] (-0.4,0) -- (4.5,0) node[right] {$\ket{s'}$};
+  \draw[->, insagris] (0,-0.5) -- (0,4.5);
+  \draw[insagris!50, dashed] (3.6,0) arc (0:90:3.6);
+  \draw[dashed, insagris!60] (210:1.8) -- (30:3.6);
+  \draw[->, very thick, insarouge] (0,0) -- (30:3.6) node[right] {$\ket{s}$};
+  \draw[->, very thick, insagris] (0,0) -- (-30:3.6) node[right] {$O_w\ket{s}$};
+  \draw[->, very thick, insarouge] (0,0) -- (90:3.6) node[above right] {$G\ket{s}=\ket{w}$};
+  \draw[insagris] (1.1,0) arc (0:30:1.1);   \node[text=insagris] at (15:1.45) {$\theta$};
+  \draw[insagris] (1.1,0) arc (0:-30:1.1);  \node[text=insagris] at (-15:1.45) {$\theta$};
+  \draw[->, insarouge, thick] (30:2.2) arc (30:90:2.2);  \node[text=insarouge] at (60:2.65) {$2\theta$};
+  \node[text=insagris, font=\footnotesize, anchor=north west, align=left] at (-1.7,-1.2)
+    {symétrie $O_w$ : $\ket{s}\mapsto O_w\ket{s}$\\ symétrie $D$ d'axe $\ket{s}$ (pointillés)};
+\end{tikzpicture}
+\caption{Une itération de Grover pour $N=4$ ($\theta=\frac\pi6$). L'oracle renvoie $\ket{s}$ en
+$O_w\ket{s}$ (angle $-\theta$), la diffusion le renvoie en $G\ket{s}$ (angle $3\theta=\frac\pi2$) :
+une seule itération amène exactement sur $\ket{w}$.}
+\label{fig:grover-geo}
+\end{figure}
+
+\subsubsection{Exemple complet : $N=4$ (deux qubits)}
+
+Prenons $w=11$. L'oracle est la porte $Z$ contrôlée $\mathrm{CZ}=\operatorname{diag}(1,1,1,-1)$
+(section~\ref{sec:controlees}). La diffusion s'écrit avec les portes du cours, car
+$2\ket{00}\bra{00}-I=\operatorname{diag}(1,-1,-1,-1)=\mathrm{CZ}\,(Z\otimes Z)$ :
+\[
+  D=(H\otimes H)\;\mathrm{CZ}\,(Z\otimes Z)\;(H\otimes H).
+\]
+Le circuit de la figure~\ref{fig:grover-circ} s'écrit donc $H\otimes H$, $\mathrm{CZ}$,
+$H\otimes H$, $Z\otimes Z$, $\mathrm{CZ}$, $H\otimes H$. Calcul pas à pas :
+\begin{align*}
+  \ket{s}&=\tfrac12\big(\ket{00}+\ket{01}+\ket{10}+\ket{11}\big),\\
+  O_w\ket{s}&=\tfrac12\big(\ket{00}+\ket{01}+\ket{10}-\ket{11}\big),\\
+  \braket{s}{O_w s}&=\tfrac14(1+1+1-1)=\tfrac12,\\
+  D\,O_w\ket{s}&=2\braket{s}{O_w s}\ket{s}-O_w\ket{s}=\ket{s}-O_w\ket{s}
+    =\tfrac12\big(0,0,0,2\big)^{\mathsf T}=\ket{11}.
+\end{align*}
+La mesure donne $11$ \emph{avec certitude} après un seul appel à l'oracle, là où un algorithme
+classique en demande en moyenne $2{,}25$. C'est cohérent avec la formule : $\sin\theta=\frac12$,
+$\theta=\frac\pi6$ et $\sin(3\theta)=1$. Pour un autre élément marqué, on change l'oracle (un
+CZ entouré de portes $X$) et le résultat est le même.
+
+\begin{figure}[!ht]
+\centering
+\adjustbox{max width=\linewidth}{%
+\begin{tikzpicture}[>=Stealth, font=\small]
+  \draw (0,1.4) -- (10.3,1.4);
+  \draw (0,0) -- (10.3,0);
+  \node[anchor=east] at (0,1.4) {$\ket{0}$};
+  \node[anchor=east] at (0,0) {$\ket{0}$};
+  \foreach \y in {0,1.4} {
+    \node[porte] at (1.1,\y) {$H$};
+    \node[porte] at (4.3,\y) {$H$};
+    \node[porte] at (5.7,\y) {$Z$};
+    \node[porte] at (8.5,\y) {$H$};
+    \pic at (9.7,\y) {mesure};
+  }
+  \foreach \x in {2.7,7.1} {
+    \draw[insarouge, thick] (\x,1.4) -- (\x,0);
+    \pic at (\x,1.4) {ctl};
+    \pic at (\x,0) {ctl};
+  }
+  \foreach \x/\lab in {1.9/{\ket{s}}, 3.5/{O_w\ket{s}}, 9.1/{\ket{11}}} {
+    \draw[dashed, insagris!70] (\x,2.0) -- (\x,-0.6);
+    \node[anchor=south, font=\footnotesize] at (\x,2.0) {$\lab$};
+  }
+  \draw[decorate, decoration={brace, amplitude=4pt, mirror}, insagris] (2.3,-0.8) -- (3.1,-0.8)
+    node[midway, below=5pt, font=\footnotesize] {oracle $O_w$};
+  \draw[decorate, decoration={brace, amplitude=4pt, mirror}, insagris] (3.9,-0.8) -- (9.0,-0.8)
+    node[midway, below=5pt, font=\footnotesize] {diffusion $D=(H\otimes H)\,\mathrm{CZ}\,(Z\otimes Z)\,(H\otimes H)$};
+\end{tikzpicture}}
+\caption{Algorithme de Grover pour $N=4$ et $w=11$ : une itération suffit. Les deux points
+reliés par un trait vertical forment la porte CZ.}
+\label{fig:grover-circ}
+\end{figure}
+
+\paragraph{Ordres de grandeur.} Pour $N=2^{20}\approx10^6$, Grover demande
+$\frac\pi4\cdot2^{10}\approx804$ itérations, contre $5\times10^5$ évaluations en moyenne. Pour une
+recherche de clé AES-128 ($N=2^{128}$), il faut $\frac\pi4\,2^{64}\approx1{,}4\times10^{19}$
+itérations \emph{séquentielles}, dont chacune contient un circuit AES complet ; et partager le travail
+entre $m$ machines ne fait gagner qu'un facteur $\sqrt m$. L'effet est tout de même de diviser par deux le
+nombre de bits de sécurité d'un chiffrement symétrique : on se protège en doublant la taille des
+clés (AES-256).
+
+% ---------------------------------------------------------------------
+\subsection{Transformée de Fourier quantique et algorithme de Shor}\label{sec:shor}
+% ---------------------------------------------------------------------
+
+Le chiffrement RSA repose sur la difficulté de factoriser un entier $N$ (section~\ref{sec:crypto}).
+L'algorithme de Shor, conçu en 1994 et publié en 1997 \parencite{shor1997}, factorise $N$ en un temps polynomial en $\log N$.
+L'algorithme a deux étages : une réduction \emph{classique} de la factorisation à la recherche d'une
+période, puis une recherche \emph{quantique} de cette période par transformée de Fourier.
+
+\subsubsection{Réduction : de la factorisation à la période}
+
+Soit $N$ impair et non puissance d'un nombre premier. On tire $a$ avec $1<a<N$. Si
+$\operatorname{pgcd}(a,N)>1$, on tient déjà un facteur. Sinon, la suite $x\mapsto a^x\bmod N$ est
+périodique : sa période $r$ est le plus petit entier $r\geq1$ tel que $a^r\equiv1\pmod N$ (l'\emph{ordre}
+de $a$ modulo $N$).
+
+\begin{resultat}{Factorisation à partir de l'ordre}
+Si $r$ est pair et si $a^{r/2}\not\equiv-1\pmod N$, alors $\operatorname{pgcd}(a^{r/2}-1,N)$ et
+$\operatorname{pgcd}(a^{r/2}+1,N)$ sont deux facteurs non triviaux de $N$. Pour $a$ tiré au hasard,
+ces deux conditions sont réunies avec une probabilité au moins égale à $\frac12$ \parencite[chap.~5]{nielsen2010}.
+\end{resultat}
+
+En effet, posons $u=a^{r/2}$. Alors $(u-1)(u+1)=a^r-1\equiv0\pmod N$ : $N$ divise le produit. Il ne
+divise pas $u-1$, sinon l'ordre de $a$ serait $r/2$, ni $u+1$ par hypothèse. Si $\operatorname{pgcd}(u-1,N)$
+valait $1$, $N$ diviserait $u+1$ (lemme de Gauss) ; s'il valait $N$, $N$ diviserait $u-1$. Les deux sont exclus, donc
+le pgcd est un diviseur strict de $N$ ; de même pour $u+1$. Tout se ramène donc à \emph{trouver $r$}. Classiquement, c'est
+aussi difficile que factoriser. C'est la seule étape où l'ordinateur quantique intervient.
+
+\subsubsection{La transformée de Fourier quantique}
+
+\begin{definition}{Transformée de Fourier quantique (QFT)}
+Sur l'espace de dimension $M$ de base $\ket{0},\ldots,\ket{M-1}$, avec $\omega=\ee^{2\ii\pi/M}$ :
+\[
+  \mathrm{QFT}_M\ket{x}=\frac{1}{\sqrt M}\sum_{y=0}^{M-1}\omega^{xy}\ket{y}.
+\]
+C'est une porte unitaire : ses colonnes sont orthonormées (somme géométrique de raison $\omega^{x-x'}$).
+Pour $M=2^m$, elle s'implémente avec $O(m^2)$ portes élémentaires, alors que la transformée de Fourier
+rapide classique demande $O(m\,2^m)$ opérations sur les $2^m$ amplitudes.
+\end{definition}
+
+Pour $M=2$ on a $\omega=-1$ et $\mathrm{QFT}_2=H$. Pour $M=4$, $\omega=\ii$ ; en écrivant $x=2x_1+x_2$ et
+$y=2y_1+y_2$, on a $\ii^{xy}=(-1)^{x_1y_2+x_2y_1}\,\ii^{x_2y_2}$ (car $\ii^4=1$), d'où
+\[
+  \mathrm{QFT}_4\ket{x_1x_2}=\underbrace{\frac{\ket0+(-1)^{x_2}\ket1}{\sqrt2}}_{=\,H\ket{x_2}\ \text{(chiffre }y_1)}
+  \otimes\ \frac{\ket0+(-1)^{x_1}\ii^{x_2}\ket1}{\sqrt2}\ \ \text{(chiffre }y_2).
+\]
+Le circuit $\mathrm{QFT}_4=\mathrm{SWAP}\,(I\otimes H)\,\mathrm{CS}\,(H\otimes I)$ de la
+figure~\ref{fig:qft4} produit exactement cet état : $H$ sur le premier chiffre donne
+$\frac{1}{\sqrt2}(\ket0+(-1)^{x_1}\ket1)$, la porte $\mathrm{CS}=\operatorname{diag}(1,1,1,\ii)$ ajoute le
+facteur $\ii^{x_2}$ devant $\ket1$, $I\otimes H$ transforme $\ket{x_2}$ en $H\ket{x_2}$, et le SWAP remet les
+chiffres dans l'ordre.
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, font=\small]
+  \draw (0,1.2) -- (7.0,1.2);
+  \draw (0,0) -- (7.0,0);
+  \node[anchor=east] at (0,1.2) {$\ket{x_2}$};
+  \node[anchor=east] at (0,0) {$\ket{x_1}$};
+  \node[porte] at (1.2,0) {$H$};
+  \draw[insarouge, thick] (2.7,1.2) -- (2.7,0);
+  \pic at (2.7,1.2) {ctl};
+  \node[porte] at (2.7,0) {$S$};
+  \node[porte] at (4.2,1.2) {$H$};
+  \draw[insarouge, thick] (5.7,1.2) -- (5.7,0);
+  \pic at (5.7,1.2) {croix};
+  \pic at (5.7,0) {croix};
+  \node[anchor=west] at (7.0,1.2) {$\ket{y_2}$};
+  \node[anchor=west] at (7.0,0) {$\ket{y_1}$};
+\end{tikzpicture}
+\caption{$\mathrm{QFT}_4$ : $H$, $S$ contrôlée par l'autre qubit, $H$, puis échange des deux fils.
+Le fil du haut est le dernier chiffre.}
+\label{fig:qft4}
+\end{figure}
+
+\begin{resultat}{La QFT transforme une période en pics}
+Si $r$ divise $M$ et si $\ket{\psi}=\sqrt{r/M}\sum_{k=0}^{M/r-1}\ket{x_0+kr}$ (état périodique, de période
+$r$), alors
+\[
+  \mathrm{QFT}_M\ket{\psi}=\frac{1}{\sqrt r}\sum_{j=0}^{r-1}\omega^{x_0\,jM/r}\,\ket{jM/r}.
+\]
+La mesure donne $y=jM/r$ avec la probabilité $\frac1r$, pour $j=0,\ldots,r-1$, quel que soit le décalage $x_0$.
+\end{resultat}
+
+Preuve : l'amplitude de $\ket{y}$ est $\frac{1}{\sqrt M}\sqrt{\frac rM}\,\omega^{x_0y}\sum_{k}\omega^{kry}$.
+La somme géométrique de raison $\omega^{ry}=\ee^{2\ii\pi ry/M}$ vaut $M/r$ si $ry/M$ est entier, et $0$ sinon
+(la raison est alors différente de $1$ et sa puissance $M/r$ vaut $1$). L'amplitude vaut donc
+$\sqrt{r}/M\cdot M/r=1/\sqrt r$ aux multiples de $M/r$, et $0$ ailleurs. Le décalage $x_0$ n'apparaît que dans une
+\emph{phase}, qui disparaît à la mesure : c'est ce qui permet de lire la période sans connaître le point de départ.
+
+\subsubsection{L'algorithme}
+
+\begin{resultat}{Algorithme de Shor : recherche de l'ordre de $a$ modulo $N$}
+On choisit $M=2^t\geq N^2$ (soit $t\approx2n$ avec $n=\lceil\log_2N\rceil$), un registre de contrôle de $t$ qubits et un
+registre de travail de $n$ qubits.
+\begin{enumerate}[nosep]
+  \item Préparer $\ket{0}^{\otimes t}\ket{1}$ et appliquer $H^{\otimes t}$ au registre de contrôle :
+        $\ket{\varphi_1}=\frac{1}{\sqrt M}\sum_{x=0}^{M-1}\ket{x}\ket{1}$.
+  \item Appliquer l'exponentiation modulaire $U_a\ket{x}\ket{z}=\ket{x}\ket{a^xz\bmod N}$ :
+        $\ket{\varphi_2}=\frac{1}{\sqrt M}\sum_{x}\ket{x}\ket{a^x\bmod N}$.
+  \item Appliquer $\mathrm{QFT}_M$ au registre de contrôle et le mesurer : on obtient $y$.
+  \item (Classique) Développer $y/M$ en fraction continue : on y lit une fraction $j/r'$ proche de
+        $y/M$ avec $r'<N$. Si $\operatorname{pgcd}(j,r)=1$, alors $r'=r$ et l'on vérifie $a^{r'}\equiv1\pmod N$.
+        Sinon, $r'$ est un diviseur strict de $r$ et $a^{r'}\not\equiv1$ : on recommence.
+\end{enumerate}
+\end{resultat}
+
+L'oracle $U_a$ est un produit de $t$ multiplications modulaires \emph{contrôlées} par les qubits $x_j$ de $x$ :
+comme $a^x=\prod_j(a^{2^j})^{x_j}$, la $j$-ème porte multiplie le registre de travail par $a^{2^j}\bmod N$, un
+nombre calculé à l'avance par un ordinateur classique. Le circuit est celui de la
+figure~\ref{fig:shor-circ}.
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, font=\small]
+  % registre de contrôle (haut) et registre de travail (bas)
+  \draw (0,1.7) -- (8.3,1.7);
+  \draw (0,0) -- (4.6,0);
+  \draw[dashed] (4.6,0) -- (8.3,0);
+  \node[anchor=east] at (0,1.7) {$\ket{0}^{\otimes t}$};
+  \node[anchor=east] at (0,0) {$\ket{1}$};
+  \draw (0.5,1.6) -- (0.7,1.8); \node[font=\scriptsize, anchor=south] at (0.6,1.78) {$t$};
+  \draw (0.5,-0.1) -- (0.7,0.1); \node[font=\scriptsize, anchor=south] at (0.6,0.08) {$n$};
+  \node[porte] at (1.5,1.7) {$H^{\otimes t}$};
+  \pic at (3.3,1.7) {ctl};
+  \draw[insarouge, thick] (3.3,1.7) -- (3.3,0.4);
+  \node[draw=insarouge, fill=insarouge!8, thick, minimum width=17mm, minimum height=8mm] at (3.3,0) {$U_a$};
+  \node[porte] at (5.4,1.7) {$\mathrm{QFT}_M$};
+  \pic at (7.0,1.7) {mesure};
+  \node[anchor=west] at (7.5,1.7) {$y$};
+  \node[anchor=north west, text=insagris, font=\footnotesize] at (4.7,-0.3) {registre de travail : ignoré};
+  \foreach \x/\lab in {2.3/1, 4.3/2, 6.3/3}
+    {\draw[dashed, insagris!70] (\x,2.35) -- (\x,-0.3);
+     \node[anchor=south, font=\footnotesize] at (\x,2.35) {$\ket{\varphi_\lab}$};}
+\end{tikzpicture}
+\caption{Circuit de Shor. Les petits traits obliques indiquent un registre de plusieurs qubits ($t$ pour le
+contrôle, $n$ pour le travail). $U_a\ket{x}\ket{z}=\ket{x}\ket{a^xz\bmod N}$ est commandé par le registre de
+contrôle.}
+\label{fig:shor-circ}
+\end{figure}
+
+\paragraph{Pourquoi cela marche.} Après l'étape~2, mesurons (en pensée) le registre de travail : il
+donne une valeur $f$ de la suite $a^x\bmod N$, et le registre de contrôle se projette sur les $x$ tels que
+$a^x\equiv f$, c'est-à-dire $x\in\{x_0,x_0+r,x_0+2r,\ldots\}$ : un état périodique de période $r$. Le résultat sur la QFT
+ci-dessus s'applique : la QFT concentre toute la probabilité sur les $y$ voisins de $jM/r$. La mesure du
+registre de travail n'est pas nécessaire (les probabilités de $y$ sont les mêmes si on l'ignore), et le
+décalage $x_0$ dépend de $f$ mais ne change pas la loi de $y$. Ainsi $y/M\approx j/r$ pour un entier $j$ \emph{aléatoire} :
+on ne choisit pas $j$, mais il est premier avec $r$ dans une fraction $\Omega(1/\log\log r)$ des cas, et quelques
+répétitions suffisent. Le choix $M\geq N^2$ garantit qu'une seule fraction de dénominateur inférieur à $N$ est
+à distance de $\frac{1}{2M}$ de $y/M$ : le développement en fraction continue l'identifie.
+
+\subsubsection{Exemple complet : $N=15$, $a=7$}
+
+\paragraph{Période.} La suite $7^x\bmod15$ vaut $1,7,4,13,1,7,4,13,\ldots$ : l'ordre est $r=4$. Les
+multiplicateurs de $U_a$ sont $a^{2^j}\bmod 15=7,\ 4,\ 1,\ 1$ pour $j=0,1,2,3$ (les deux derniers sont triviaux).
+On prend ici $t=4$, soit $M=16$. Ce choix est trop court en général ($M\geq N^2=225$ serait exigé) mais suffit
+car $r=4$ divise $M$, ce qui rend le calcul exact.
+
+\paragraph{État avant la QFT.} $\ket{\varphi_2}=\frac14\sum_{x=0}^{15}\ket{x}\ket{7^x\bmod15}$. Si le
+registre de travail est mesuré et donne $1$, le registre de contrôle est dans $\frac12(\ket0+\ket4+\ket8+\ket{12})$ ;
+s'il donne $7$, dans $\frac12(\ket1+\ket5+\ket9+\ket{13})$, etc.
+
+\paragraph{QFT.} On a $\omega=\ee^{2\ii\pi/16}$ et $\omega^4=\ii$. Pour le décalage $x_0=0$ :
+\[
+  \mathrm{QFT}_{16}\,\tfrac12\big(\ket0+\ket4+\ket8+\ket{12}\big)
+  =\frac18\sum_{y=0}^{15}\Big(\sum_{k=0}^{3}\ii^{\,ky}\Big)\ket{y}
+  =\frac12\big(\ket0+\ket4+\ket8+\ket{12}\big),
+\]
+car $\sum_{k=0}^{3}\ii^{\,ky}$ vaut $4$ si $y$ est multiple de $4$ et $0$ sinon. Pour les autres valeurs de
+$f$, seules les phases changent. Dans tous les cas la mesure de $y$ donne $0,4,8$ ou $12$, chacun avec la probabilité $\frac14$
+(figure~\ref{fig:shor-n15}).
+
+\paragraph{Lecture classique.} On calcule $y/16$ :
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}cccp{7.3cm}@{}}
+\toprule
+$y$ & $y/16$ & fraction irréductible & conclusion\\
+\midrule
+$0$ & $0$ & $0/1$ & inutile ($j=0$) : on recommence\\
+$4$ & $\frac14$ & $1/4$ & $r=4$\ ; $7^4=2401\equiv1$ : correct\\
+$8$ & $\frac12$ & $1/2$ & dénominateur $2$ : $7^2=49\equiv4\not\equiv1$, rejeté, on recommence\\
+$12$ & $\frac34$ & $3/4$ & $r=4$ : correct\\
+\bottomrule
+\end{tabular}
+\end{center}
+Un essai réussit donc avec la probabilité $\frac12$ ($y=4$ ou $12$). Avec $r=4$ pair et $7^{2}=49\equiv4\not\equiv-1\pmod{15}$ :
+\[
+  \operatorname{pgcd}(7^2-1,15)=\operatorname{pgcd}(48,15)=3,\qquad
+  \operatorname{pgcd}(7^2+1,15)=\operatorname{pgcd}(50,15)=5,\qquad 15=3\times5.
+\]
+
+\begin{figure}[!ht]
+\centering
+\adjustbox{max width=\linewidth}{%
+\begin{tikzpicture}[>=Stealth, font=\small]
+  % (a) suite 7^x mod 15, x = 0..15
+  \draw[->, insagris] (-0.2,0) -- (6.7,0) node[right] {$x$};
+  \draw[->, insagris] (0,-0.1) -- (0,2.6);
+  \foreach \x/\v in {0/1,1/7,2/4,3/13,4/1,5/7,6/4,7/13,8/1,9/7,10/4,11/13,12/1,13/7,14/4,15/13}
+    \fill[insarouge] ({\x*0.42},{\v*0.17}) circle (1.7pt);
+  \foreach \v in {1,4,7,13}
+    {\draw[insagris] (-0.05,{\v*0.17}) -- (0.05,{\v*0.17});
+     \node[anchor=east, font=\scriptsize] at (-0.08,{\v*0.17}) {$\v$};}
+  \foreach \x in {0,4,8,12}
+    {\draw[insagris] ({\x*0.42},-0.05) -- ({\x*0.42},0.05);
+     \node[anchor=north, font=\scriptsize] at ({\x*0.42},-0.07) {$\x$};}
+  \draw[<->, insarouge] (0,2.45) -- (1.68,2.45) node[midway, above, font=\footnotesize] {période $r=4$};
+  \node[font=\footnotesize, anchor=south] at (3.2,3.15) {(a) $f(x)=7^x\bmod15$};
+  % flèche QFT
+  \draw[->, very thick, insarouge] (7.0,0.8) -- (8.1,0.8) node[midway, above, font=\footnotesize] {$\mathrm{QFT}_{16}$};
+  % (b) loi de y : P(y)=1/4 pour y = 0, 4, 8, 12
+  \draw[->, insagris] (8.5,0) -- (14.9,0) node[right] {$y$};
+  \draw[->, insagris] (8.6,-0.1) -- (8.6,2.6);
+  \node[font=\footnotesize, anchor=south] at (11.7,3.15) {(b) loi de la mesure $y$ : $P(y)$};
+  \foreach \y in {0,4,8,12}
+    {\fill[insarouge] ({8.6+\y*0.4-0.1},0) rectangle ({8.6+\y*0.4+0.1},1.5);
+     \node[anchor=north, font=\scriptsize] at ({8.6+\y*0.4},-0.07) {$\y$};}
+  \draw[dashed, insagris] (8.55,1.5) -- (14.2,1.5);
+  \node[anchor=east, font=\scriptsize] at (8.5,1.5) {$\frac14$};
+  \node[text=insagris, font=\footnotesize, align=center] at (11.7,2.35) {$y/16=\frac{j}{4}$, $j=0,1,2,3$};
+\end{tikzpicture}}
+\caption{Shor pour $N=15$, $a=7$, $t=4$. À gauche, la suite $7^x\bmod15$ a la période $4$. À droite,
+la mesure du registre de contrôle après la QFT ne donne que $y\in\{0,4,8,12\}$, avec la probabilité
+$\frac14$ chacun : la période $r=4$ se lit dans l'écart $M/r=4$ entre les pics.}
+\label{fig:shor-n15}
+\end{figure}
+
+\subsubsection{Ce que coûte l'algorithme}
+
+Notons $n=\lceil\log_2N\rceil$ le nombre de bits de $N$ ($n=2048$ pour un module RSA-2048). Le coût s'exprime en
+fonction de $n$, pas de $N$.
+\begin{align*}
+  \text{meilleur algorithme classique connu (crible algébrique, GNFS) :}&\quad
+    \exp\!\Big(O\big(n^{1/3}(\log n)^{2/3}\big)\Big),\\
+  \text{algorithme de Shor :}&\quad O(n^3)\ \text{portes élémentaires.}
+\end{align*}
+Le premier temps est sous-exponentiel en $n$ \parencite{lenstra1993}, mais supérieur à tout polynôme. Le second est un
+polynôme en $n$ avec la multiplication scolaire ($O(n^2\log n\log\log n)$ avec une multiplication rapide).
+
+\begin{remarque}[Où est le « log » ?]
+On résume parfois « de $O(N^p)$ à $O(\log N)$ ». La comparaison correcte est la suivante. La division
+d'essai coûte $O(\sqrt N)=O(2^{n/2})$ : exponentielle en $n$. Le crible algébrique est sous-exponentiel en $n$. Shor est
+polynomial en $\log N=n\ln2$, soit $O((\log N)^3)$ et non $O(\log N)$ : rien que pour lire $N$ et multiplier
+modulo $N$, il faut au moins $n$ opérations. Le « $\log$ » désigne donc la \emph{taille} du nombre.
+\end{remarque}
+
+Doubler la taille de la clé multiplie le coût de Shor par $8$, alors qu'il augmente de façon
+spectaculaire celui de l'attaque classique. Le tableau compare le coût $n^3$ de Shor à la sécurité
+classique que le NIST attribue aux modules RSA \parencite{nist80057}.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}rccc@{}}
+\toprule
+Module RSA $n$ (bits) & sécurité classique (NIST) & $n^3$ (portes, ordre de grandeur) & $\log_2(n^3)$\\
+\midrule
+$1024$ & $2^{80}$ & $1{,}1\times10^{9}$ & $30{,}0$\\
+$2048$ & $2^{112}$ & $8{,}6\times10^{9}$ & $33{,}0$\\
+$3072$ & $2^{128}$ & $2{,}9\times10^{10}$ & $34{,}8$\\
+$7680$ & $2^{192}$ & $4{,}5\times10^{11}$ & $38{,}7$\\
+$15360$ & $2^{256}$ & $3{,}6\times10^{12}$ & $41{,}7$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Passer de $2048$ à $3072$ bits fait gagner un facteur $2^{16}=65\,536$ sur l'attaque classique, mais le coût de
+Shor n'est multiplié que par $(3/2)^3\approx3{,}4$. Face à un ordinateur quantique, \emph{grossir
+les clés RSA ne protège pas} : il faut changer d'algorithme (section~\ref{sec:crypto}). Cela dit, le nombre de portes
+n'est pas le vrai coût : il faut des qubits \emph{corrigés d'erreurs}, et c'est là que se trouve le verrou technique
+(section~\ref{sec:machine}). Les estimations les plus citées sont les suivantes.
+\begin{itemize}[nosep]
+  \item \textbf{RSA-2048} : environ $3n+0{,}002\,n\log_2n\approx6\,189$ qubits logiques et
+        $0{,}3\,n^3+0{,}0005\,n^3\log_2n\approx2{,}6\times10^9$ portes de Toffoli ; avec des qubits physiques
+        d'erreur $10^{-3}$ et un cycle de code de surface de $1\,\mu$s, $20$ millions de qubits physiques pendant
+        $8$ heures \parencite{gidney2021}. Une optimisation de 2025 (arithmétique approchée, codes « yoked »,
+        « magic state cultivation ») descend à \emph{moins d'un million} de qubits physiques, pour moins d'une
+        semaine \parencite{gidney2025}.
+  \item \textbf{Courbes elliptiques (ECC-256)}, utilisées dans TLS : au plus $2\,330$ qubits logiques
+        \parencite{roetteler2017}. Avec des qubits de chat (section~\ref{sec:machine}), $126\,133$ qubits suffiraient
+        pour $9$ heures de calcul \parencite{gouzien2023}. Une \emph{prépublication} de 2026, fondée sur des
+        hypothèses optimistes pour les atomes neutres, évoque $10\,000$ à $26\,000$ atomes et quelques
+        jours \parencite{cain2026}.
+\end{itemize}
+Ce sont des estimations, pas des mesures : les démonstrations expérimentales de $15=3\times5$ ou
+$21=3\times7$ reposent sur des circuits simplifiés grâce à la connaissance préalable de la réponse
+\parencite{smolin2013}. À notre connaissance, aucune n'a factorisé par l'algorithme de Shor un nombre hors de portée d'un
+calcul à la main.
+
+% ---------------------------------------------------------------------
+\subsection{Cryptographie : RSA, TLS et « stocker maintenant, déchiffrer plus tard »}\label{sec:crypto}
+% ---------------------------------------------------------------------
+
+La sécurité des échanges sur Internet repose sur deux familles d'algorithmes. La cryptographie
+\emph{symétrique} (AES, ChaCha20) chiffre les données avec une clé secrète partagée. La cryptographie
+\emph{asymétrique} (RSA, Diffie--Hellman, courbes elliptiques) sert à \emph{établir} cette clé entre deux
+personnes qui ne se sont jamais rencontrées, et à \emph{authentifier} l'interlocuteur par une signature. Les
+algorithmes asymétriques s'appuient sur deux problèmes réputés difficiles : la factorisation d'un entier
+(RSA) et le logarithme discret (Diffie--Hellman, courbes elliptiques). Ce sont deux problèmes de
+\emph{période} dans un groupe : l'algorithme de Shor les résout tous les deux.
+
+\subsubsection{RSA et ce que Shor en fait}
+
+\begin{definition}{Chiffrement RSA}
+Alice choisit deux nombres premiers $p\neq q$, pose $n=pq$ et $\varphi(n)=(p-1)(q-1)$, choisit $e$ premier avec
+$\varphi(n)$ et calcule $d$ tel que $ed\equiv1\pmod{\varphi(n)}$. La \emph{clé publique} est $(n,e)$, la \emph{clé
+privée} $d$. Pour un message $m<n$ :
+\[
+  c=m^e\bmod n\quad(\text{chiffrement}),\qquad m=c^d\bmod n\quad(\text{déchiffrement}).
+\]
+Le déchiffrement fonctionne parce que $m^{ed}\equiv m\pmod n$ (théorème d'Euler) \parencite{rivest1978}.
+\end{definition}
+
+\paragraph{Exemple jouet.} $p=3$, $q=11$, $n=33$, $\varphi(n)=20$, $e=3$ (premier avec $20$) et $d=7$ (car
+$3\times7=21\equiv1\pmod{20}$). Pour $m=4$ : $c=4^3\bmod33=64-33=31$. Le déchiffrement donne
+$31^7\bmod33$ ; comme $31\equiv-2$, on a $(-2)^7=-128\equiv-128+132=4=m$ : on retrouve le message.
+
+\paragraph{Attaque.} L'attaquant connaît $(n,e)$. Il lui manque $\varphi(n)$ : le calculer équivaut à
+factoriser $n$. Avec $n=33=3\times11$, il obtient $\varphi=20$ puis $d=e^{-1}\bmod20=7$ par l'algorithme d'Euclide
+étendu (polynomial). Tout le secret de RSA est donc la difficulté de factoriser. Pour un module de $2048$ bits
+(617 chiffres décimaux), les meilleures factorisations classiques publiques (RSA-240, $795$ bits, en 2019
+\parencite{boudot2020}) sont loin du compte : on a vu à la section~\ref{sec:shor} que
+l'algorithme de Shor l'attaque en $O(n^3)$ portes. Le même algorithme, appliqué au groupe d'une courbe elliptique,
+résout le logarithme discret et casse Diffie--Hellman, ECDH et ECDSA.
+
+\subsubsection{Ce que cassent Shor et Grover}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{4.1cm}>{\raggedright\arraybackslash}p{2.9cm}>{\raggedright\arraybackslash}p{2.5cm}>{\raggedright\arraybackslash}p{5.2cm}@{}}
+\toprule
+\textbf{Primitive} & \textbf{Rôle} & \textbf{Attaque quantique} & \textbf{Conséquence}\\
+\midrule
+RSA, Diffie--Hellman, ECDH (X25519) & échange de clé, chiffrement & Shor & \textbf{cassés} (temps polynomial)\\
+RSA, ECDSA, EdDSA & signature, certificats & Shor & \textbf{cassés}\\
+AES, ChaCha20 & chiffrement symétrique & Grover & clé de $k$ bits : $2^{k/2}$ itérations ; AES-128 affaibli, \textbf{AES-256 sûr}\\
+SHA-2, SHA-3 & hachage & Grover (pré-image) & SHA-256 : $2^{128}$, \textbf{sûr}\\
+ML-KEM, ML-DSA, SLH-DSA & échange de clé, signature & aucune attaque efficace connue & normes NIST de 2024 (voir plus bas)\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Les trois premières lignes ne sont pas à égalité. Un algorithme asymétrique est \emph{détruit} par Shor : il faut
+le remplacer. Un algorithme symétrique n'est que \emph{ralenti} par Grover (racine carrée, section~\ref{sec:grover}) :
+il suffit de doubler la taille de la clé. « Aucune attaque connue » n'est pas une preuve de sécurité, d'où la prudence
+des agences décrite plus bas.
+
+\subsubsection{TLS 1.3 : où sont les points faibles ?}
+
+Le protocole TLS 1.3 (RFC~8446 \parencite{rfc8446}) protège HTTPS. Il combine les trois mécanismes : un
+\emph{échange de clés} éphémère (ECDHE, le plus souvent X25519 : chaque côté tire un secret $a$ ou $b$ et
+publie $g^a$ ou $g^b$, d'où le secret partagé $g^{ab}$), une \emph{authentification} du serveur par signature
+(certificat RSA ou ECDSA, vérifié par une chaîne d'autorités de certification, elle aussi faite de signatures),
+et un \emph{chiffrement symétrique} des données (AES-GCM ou ChaCha20-Poly1305) avec des clés dérivées de $g^{ab}$
+(figure~\ref{fig:tls}).
+
+\begin{figure}[!ht]
+\centering
+\adjustbox{max width=\linewidth}{%
+\begin{tikzpicture}[>=Stealth, font=\small,
+    tag/.style={rounded corners=2pt, font=\footnotesize, inner sep=3pt, anchor=west, text width=4.6cm, align=left}]
+  \node[draw=insarouge, fill=insarouge!8, thick, minimum width=20mm] (C) at (0,0) {Client};
+  \node[draw=insarouge, fill=insarouge!8, thick, minimum width=20mm] (S) at (6.2,0) {Serveur};
+  \draw[insagris, thick] (0,-0.4) -- (0,-6.2);
+  \draw[insagris, thick] (6.2,-0.4) -- (6.2,-6.2);
+  \draw[->, thick] (0,-1.0) -- (6.2,-1.0) node[midway, above, font=\footnotesize] {ClientHello + clé publique $g^a$};
+  \draw[<-, thick] (0,-1.9) -- (6.2,-1.9) node[midway, above, font=\footnotesize] {ServerHello + clé publique $g^b$};
+  \node[font=\footnotesize, text=insagris, anchor=east] at (-0.2,-2.35) {calcule $g^{ab}$, dérive les clés};
+  \node[font=\footnotesize, text=insagris, anchor=west] at (6.4,-2.35) {calcule $g^{ab}$};
+  \draw[<-, thick] (0,-3.2) -- (6.2,-3.2) node[midway, above, font=\footnotesize, align=center]
+       {\{Certificat, signature (CertificateVerify),\\ Finished\}};
+  \draw[->, thick] (0,-4.1) -- (6.2,-4.1) node[midway, above, font=\footnotesize] {\{Finished\}};
+  \draw[<->, very thick, insarouge] (0,-5.2) -- (6.2,-5.2) node[midway, above, font=\footnotesize] {données chiffrées (AES-GCM, ChaCha20)};
+  \node[tag, fill=insarouge!18] at (7.8,-1.45) {\textbf{Échange de clés} : cassé par Shor (logarithme discret)};
+  \node[tag, fill=insarouge!18] at (7.8,-3.2) {\textbf{Signature et certificats} : cassés par Shor (RSA, ECDSA)};
+  \node[tag, fill=insagris!20] at (7.8,-5.2) {\textbf{Chiffrement symétrique} : \mbox{Grover} seulement, AES-256 suffit};
+\end{tikzpicture}}
+\caption{Poignée de main TLS 1.3 simplifiée. Les accolades \{\,\} indiquent des messages déjà chiffrés avec les clés
+issues de $g^{ab}$. Deux des trois briques tombent face à Shor ; la troisième résiste.}
+\label{fig:tls}
+\end{figure}
+
+\begin{remarque}[La confidentialité persistante ne protège pas contre l'ordinateur quantique]
+Les secrets $a$ et $b$ sont détruits après la session : si la clé privée du serveur est volée plus tard, les sessions
+passées ne peuvent pas être déchiffrées (propriété dite de \emph{forward secrecy}). Mais les valeurs publiques
+$g^a$ et $g^b$ ont circulé en clair. Un adversaire qui les a enregistrées peut, avec l'algorithme de Shor (logarithme
+discret sur la courbe), retrouver $a$ puis $g^{ab}$, donc toutes les clés de la session. La forward secrecy protège
+contre le vol d'une \emph{clé}, pas contre l'effondrement de la difficulté du \emph{problème mathématique}.
+\end{remarque}
+
+\subsubsection{« Stocker maintenant, déchiffrer plus tard »}
+
+La menace n'attend pas l'existence de la machine. Un adversaire qui capte le trafic chiffré aujourd'hui (il lui
+suffit d'écouter une liaison, ce qui est discret et peu coûteux) peut le \emph{conserver} et attendre qu'un
+ordinateur quantique assez puissant existe pour le déchiffrer. C'est l'attaque \emph{Harvest Now, Decrypt Later}
+(HNDL, ou « stocker maintenant, déchiffrer plus tard »). Elle vise la \emph{confidentialité de long terme} :
+dossiers médicaux et génétiques, secrets industriels, secrets d'État, archives juridiques. Elle ne vise pas un
+jeton de session valable dix minutes. On ne sait pas qui enregistre quoi ; il faut supposer que cela se fait.
+
+\begin{resultat}{Inégalité de Mosca}
+Soit $X$ la durée pendant laquelle les données doivent rester secrètes, $Y$ le temps nécessaire pour migrer vers une
+cryptographie résistante, et $Z$ le délai avant qu'un ordinateur quantique capable de casser la cryptographie actuelle existe
+(tous en années \parencite{mosca2018}). Les données sont \emph{déjà exposées} si
+\[
+  X+Y>Z.
+\]
+\end{resultat}
+
+Les données chiffrées juste avant la fin de la migration (à la date $Y$) doivent encore être secrètes à la date $X+Y$ ;
+si $Z$ tombe avant, l'adversaire les lit. Exemple (figure~\ref{fig:mosca}) : des données médicales à protéger
+$X=20$ ans, une migration de $Y=7$ ans, et $Z=15$ ans : $X+Y=27>15$, avec douze années d'exposition. On ne connaît pas
+$Z$ (ce chapitre ne cherche pas à le prédire), mais on connaît $X$ et $Y$ : plus ils sont grands, plus il faut
+commencer tôt, et le coût d'une migration trop précoce est faible devant celui d'une divulgation irréversible.
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, font=\small, x=0.3cm]
+  \draw[->, insagris] (0,0) -- (31,0) node[right] {années};
+  \foreach \t in {0,5,...,30}
+    {\draw[insagris] (\t,0.08) -- (\t,-0.08);
+     \node[anchor=north, font=\scriptsize] at (\t,-0.1) {$\t$};}
+  \fill[insagris!35] (0,0.5) rectangle (7,1.1);
+  \fill[insarouge!18] (7,0.5) rectangle (27,1.1);
+  \fill[insarouge!60] (15,0.5) rectangle (27,1.1);
+  \node[font=\footnotesize] at (3.5,0.8) {$Y=7$};
+  \node[font=\footnotesize] at (11,0.8) {$X=20$};
+  \draw[insarouge, very thick] (15,0) -- (15,2.0);
+  \node[anchor=south, font=\footnotesize, text=insarouge] at (15,2.0) {$Z=15$ : ordinateur quantique opérationnel};
+  \node[anchor=west, font=\footnotesize, text=white] at (15.4,0.8) {exposé 12 ans};
+  \node[anchor=north west, font=\footnotesize, text=insagris] at (0,-0.65)
+    {$Y$ : migration (la cryptographie vulnérable est encore utilisée)};
+  \node[anchor=north west, font=\footnotesize, text=insagris] at (0,-1.15)
+    {$X$ : durée de confidentialité exigée pour les données chiffrées à la fin de la migration};
+\end{tikzpicture}
+\caption{Inégalité de Mosca pour $X=20$, $Y=7$, $Z=15$ ans. La zone rouge foncé est la période où des données
+interceptées sont lisibles par l'adversaire alors qu'elles devraient rester secrètes.}
+\label{fig:mosca}
+\end{figure}
+
+\begin{remarque}[Signatures : un risque différent]
+L'attaque HNDL ne concerne que la confidentialité. Une signature ne sert qu'au moment où on la vérifie : falsifier en 2035 un
+certificat TLS expiré ne change rien à une session de 2026. Les signatures à longue durée de vie (micrologiciels,
+racines de confiance, documents juridiques) devront néanmoins migrer, mais plus tard : c'est l'échange de clés qui est
+urgent.
+\end{remarque}
+
+\subsubsection{Première réponse : la cryptographie post-quantique}
+
+La \emph{cryptographie post-quantique} (PQC) regroupe des algorithmes qui s'exécutent sur des ordinateurs
+\emph{classiques} mais reposent sur des problèmes contre lesquels on ne connaît aucune attaque quantique efficace :
+réseaux euclidiens (problème \emph{Learning With Errors}), fonctions de hachage, codes correcteurs d'erreurs. Le NIST a
+publié le 13 août 2024 trois normes \parencite{fips203,fips204,fips205}, puis sélectionné un quatrième algorithme en 2025 \parencite{nist2025hqc}.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Norme} & \textbf{Nom} & \textbf{Usage} & \textbf{Problème sous-jacent}\\
+\midrule
+FIPS 203 & ML-KEM (ex-Kyber) & échange de clé & réseaux (module-LWE)\\
+FIPS 204 & ML-DSA (ex-Dilithium) & signature & réseaux\\
+FIPS 205 & SLH-DSA (ex-SPHINCS+) & signature & fonctions de hachage\\
+(à venir) & HQC & échange de clé (second choix) & codes correcteurs\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Hybridation.} Dans TLS 1.3, la solution déployée est \emph{hybride} : le client envoie à la fois une clé
+publique X25519 et une clé publique ML-KEM-768, et les deux secrets sont concaténés dans la dérivation des clés. L'adversaire
+doit casser \emph{les deux} : X25519 (que Shor casse, mais que l'on connaît bien) et ML-KEM (que Shor ne casse pas, mais
+que l'on connaît depuis moins longtemps). Le groupe \texttt{X25519MLKEM768} est normalisé par la RFC~10024 d'août 2026
+\parencite{rfc10024}, et il est activé par défaut dans les navigateurs depuis fin 2024 (Chrome 131, Firefox 132). Le
+prix est la taille : $32$ octets pour une clé X25519, mais $1\,184$ octets de clé publique et $1\,088$ octets de
+chiffré pour ML-KEM-768.
+
+\paragraph{Pourquoi pas ML-KEM seul ?} Les algorithmes post-quantiques sont plus jeunes et moins étudiés. En 2022, le
+candidat SIKE, arrivé au quatrième tour du NIST, a été cassé par une \emph{attaque classique} : une dizaine de minutes sur un seul
+cœur d'ordinateur suffisent pour son plus petit jeu de paramètres \parencite{castryck2023}. L'ANSSI recommande donc de \emph{combiner} cryptographie classique et
+post-quantique pendant la transition \parencite{anssi2024}.
+
+\paragraph{Calendrier.} Le projet de document NIST~IR~8547 (version initiale publique de novembre 2024, qui peut
+avoir évolué) prévoit de déprécier RSA-2048 et les algorithmes de sécurité équivalente après 2030, et d'interdire tous les
+algorithmes vulnérables après 2035 \parencite{nistir8547}. La migration est longue : il faut inventorier où la cryptographie est
+utilisée (logiciels, matériel, certificats, protocoles), puis la remplacer. L'« agilité cryptographique », c'est-à-dire
+la capacité de changer d'algorithme sans refondre un système, est la qualité qui coûtera le moins cher.
+
+\subsubsection{Seconde réponse : la distribution quantique de clé}
+
+La \emph{distribution quantique de clé} (QKD) ne cherche pas un problème difficile : elle utilise la physique. Dans le
+protocole BB84 \parencite{bennett1984}, Alice envoie à Bob des qubits dont l'état est choisi au hasard parmi quatre :
+$\ket0,\ket1$ (base $Z$) ou $\ket+,\ket-$ (base $X$). Bob mesure chaque qubit dans une base $Z$ ou $X$ choisie au hasard.
+Ensuite, Alice et Bob annoncent \emph{publiquement leurs bases} (pas les bits) et gardent les positions où les bases
+coïncident : si la base est la bonne, Bob lit exactement le bit d'Alice ; sinon son résultat est aléatoire. Exemple, sans espion :
+
+\begin{center}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}l*{8}{c}@{}}
+\toprule
+position & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8\\
+\midrule
+bit d'Alice & 0 & 1 & 1 & 0 & 1 & 0 & 0 & 1\\
+base d'Alice & $Z$ & $X$ & $X$ & $Z$ & $X$ & $Z$ & $X$ & $Z$\\
+base de Bob & $Z$ & $Z$ & $X$ & $X$ & $X$ & $Z$ & $Z$ & $Z$\\
+\midrule
+bases identiques ? & oui & non & oui & non & oui & oui & non & oui\\
+clé tamisée & 0 & & 1 & & 1 & 0 & & 1\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+La clé tamisée est $01101$ : en moyenne la moitié des qubits est conservée. Pour détecter un espion Ève, Alice et Bob
+comparent publiquement un échantillon de la clé tamisée. Une attaque « intercepter puis renvoyer » est détectée parce que
+\emph{mesurer perturbe} (postulat de la mesure) et que l'on ne peut pas copier un état inconnu pour mesurer la copie
+(théorème de non-clonage, section~\ref{sec:teleportation}). Ève choisit la mauvaise base une fois sur deux ; dans ce cas
+le qubit renvoyé est dans la mauvaise base, et Bob, s'il a la bonne base, se trompe une fois sur deux. Le taux d'erreur de la clé tamisée
+(\emph{QBER}) vaut donc
+\[
+  \mathrm{QBER}=\underbrace{\tfrac12}_{\text{Ève se trompe de base}}\times\underbrace{\tfrac12}_{\text{Bob se trompe}}=\tfrac14=25\,\%.
+\]
+En pratique, quelques pour cent d'erreurs viennent du bruit ; au-delà d'un seuil de l'ordre de $11\,\%$, on abandonne la clé. La
+variante E91 \parencite{ekert1991} remplace l'envoi de qubits par des paires intriquées et teste l'absence d'espion par la violation
+de l'inégalité CHSH (section~\ref{sec:chsh}).
+
+\begin{remarque}[Pourquoi les agences recommandent la PQC plutôt que la QKD]
+En janvier 2024, l'ANSSI, le BSI allemand et leurs homologues néerlandais et suédois ont publié une position commune
+\parencite{anssi2024qkd} : la QKD n'est pas assez mûre pour la sécurité, ne convient qu'à des cas d'usage restreints, et la priorité est donnée à
+une technologie « beaucoup plus compatible avec les systèmes cryptographiques existants ». Elle demande des liaisons optiques
+dédiées de portée limitée, des nœuds de confiance, une authentification classique des messages publics (qui nécessite
+elle-même de la cryptographie), et ses implémentations ont des failles de matériel. La QKD protège donc un lien, la PQC un
+protocole entier.
+\end{remarque}
+
+% ---------------------------------------------------------------------
+\subsection{Construire un ordinateur quantique}\label{sec:machine}
+% ---------------------------------------------------------------------
+
+Les sections précédentes supposent des qubits parfaits. Les qubits réels sont bruités, et c'est le bruit, bien plus que le
+nombre de portes, qui sépare les machines actuelles des estimations de la section~\ref{sec:shor}. Cette section
+explique ce qu'il faut pour fabriquer un qubit, pourquoi certains tournent dans un réfrigérateur à
+$10\ \mathrm{mK}$, comment on corrige les erreurs, et ce que proposent les qubits de chat d'Alice \& Bob.
+
+\subsubsection{Que faut-il ? Les critères de DiVincenzo}
+
+\textcite{divincenzo2000} a résumé les conditions nécessaires au calcul quantique :
+\begin{enumerate}[nosep]
+  \item des qubits bien définis, en nombre extensible ;
+  \item une initialisation fiable dans l'état $\ket{0\ldots0}$ ;
+  \item une cohérence longue devant la durée d'une porte ;
+  \item un jeu universel de portes : portes à un qubit et au moins une porte à deux qubits comme le CNOT (chapitre~\ref{chap:portes}) ;
+  \item une mesure individuelle des qubits.
+\end{enumerate}
+S'y ajoutent, pour les réseaux, deux critères de communication. Le critère~3 (cohérence) est le plus difficile à tenir quand le nombre de qubits augmente.
+
+\subsubsection{La décohérence}
+
+Un qubit n'est jamais seul. Supposons un qubit $S$ dans l'état $\frac{1}{\sqrt2}(\ket0+\ket1)$ qui interagit
+avec son environnement $E$ de façon que celui-ci « enregistre » l'état de $S$ : $\ket0\ket{E_0}$ et $\ket1\ket{E_1}$.
+L'état global est $\frac{1}{\sqrt2}(\ket0\ket{E_0}+\ket1\ket{E_1})$, intriqué. L'environnement n'est pas observé : l'état de $S$ seul
+est obtenu par trace partielle (section~\ref{sec:trace}),
+\[
+  \rho_S=\frac12\begin{pmatrix}1&\braket{E_1}{E_0}\\\braket{E_0}{E_1}&1\end{pmatrix}.
+\]
+Si les deux états de l'environnement sont orthogonaux, $\rho_S=\frac12 I$ : l'état est maximalement mixte
+(section~\ref{sec:pur-mixte}) et la superposition est perdue. En pratique le recouvrement décroît
+comme $\braket{E_1}{E_0}=\ee^{-t/T_2}$, d'où, pour la pureté,
+\[
+  \operatorname{Tr}\rho_S^2=\frac{1+\ee^{-2t/T_2}}{2}\ \xrightarrow[t\to\infty]{}\ \frac12 .
+\]
+(à $t=T_2$, elle vaut $0{,}57$). Les termes diagonaux, eux, évoluent avec le temps de relaxation $T_1$ (perte d'énergie : $\ket1\to\ket0$). Le rapport
+entre $T_2$ et la durée $t_{\mathrm{porte}}$ d'une porte fixe le nombre d'opérations avant que l'information soit perdue. Avec
+$T_2=100\ \mu\mathrm{s}$ et des portes de $50\ \mathrm{ns}$, il vaut $2\,000$ : l'erreur par porte est de l'ordre de
+$t_{\mathrm{porte}}/T_2=5\times10^{-4}$. Calculer sur des milliards de portes sans corriger les erreurs est
+donc impossible.
+
+\subsubsection{Les plateformes}
+
+Plusieurs systèmes physiques servent de qubits. Chacun a ses forces et ses faiblesses ; les valeurs du tableau sont des ordres de
+grandeur tirés de la littérature récente et évoluent vite.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{2.7cm}>{\raggedright\arraybackslash}p{2.2cm}>{\raggedright\arraybackslash}p{1.9cm}>{\raggedright\arraybackslash}p{1.9cm}>{\raggedright\arraybackslash}p{5.5cm}@{}}
+\toprule
+\textbf{Plateforme} & \textbf{Température} & \textbf{Porte à 2 qubits} & \textbf{Cohérence} & \textbf{Atouts / difficultés}\\
+\midrule
+Circuits supra\-conducteurs \parencite{kjaergaard2020} & $10$--$20\ \mathrm{mK}$ & $20$--$100\ \mathrm{ns}$ & $\sim0{,}1\ \mathrm{ms}$ & portes rapides, fabrication par lithographie ; cryogénie, câblage, voisinage limité\\
+Ions piégés \parencite{bruzewicz2019} & ambiante (vide poussé) & $10\ \mu\mathrm{s}$--$1\ \mathrm{ms}$ & secondes à minutes & meilleures fidélités ($\geq99{,}9\,\%$), connexion totale ; portes lentes, passage à grande échelle\\
+Atomes neutres \parencite{saffman2016} & ambiante (vide poussé) & $0{,}1$--$1\ \mu\mathrm{s}$ & $\sim1\ \mathrm{s}$ & réseaux de milliers d'atomes reconfigurables ; erreurs de porte plus élevées\\
+Photons \parencite{kok2007} & ambiante (détecteurs $\sim2\ \mathrm{K}$) & $\mathrm{ns}$ & pas de décohérence en vol & communication ; pertes, portes à deux photons probabilistes\\
+Spins dans le silicium \parencite{burkard2023} & $0{,}1$--$1\ \mathrm{K}$ & $10$--$100\ \mathrm{ns}$ & $\sim\mathrm{ms}$ & compatible avec la microélectronique ; peu de qubits à ce jour\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Aucune plateforme ne domine. Les machines actuelles comptent de quelques dizaines à quelques milliers de qubits physiques
+\emph{bruités}, sans correction d'erreurs : \textcite{preskill2018} les a appelées « NISQ » (\emph{noisy intermediate-scale quantum}). Elles ne suffisent pas pour Shor.
+
+\subsubsection{Le cryostat : pourquoi $10\ \mathrm{mK}$ ?}
+
+Un transmon (qubit supraconducteur) a une fréquence de transition $f\approx5\ \mathrm{GHz}$ : une micro-onde. À l'équilibre thermique
+à la température $T$, la loi de Boltzmann donne $p_1/p_0=\ee^{-hf/k_BT}$ avec $p_0+p_1=1$, d'où
+\[
+  p_1=\frac{1}{1+\ee^{\,hf/k_BT}},\qquad
+  \frac{hf}{k_B}=\frac{6{,}626\times10^{-34}\times5\times10^{9}}{1{,}381\times10^{-23}}\approx0{,}24\ \mathrm{K}.
+\]
+Le qubit n'est « dans l'état $\ket0$ » que si $T\ll0{,}24\ \mathrm{K}$. Sinon il est dans un mélange statistique de
+$\ket0$ et $\ket1$, de matrice densité $\operatorname{diag}(1-p_1,p_1)$ (section~\ref{sec:rho}) :
+
+\begin{center}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}rccc@{}}
+\toprule
+Température $T$ & $hf/k_BT$ & population $p_1$ de $\ket1$ & pureté $\operatorname{Tr}\rho^2$\\
+\midrule
+$300\ \mathrm{K}$ (ambiante) & $0{,}0008$ & $0{,}4998$ & $0{,}500$\\
+$4\ \mathrm{K}$ (hélium liquide) & $0{,}060$ & $0{,}485$ & $0{,}500$\\
+$1\ \mathrm{K}$ & $0{,}24$ & $0{,}44$ & $0{,}507$\\
+$100\ \mathrm{mK}$ & $2{,}4$ & $0{,}083$ & $0{,}85$\\
+$20\ \mathrm{mK}$ & $12$ & $6{,}2\times10^{-6}$ & $0{,}99999$\\
+$10\ \mathrm{mK}$ & $24$ & $3{,}8\times10^{-11}$ & $1{,}000$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+À température ambiante, $p_1\approx\frac12$ : l'état est maximalement mixte (pureté minimale d'un qubit,
+$\operatorname{Tr}\rho^2=\frac12$, section~\ref{sec:pur-mixte}) et le qubit ne porte aucune information. Il faut descendre vers $20\ \mathrm{mK}$ pour que
+l'état initial soit pur à mieux que $10^{-5}$ près. S'y ajoute une seconde raison : les jonctions Josephson sont en aluminium, supraconducteur
+seulement sous $\approx1{,}2\ \mathrm{K}$, et les photons thermiques des lignes de commande doivent être éteints. Les autres
+plateformes évitent ce problème autrement : ions et atomes sont préparés dans $\ket0$ par pompage optique (un laser les force dans l'état voulu)
+et refroidis par laser ; les photons ont des fréquences optiques ($\sim10^{14}\ \mathrm{Hz}$, soit $hf/k_B\approx5\times10^3\ \mathrm{K}$),
+sans aucune excitation thermique.
+
+\paragraph{Le réfrigérateur à dilution.} On atteint $10\ \mathrm{mK}$ avec un mélange d'isotopes d'hélium, $^3$He et $^4$He. Sous
+$0{,}87\ \mathrm{K}$, le mélange se sépare en deux phases, l'une riche en $^3$He, l'autre diluée. Faire passer des atomes de $^3$He de
+la phase riche à la phase diluée \emph{absorbe de la chaleur}, comme une évaporation : c'est le principe de la dilution. Un
+refroidisseur à tube pulsé fournit le froid initial (étages à $50\ \mathrm{K}$ puis $4\ \mathrm{K}$), et le circuit de dilution
+descend en étages jusqu'à la \emph{chambre de mélange} (figure~\ref{fig:cryostat}). Le prix est la \emph{puissance
+froide} : de l'ordre de $10\ \mu\mathrm{W}$ à $20\ \mathrm{mK}$ pour un appareil commercial, ce qui limite la chaleur que les lignes et
+l'électronique peuvent apporter à cet étage.
+
+\begin{figure}[!ht]
+\centering
+\adjustbox{max width=\linewidth}{%
+\begin{tikzpicture}[>=Stealth, font=\small,
+    plaque/.style={fill=insagris!35, draw=insagris, thick, minimum height=3.5mm, inner sep=0pt},
+    legende/.style={font=\footnotesize, anchor=west, text width=7.2cm, align=left}]
+  % plaques : (hauteur, largeur, température)
+  \node[plaque, minimum width=6.4cm] (p0) at (0,0)    {};
+  \node[plaque, minimum width=5.6cm] (p1) at (0,-1.3) {};
+  \node[plaque, minimum width=4.8cm] (p2) at (0,-2.6) {};
+  \node[plaque, minimum width=4.0cm] (p3) at (0,-3.9) {};
+  \node[plaque, minimum width=3.2cm] (p4) at (0,-5.2) {};
+  \node[plaque, minimum width=2.4cm, fill=insarouge!30, draw=insarouge] (p5) at (0,-6.5) {};
+  \foreach \a/\b in {0/-1.3, -1.3/-2.6, -2.6/-3.9, -3.9/-5.2, -5.2/-6.5}
+    {\draw[insagris, thick] (-0.9,\a-0.175) -- (-0.9,\b+0.175);
+     \draw[insagris, thick] (0.9,\a-0.175) -- (0.9,\b+0.175);}
+  % puce
+  \node[draw=insarouge, fill=insarouge!15, thick, minimum width=14mm, minimum height=5mm] (puce) at (0,-7.15) {\footnotesize puce};
+  \draw[insarouge, thick] (0,-6.675) -- (0,-6.9);
+  % ligne de commande (coaxial) avec atténuateurs
+  \draw[insarouge, thick] (0.3,0.35) -- (0.3,-6.9);
+  \foreach \y/\att in {-2.6/{$-20$ dB}, -5.2/{$-20$ dB}, -6.5/{$-20$ dB}}
+    {\node[draw=insarouge, fill=white, inner sep=1.8pt] at (0.3,\y) {};
+     \node[font=\scriptsize, text=insarouge, anchor=west, fill=white, inner sep=1pt] at (1.3,\y) {\att};}
+  % températures (gauche)
+  \foreach \y/\T in {0/{$300\ \mathrm{K}$}, -1.3/{$50\ \mathrm{K}$}, -2.6/{$4\ \mathrm{K}$}, -3.9/{$\approx1\ \mathrm{K}$}, -5.2/{$\approx100\ \mathrm{mK}$}, -6.5/{$\approx10\ \mathrm{mK}$}}
+    \node[anchor=east, font=\footnotesize\bfseries] at (-3.4,\y) {\T};
+  % légendes (droite)
+  \node[legende] at (3.7,0)    {électronique de commande et de lecture, ambiante};
+  \node[legende] at (3.7,-1.3) {1\up{er} étage du tube pulsé, ancrage thermique des câbles};
+  \node[legende] at (3.7,-2.6) {2\up{e} étage du tube pulsé ; amplificateur HEMT (lecture)};
+  \node[legende] at (3.7,-3.9) {« still » du circuit de dilution};
+  \node[legende] at (3.7,-5.2) {plaque froide : filtres et atténuateurs};
+  \node[legende] at (3.7,-6.5) {chambre de mélange : qubits, amplificateur paramétrique};
+\end{tikzpicture}}
+\caption{Réfrigérateur à dilution en coupe schématique (« lustre »). Les plaques sont de plus en plus froides vers le
+bas ; les atténuateurs placés sur la ligne de commande (valeurs typiques) ramènent le bruit thermique de $300\ \mathrm{K}$ à
+celui de l'étage où ils sont fixés.}
+\label{fig:cryostat}
+\end{figure}
+
+\paragraph{Le goulot d'étranglement : le câblage.} Chaque qubit demande plusieurs lignes coaxiales (commande, lecture),
+qui apportent de la chaleur depuis les étages chauds et du bruit thermique. Des atténuateurs ancrés à chaque étage
+ramènent ce bruit : $T_{\mathrm{eff}}\approx T_{\text{étage}}+T_{\text{chaud}}\,10^{-A/10}$, donc $60\ \mathrm{dB}$ au total limitent à
+$300\ \mathrm{K}\times10^{-6}=0{,}3\ \mathrm{mK}$ la contribution du bruit de l'étage ambiant \parencite{krinner2019}. Mais des machines de millions de
+qubits physiques ne tiennent pas dans un cryostat avec un coaxial par qubit : les pistes de recherche sont le multiplexage des lignes,
+l'électronique de commande placée à $4\ \mathrm{K}$ et le raccordement de plusieurs cryostats entre eux.
+
+\subsubsection{Corriger les erreurs : du code à répétition au code de surface}
+
+Classiquement, on se protège du bruit en copiant chaque bit trois fois et en prenant le vote majoritaire. Le théorème de
+non-clonage interdit de copier $\alpha\ket0+\beta\ket1$, et la mesure détruirait la superposition. On \emph{intrique} plutôt
+le qubit avec deux autres.
+
+\begin{definition}{Code à répétition à trois qubits}
+Le qubit logique $\alpha\ket0+\beta\ket1$ est encodé par deux CNOT dont le contrôle est $q_1$ (et les cibles $q_2$, $q_3$) :
+\[
+  (\alpha\ket0+\beta\ket1)\ket{00}\ \longmapsto\ \alpha\ket{000}+\beta\ket{111}.
+\]
+Ce n'est pas $\ket\psi^{\otimes3}$ : l'état est intriqué. Dans cette section, les kets s'écrivent $\ket{q_1q_2q_3}$ et les
+fils sont étiquetés : la convention « fil du haut = dernier chiffre » ne s'applique pas. Une erreur $X_k$ (inversion de bit sur $q_k$) est détectée en mesurant les
+\emph{parités} $Z_1Z_2$ et $Z_2Z_3$, de valeurs propres $\pm1$.
+\end{definition}
+
+Sur $\alpha\ket{000}+\beta\ket{111}$ les deux parités valent $+1$. Une inversion fait changer le signe des parités qui contiennent le qubit touché :
+
+\begin{center}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+erreur & état obtenu & $(Z_1Z_2,\ Z_2Z_3)$ & correction\\
+\midrule
+aucune & $\alpha\ket{000}+\beta\ket{111}$ & $(+1,+1)$ & aucune\\
+$X_1$ & $\alpha\ket{100}+\beta\ket{011}$ & $(-1,+1)$ & $X_1$\\
+$X_2$ & $\alpha\ket{010}+\beta\ket{101}$ & $(-1,-1)$ & $X_2$\\
+$X_3$ & $\alpha\ket{001}+\beta\ket{110}$ & $(+1,-1)$ & $X_3$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Les deux parités sont identiques pour $\ket{000}$ et $\ket{111}$ : leur mesure localise l'erreur \emph{sans rien apprendre sur
+$\alpha$ et $\beta$}, donc sans détruire la superposition. On mesure les parités avec deux qubits
+auxiliaires (\emph{ancillas}) $a_1$ et $a_2$ : le CNOT inscrit dans l'ancilla le ou-exclusif des deux qubits qu'il contrôle
+(figure~\ref{fig:code3}).
+
+\begin{figure}[!ht]
+\centering
+\adjustbox{max width=\linewidth}{%
+\begin{tikzpicture}[>=Stealth, font=\small]
+  \foreach \y in {3.6, 2.4, 1.2} \draw (0,\y) -- (11.3,\y);
+  \foreach \y in {0, -1.2} \draw (0,\y) -- (8.7,\y);
+  \node[anchor=east] at (0,3.6) {$q_1:\ \alpha\ket0+\beta\ket1$};
+  \node[anchor=east] at (0,2.4) {$q_2:\ \ket0$};
+  \node[anchor=east] at (0,1.2) {$q_3:\ \ket0$};
+  \node[anchor=east] at (0,0) {$a_1:\ \ket0$};
+  \node[anchor=east] at (0,-1.2) {$a_2:\ \ket0$};
+  % encodage : CNOT q1 -> q2, q1 -> q3
+  \draw[insarouge, thick] (1.1,3.6) -- (1.1,2.4);
+  \pic at (1.1,3.6) {ctl}; \pic at (1.1,2.4) {cible};
+  \draw[insarouge, thick] (2.0,3.6) -- (2.0,1.2);
+  \pic at (2.0,3.6) {ctl}; \pic at (2.0,1.2) {cible};
+  % erreur éventuelle
+  \node[draw=insagris, dashed, minimum width=9mm, minimum height=9mm] at (3.3,2.4) {$X$};
+  \node[font=\footnotesize, text=insagris, anchor=south] at (3.3,3.0) {erreur ?};
+  % syndrome : a1 <- q1 xor q2 ; a2 <- q2 xor q3
+  \draw[insarouge, thick] (4.5,3.6) -- (4.5,0);  \pic at (4.5,3.6) {ctl}; \pic at (4.5,0) {cible};
+  \draw[insarouge, thick] (5.4,2.4) -- (5.4,0);  \pic at (5.4,2.4) {ctl}; \pic at (5.4,0) {cible};
+  \draw[insarouge, thick] (6.3,2.4) -- (6.3,-1.2); \pic at (6.3,2.4) {ctl}; \pic at (6.3,-1.2) {cible};
+  \draw[insarouge, thick] (7.2,1.2) -- (7.2,-1.2); \pic at (7.2,1.2) {ctl}; \pic at (7.2,-1.2) {cible};
+  \pic at (8.4,0) {mesure};   \pic at (8.4,-1.2) {mesure};
+  \node[anchor=west, font=\footnotesize] at (9.0,-0.6) {syndrome $(s_1,s_2)$};
+  \node[porte] at (10.0,3.6) {$X^{?}$}; \node[porte] at (10.0,2.4) {$X^{?}$}; \node[porte] at (10.0,1.2) {$X^{?}$};
+  \draw[dashed, insagris] (8.4,0.25) -- (8.4,0.5) -- (10.0,0.5) -- (10.0,0.85);
+  \foreach \x/\t in {2.65/{encodage}, 6.0/{extraction du syndrome}}
+    \node[font=\footnotesize, text=insagris] at (\x,-2.1) {\t};
+\end{tikzpicture}}
+\caption{Code à répétition à trois qubits : encodage, erreur éventuelle (ici sur $q_2$), extraction du syndrome
+$(s_1,s_2)=(q_1\oplus q_2,\,q_2\oplus q_3)$ dans les ancillas, puis correction par une porte $X$ sur le qubit désigné
+par le syndrome. Les kets s'écrivent $\ket{q_1q_2q_3}$.}
+\label{fig:code3}
+\end{figure}
+
+\paragraph{Gain.} La correction échoue si au moins deux qubits sont inversés. Avec une probabilité $p$ d'inversion par
+qubit, la probabilité d'échec est $3p^2(1-p)+p^3=3p^2-2p^3$, inférieure à $p$ si et seulement si $(2p-1)(p-1)>0$,
+c'est-à-dire $p<\frac12$. Le code est utile \emph{si le bruit est assez faible}. C'est le principe d'un
+\emph{seuil}.
+
+\paragraph{Erreurs de phase.} Une erreur $Z_1$ sur $\alpha\ket{000}+\beta\ket{111}$ donne $\alpha\ket{000}-\beta\ket{111}$ : un état
+logique différent, que ce code ne voit pas. On se protège en travaillant dans la base $X$ : $H^{\otimes3}(\alpha\ket{000}+\beta\ket{111})
+=\alpha\ket{+++}+\beta\ket{---}$, où une erreur $Z$ (qui échange $\ket+$ et $\ket-$) joue le rôle d'une inversion de
+bit. \textcite{shor1995} a montré que l'on peut \emph{concaténer} les deux codes (neuf qubits) pour corriger n'importe quelle erreur sur un
+qubit : toute erreur est une combinaison de $I,X,Y,Z$ et la mesure du syndrome l'y projette.
+
+\paragraph{Code de surface.} Les qubits sont disposés sur un réseau plan de $d\times d$ qubits de donnée, entourés de qubits
+de mesure ; les syndromes de type $X$ et de type $Z$ sont mesurés à chaque cycle. La \emph{distance} $d$ est le nombre minimal
+d'erreurs qui changent l'état logique : le code corrige jusqu'à $\lfloor(d-1)/2\rfloor$ erreurs, et il faut
+$2d^2-1$ qubits physiques par qubit logique. Si le taux d'erreur physique est sous le seuil ($\approx1\,\%$), l'erreur
+logique \emph{décroît exponentiellement avec $d$} : à chaque passage de $d$ à $d+2$, elle est divisée par un
+facteur $\Lambda>1$. Google a observé ce comportement sur des codes de distance 3, 5 puis 7, avec
+$\Lambda=2{,}14\pm0{,}02$ et une erreur logique de $0{,}143\,\%$ par cycle à $d=7$ (101 qubits physiques)
+\parencite{acharya2025}. En prolongeant avec ce même $\Lambda$, atteindre une erreur logique de $10^{-12}$ par cycle demande
+$\Lambda^{k}\geq1{,}43\times10^{-3}/10^{-12}$, soit $k\geq\ln(1{,}43\times10^{9})/\ln(2{,}14)\approx27{,}7$, donc
+$k=28$ et $d=7+2\times28=63$ : près de $8\,000$ qubits physiques par qubit logique. C'est une extrapolation (l'erreur n'est pas
+exactement exponentielle), mais elle explique les millions de qubits de la section~\ref{sec:shor} : le surcoût de la
+correction d'erreurs domine tout, et un meilleur $\Lambda$ (des qubits physiques moins bruités) le réduit fortement.
+
+\subsubsection{Les qubits de chat d'Alice \& Bob}
+
+Le code de surface doit corriger \emph{deux} types d'erreurs ($X$ et $Z$) sur un réseau plan, d'où un surcoût en $d^2$. L'idée des
+\emph{qubits de chat} \parencite{mirrahimi2014} est de concevoir un qubit dont une des deux erreurs est déjà supprimée par la physique. Il ne reste
+alors qu'un type d'erreur à corriger : un code \emph{unidimensionnel} (la répétition de la section précédente), de $2d-1$ qubits
+au lieu de $2d^2-1$, suffit.
+
+\paragraph{Un qubit dans un oscillateur.} On utilise un mode d'un résonateur micro-onde, oscillateur harmonique d'états de
+Fock $\ket n$ ($n$ photons). Un \emph{état cohérent} $\ket\alpha=\ee^{-|\alpha|^2/2}\sum_n\frac{\alpha^n}{\sqrt{n!}}\ket n$ est vecteur propre de l'opérateur
+d'annihilation : $a\ket\alpha=\alpha\ket\alpha$, avec $|\alpha|^2$ photons en moyenne. Pour $\alpha$ réel, on pose
+\[
+  \ket{0_L}\approx\ket{\alpha},\qquad\ket{1_L}\approx\ket{-\alpha},\qquad
+  \braket{\alpha}{-\alpha}=\ee^{-|\alpha|^2-|\alpha|^2}=\ee^{-2|\alpha|^2}.
+\]
+Le recouvrement est $1{,}8\times10^{-2}$ pour $|\alpha|^2=2$, $3{,}4\times10^{-4}$ pour $|\alpha|^2=4$ et $1{,}1\times10^{-7}$ pour
+$|\alpha|^2=8$ : les deux états sont presque orthogonaux dès que $|\alpha|^2\gtrsim4$. Les états de la base $X$ sont les
+\emph{états de chat} de Schrödinger
+\[
+  \ket{C_\pm}=N_\pm\big(\ket\alpha\pm\ket{-\alpha}\big),\qquad N_\pm=\frac{1}{\sqrt{2\,(1\pm\ee^{-2|\alpha|^2})}},\qquad
+  \ket{\pm_L}\approx\ket{C_\pm}.
+\]
+$\ket{C_+}$ ne contient que des nombres \emph{pairs} de photons et $\ket{C_-}$ que des nombres \emph{impairs} (les termes en
+$\alpha^n$ et $(-\alpha)^n$ s'annulent ou s'ajoutent selon la parité de $n$).
+
+\paragraph{Une perte de photon est une erreur de phase.} Le bruit principal d'un résonateur est la perte d'un photon, décrite par $a$.
+Comme $a\ket{\pm\alpha}=\pm\alpha\ket{\pm\alpha}$,
+\[
+  a\ket{C_\pm}=\alpha N_\pm\big(\ket\alpha\mp\ket{-\alpha}\big)=\alpha\,\frac{N_\pm}{N_\mp}\,\ket{C_\mp}.
+\]
+Après normalisation, $\ket{C_+}\leftrightarrow\ket{C_-}$ : c'est $\ket{+_L}\leftrightarrow\ket{-_L}$, une \emph{inversion de phase} $Z$. Sur
+$\ket{\pm\alpha}$, $a$ ne change rien (un simple facteur), donc la perte de photon ne provoque aucune inversion de bit. Elle survient au taux
+$\kappa_1\langle n\rangle=\kappa_1|\alpha|^2$ : le taux d'inversion de phase \emph{croît linéairement} avec $|\alpha|^2$.
+
+\paragraph{Supprimer les inversions de bit.} On ajoute une dissipation \emph{à deux photons} : le circuit éjecte des paires de photons
+(taux $\kappa_2$) et en réinjecte par paires (pompe d'amplitude $\epsilon_2$). Cela équivaut à un saut d'opérateur
+$\sqrt{\kappa_2}\,(a^2-\alpha^2)$ avec $|\alpha|^2$ fixé par le rapport pompe/perte. Or $(a^2-\alpha^2)\ket{\pm\alpha}=0$ car
+$a^2\ket{\pm\alpha}=\alpha^2\ket{\pm\alpha}$ : l'espace $\mathrm{Vect}(\ket\alpha,\ket{-\alpha})$ est exactement le noyau de la dissipation. Elle ramène
+tout état de l'oscillateur vers cet espace et le \emph{stabilise}. Retirer les photons deux par deux conserve la parité du nombre de photons, donc la
+cohérence entre $\ket{C_+}$ et $\ket{C_-}$. Pour qu'un bruit transforme $\ket\alpha$ en $\ket{-\alpha}$, il doit franchir la distance $2\alpha$ dans
+le plan de phase contre la dissipation, ce qui est exponentiellement improbable : le taux d'inversion de bit décroît
+comme $\ee^{-2|\alpha|^2}$.
+
+\begin{figure}[!ht]
+\centering
+\begin{tikzpicture}[>=Stealth, font=\small]
+  \draw[->, insagris] (-4.6,0) -- (4.8,0) node[right] {$\mathrm{Re}\,\alpha$};
+  \foreach \sg in {1,-1}
+    \shade[inner color=insarouge!80, outer color=insarouge!5] (\sg*2.6,0) circle (0.75);
+  \node[anchor=north, font=\footnotesize] at (2.6,-0.85) {$\ket{\alpha}=\ket{0_L}$};
+  \node[anchor=north, font=\footnotesize] at (-2.6,-0.85) {$\ket{-\alpha}=\ket{1_L}$};
+  \draw[<->, dashed, insagris, thick] (-1.8,0) -- (1.8,0);
+  \node[fill=white, inner sep=1pt, text=insarouge] at (0,0) {$\times$};
+  \node[anchor=north, font=\footnotesize, text=insagris, align=center] at (0,-0.2)
+    {inversion de bit : $\sim\ee^{-2|\alpha|^2}$\\ (supprimée)};
+  \draw[->, insarouge, thick] (-1.5,0.75) to[bend left=40] (1.5,0.75);
+  \node[anchor=south, font=\footnotesize, text=insarouge, align=center] at (0,1.3)
+    {photon perdu : $\ket{C_+}\leftrightarrow\ket{C_-}$\\ (inversion de phase, $\propto\kappa_1|\alpha|^2$)};
+\end{tikzpicture}
+\caption{Qubit de chat dans le plan de phase de l'oscillateur (axe réel) : deux états cohérents $\ket{\pm\alpha}$ représentent $\ket{0_L}$
+et $\ket{1_L}$. La dissipation à deux photons les stabilise ; passer de l'un à l'autre (inversion de bit) est exponentiellement
+rare, alors que la perte d'un photon échange les états de chat $\ket{C_\pm}\approx\ket{\pm_L}$, de parités opposées (inversion de phase).}
+\label{fig:chat}
+\end{figure}
+
+\paragraph{Résultat : un biais de bruit énorme.} On augmente $|\alpha|^2$ pour supprimer les inversions de bit, au prix d'inversions de phase
+plus fréquentes. Mais l'asymétrie est telle que le compromis est favorable. Les expériences sont de plus en plus convaincantes :
+des équipes parisiennes (ENS, Inria, Alice \& Bob) ont observé la suppression exponentielle de l'inversion de bit
+\parencite{lescanne2020}, puis un temps d'inversion de bit supérieur à $10\ \mathrm{s}$, pour un temps d'inversion de phase supérieur à
+$490\ \mathrm{ns}$ \parencite{reglade2024}. Le rapport est de l'ordre de $2\times10^{7}$ ($10/(0{,}49\times10^{-6})$). Une \emph{annonce de l'entreprise} Alice \& Bob (septembre 2025, résultat préliminaire, non évalué par des pairs à
+notre connaissance) fait état de plus d'une heure avec $\langle n\rangle=11$ \parencite{aliceandbob2025}.
+
+\paragraph{De là à un ordinateur.} Il reste à corriger les inversions de phase, par un code à répétition de $d$ qubits de chat
+\parencite{guillaud2019}, dont les portes à deux qubits (CNOT) doivent \emph{préserver le biais} : c'est le point que les expériences
+doivent encore démontrer. Une estimation d'architecture évalue le calcul d'un logarithme discret sur une courbe de 256 bits à
+$126\,133$ qubits de chat et $9$ heures \parencite{gouzien2023}. Alice \& Bob (start-up française) et Amazon \parencite{putterman2025} suivent cette voie ;
+Alice \& Bob vise, dans sa \emph{feuille de route} d'entreprise, une machine de 100 qubits logiques en 2030. C'est un objectif commercial, pas un résultat.
+
+% ---------------------------------------------------------------------
+\subsection{Autres applications et algorithmes}\label{sec:autres}
+% ---------------------------------------------------------------------
+
+Shor et Grover sont les algorithmes les plus connus, pas les seuls. Il faut distinguer les gains \emph{prouvés} (on sait démontrer
+qu'aucun algorithme classique ne fait aussi bien, ou on connaît un bien meilleur algorithme quantique), les gains
+\emph{conditionnels} (valables sous hypothèses) et les méthodes \emph{heuristiques} (qui marchent peut-être, sans preuve).
+
+\subsubsection{Panorama}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.1cm}>{\raggedright\arraybackslash}p{3.8cm}>{\raggedright\arraybackslash}p{3.0cm}>{\raggedright\arraybackslash}p{4.6cm}@{}}
+\toprule
+\textbf{Algorithme} & \textbf{Problème} & \textbf{Gain} & \textbf{Statut et usage}\\
+\midrule
+Deutsch--Jozsa, Bernstein--Vazirani, Simon (1985--1997) & fonctions « boîtes noires » & exponentiel (Simon) & prouvé ; peu d'usage direct, base de Shor\\
+Shor (1994) \parencite{shor1997} & factorisation, logarithme discret & superpolynomial & prouvé ; casse RSA et courbes elliptiques\\
+Grover (1996) & recherche non structurée & quadratique : $\sqrt N$ & prouvé, optimal ; clés symétriques, SAT\\
+Estimation de phase \parencite{kitaev1995} & valeur propre d'une porte $U$ & précision $2^{-m}$ avec $m$ qubits & prouvé ; brique de Shor, de la chimie, de HHL\\
+Estimation d'amplitude \parencite{brassard2002} & estimer une probabilité & $\varepsilon^{-1}$ au lieu de $\varepsilon^{-2}$ & prouvé ; Monte-Carlo, finance\\
+Simulation hamiltonienne \parencite{lloyd1996} & évolution $\ee^{-\ii Ht}\ket\psi$ & exponentiel (systèmes quantiques) & prouvé ; chimie, matériaux : application la plus naturelle\\
+HHL \parencite{harrow2009} & système linéaire $Ax=b$ & exponentiel \emph{sous conditions} & conditionnel ; en partie « déquantisé » \parencite{tang2019}\\
+VQE \parencite{peruzzo2014} & énergie de l'état fondamental & aucun gain prouvé & heuristique ; machines bruitées\\
+QAOA \parencite{farhi2014} & optimisation combinatoire & aucun gain prouvé & heuristique ; machines bruitées\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsubsection{Simuler la matière : l'idée de Feynman}
+
+Pour décrire $n$ qubits, un ordinateur classique stocke $2^n$ amplitudes complexes. Avec $16$ octets par amplitude, $n=50$
+demande $2^{50}\times16=2^{54}$ octets, soit $16$ pébioctets ($1{,}8\times10^{16}$ octets) ; $n=300$ demande $2^{300}\approx2\times10^{90}$
+amplitudes, plus que d'atomes dans l'univers observable ($\sim10^{80}$). \textcite{feynman1982} en a tiré l'idée
+inverse : un système quantique simule naturellement un autre système quantique.
+
+La \emph{simulation hamiltonienne} calcule $\ee^{-\ii Ht}\ket{\psi}$ pour $H=A+B$, où $A$ et $B$ sont des sommes de termes simples dont on sait implémenter les exponentielles.
+Si $A$ et $B$ ne commutent pas, $\ee^{-\ii(A+B)t}\neq\ee^{-\ii At}\ee^{-\ii Bt}$. La formule de Baker--Campbell--Hausdorff donne, pour un pas $\tau$,
+\[
+  \ee^{-\ii A\tau}\ee^{-\ii B\tau}=\exp\!\Big(-\ii(A+B)\tau-\tfrac{\tau^2}{2}[A,B]+O(\tau^3)\Big).
+\]
+On coupe donc $t$ en $N$ pas $\tau=t/N$ (\emph{formule de Trotter}) :
+\[
+  \Big\|\ee^{-\ii(A+B)t}-\big(\ee^{-\ii At/N}\ee^{-\ii Bt/N}\big)^N\Big\|\ \leq\ \frac{t^2}{2N}\,\big\|[A,B]\big\|\quad(\text{à l'ordre dominant}),
+\]
+l'erreur de chaque pas ($\sim\tau^2\|[A,B]\|/2$) s'additionnant sur $N$ pas. Pour $A=X$ et $B=Z$ (un qubit), $[X,Z]=-2\ii Y$ et
+$\|[X,Z]\|=2$ : l'erreur vaut au plus $t^2/N$ ; pour $t=1$, $N=100$ pas donnent une erreur inférieure à $10^{-2}$ (le calcul numérique donne $7\times10^{-3}$). Les applications visées sont la chimie
+(énergie d'une molécule comme le cofacteur FeMoco de la nitrogénase, qui intervient dans la fabrication des engrais \parencite{reiher2017}),
+les matériaux (batteries, supraconducteurs) et la physique des particules. Les méthodes classiques (théorie de la fonctionnelle de
+la densité, \emph{coupled cluster}) traitent bien les systèmes faiblement corrélés ; c'est pour les systèmes \emph{fortement
+corrélés} qu'un avantage est espéré, avec des machines tolérantes aux fautes.
+
+\subsubsection{Méthodes variationnelles et optimisation}
+
+Sur les machines bruitées actuelles, on ne peut pas faire tourner de longs circuits ; on utilise donc des circuits courts à paramètres
+$\theta$ dans une boucle avec un ordinateur classique : le circuit prépare $\ket{\psi(\theta)}$, on mesure l'énergie
+$E(\theta)=\bra{\psi(\theta)}H\ket{\psi(\theta)}$, et un optimiseur classique corrige $\theta$. Cela repose sur le
+\emph{principe variationnel} : en décomposant $\ket\psi=\sum_kc_k\ket{k}$ sur les états propres de $H$ (section~\ref{sec:spectral}),
+$E=\sum_k|c_k|^2E_k\geq E_0\sum_k|c_k|^2=E_0$. Minimiser $E(\theta)$ approche donc l'énergie fondamentale $E_0$ par le haut. Exemple pour un qubit,
+$H=X+Z$ (valeurs propres $\pm\sqrt2$) avec $\ket{\psi(\theta)}=\cos\frac\theta2\ket0+\sin\frac\theta2\ket1$ :
+\[
+  E(\theta)=\langle Z\rangle+\langle X\rangle=\cos\theta+\sin\theta=\sqrt2\cos\!\big(\theta-\tfrac\pi4\big),
+\]
+minimale pour $\theta=\frac{5\pi}{4}$, de valeur $-\sqrt2=E_0$. Le VQE \parencite{peruzzo2014} généralise cette idée à des molécules, et le QAOA
+\parencite{farhi2014} l'applique à des problèmes d'optimisation en alternant deux types de portes. Aucun avantage n'est démontré pour ces méthodes :
+elles sont l'objet de la recherche actuelle.
+
+\subsubsection{Algèbre linéaire quantique : une promesse sous conditions}
+
+L'algorithme HHL \parencite{harrow2009} prépare un état $\ket{x}\propto\sum_ix_i\ket{i}$ où $Ax=b$, en un temps polynomial en $\log N$
+là où la résolution classique est polynomiale en $N$. Le gain exponentiel apparent est soumis à plusieurs conditions. Il faut
+\emph{charger} $b$ dans l'état $\ket{b}$ efficacement ; $A$ doit être creuse et bien conditionnée ; et le résultat est un
+\emph{état} : en lire les $N$ composantes demanderait déjà $N$ répétitions, de sorte que l'on n'obtient que des
+grandeurs globales de $x$. De plus, des algorithmes classiques « inspirés du quantique » (\emph{déquantisation}) obtiennent le même
+résultat sous des hypothèses d'accès analogues \parencite{tang2019}, ce qui a supprimé l'avantage exponentiel annoncé pour
+certaines applications d'apprentissage. Le bilan honnête : \emph{pas d'avantage démontré en apprentissage automatique à ce jour}.
+
+\subsubsection{Capteurs, nombres aléatoires, réseaux}
+
+\paragraph{Métrologie quantique.} Les premières technologies quantiques commercialisées sont des capteurs (horloges atomiques,
+magnétomètres, gravimètres). L'intrication y améliore la précision. Soit $N$ qubits qui subissent chacun la phase
+$\ket1\mapsto\ee^{\ii\varphi}\ket1$ à mesurer. Dans l'état de GHZ $\frac{1}{\sqrt2}(\ket{0\ldots0}+\ket{1\ldots1})$ (généralisation à $N$ qubits de l'état de Bell
+$\frac{1}{\sqrt2}(\ket{00}+\ket{11})$, section~\ref{sec:bell}), seuls $\ket{0\ldots0}$ et $\ket{1\ldots1}$ interviennent, et l'état devient
+\[
+  \frac{1}{\sqrt2}\big(\ket{0\ldots0}+\ee^{\ii N\varphi}\ket{1\ldots1}\big),\qquad
+  P\big(X^{\otimes N}=+1\big)=\frac{1+\cos N\varphi}{2}=\cos^2\!\frac{N\varphi}{2}.
+\]
+La phase est amplifiée par $N$ : la précision atteint $\Delta\varphi\sim1/N$ (limite de Heisenberg) au lieu de $1/\sqrt N$ pour
+$N$ qubits indépendants (limite quantique standard) \parencite{giovannetti2004}. En pratique, la décohérence réduit ce gain, qui
+se limite souvent à de petits $N$.
+
+\paragraph{Nombres aléatoires.} Mesurer $\ket+$ dans la base $Z$ donne $0$ ou $1$ avec la probabilité $\frac12$ : le postulat de Born
+garantit un hasard \emph{intrinsèque}, contrairement à un générateur pseudo-aléatoire déterministe. Les générateurs quantiques
+de nombres aléatoires (QRNG), à base de photons, sont déjà commercialisés ; ils alimentent par exemple la génération de clés cryptographiques.
+
+\paragraph{Réseaux quantiques.} Relier des ordinateurs quantiques demande de transmettre des qubits (téléportation, section~\ref{sec:teleportation}).
+Une fibre optique standard atténue de $0{,}2\ \mathrm{dB/km}$, soit une transmission $T=10^{-0{,}02L}$ ($L$ en km) :
+$T=10^{-2}$ à $100\ \mathrm{km}$ et $10^{-10}$ à $500\ \mathrm{km}$. Un amplificateur est impossible (non-clonage) : on utilise des
+\emph{répéteurs quantiques}, qui étendent l'intrication par \emph{échange d'intrication} (une mesure de Bell entre deux paires intriquées, comme dans la
+téléportation de la section~\ref{sec:teleportation}), ou des satellites : la distribution
+d'intrication sur $1\,200\ \mathrm{km}$ a été démontrée par le satellite chinois Micius \parencite{yin2017}. L'objectif est un « internet
+quantique » \parencite{wehner2018} reliant des processeurs, des capteurs et des liens de QKD.
+
+\subsubsection{Jalons et niveaux de preuve}
+
+Le tableau place quelques jalons dans le temps et indique la \emph{nature de la source}, car une annonce d'entreprise ou une
+prépublication n'a pas la valeur d'un article évalué par des pairs ou d'une norme.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{1.9cm}>{\raggedright\arraybackslash}p{8.8cm}>{\raggedright\arraybackslash}p{3.3cm}@{}}
+\toprule
+\textbf{Date} & \textbf{Jalon} & \textbf{Nature de la source}\\
+\midrule
+1994--1996 & algorithmes de Shor et de Grover \parencite{shor1997} & articles évalués\\
+2019 & Google, $53$ qubits : échantillonnage de circuits aléatoires en $200\ \mathrm{s}$, annoncé hors de portée des machines classiques \parencite{arute2019} (contesté ensuite) & article évalué\\
+août 2024 & normes NIST FIPS 203, 204, 205 \parencite{fips203} & norme\\
+2024 & qubit de chat : inversion de bit $>10\ \mathrm{s}$ \parencite{reglade2024} & article évalué\\
+déc. 2024 & code de surface sous le seuil, $\Lambda=2{,}14$ \parencite{acharya2025} & article évalué\\
+mars 2025 & HQC choisi par le NIST \parencite{nist2025hqc} & rapport officiel\\
+mai 2025 & RSA-2048 : moins d'un million de qubits \parencite{gidney2025} & prépublication\\
+sept. 2025 & qubit de chat : plus d'une heure d'inversion de bit \parencite{aliceandbob2025} & annonce d'entreprise\\
+mars 2026 & Shor avec $10\,000$ à $26\,000$ atomes \parencite{cain2026} & prépublication\\
+août 2026 & RFC~10024 : TLS hybride X25519 + ML-KEM \parencite{rfc10024} & norme IETF\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Ce qui est \emph{acquis} : les gains théoriques de Shor et de Grover, la correction d'erreurs sous le seuil sur de petits codes,
+et les standards post-quantiques. Ce qui \emph{ne l'est pas} : un ordinateur à plusieurs milliers de qubits \emph{logiques},
+un avantage utile sur un problème pratique, et surtout la date $Z$ de l'inégalité de Mosca. C'est pourquoi la migration cryptographique se
+décide sur $X+Y$, qui se connaît, et non sur une prédiction de $Z$.
+
+\clearpage
+% ---------------------------------------------------------------------
+\subsection{Récapitulatif du chapitre}\label{sec:recap-appli}
+% ---------------------------------------------------------------------
+
+\begin{center}
+\adjustbox{max width=\linewidth}{%
+\begin{tikzpicture}[>=Stealth, font=\footnotesize,
+    boite/.style={draw=insarouge, fill=insarouge!6, rounded corners=2pt, thick,
+                  minimum width=4.4cm, minimum height=1.45cm, align=center, inner sep=3pt},
+    lien/.style={->, very thick, insagris},
+    etiq/.style={font=\scriptsize\itshape, text=insagris, inner sep=2pt}]
+  \node[boite] (int) at (0,0)
+    {\textbf{Interférence}\\ oracle, Deutsch, Grover : $\sqrt N$\\ {\scriptsize\S\,\ref{sec:interference}, \ref{sec:grover}}};
+  \node[boite] (sho) at (6.3,0)
+    {\textbf{Shor}\\ QFT, période $r$, $O(n^3)$\\ {\scriptsize\S\,\ref{sec:shor}}};
+  \node[boite] (cry) at (12.6,0)
+    {\textbf{Cryptographie}\\ RSA et ECC cassés ; HNDL ; PQC\\ {\scriptsize\S\,\ref{sec:crypto}}};
+  \node[boite] (cryo) at (12.6,-2.3)
+    {\textbf{Qubits physiques}\\ décohérence, cryostat $10\ \mathrm{mK}$\\ {\scriptsize\S\,\ref{sec:machine}}};
+  \node[boite] (qec) at (6.3,-2.3)
+    {\textbf{Correction d'erreurs}\\ seuil, code de surface, qubits de chat\\ {\scriptsize\S\,\ref{sec:machine}}};
+  \node[boite] (aut) at (0,-2.3)
+    {\textbf{Autres usages}\\ simulation, VQE, capteurs, réseaux\\ {\scriptsize\S\,\ref{sec:autres}}};
+  \draw[lien] (int) -- (sho) node[etiq, midway, above=1pt] {période};
+  \draw[lien] (sho) -- (cry) node[etiq, midway, above=1pt] {casse RSA};
+  \draw[lien] (cry) -- (cryo) node[etiq, midway, right=1pt] {quelle machine ?};
+  \draw[lien] (cryo) -- (qec) node[etiq, midway, above=1pt] {qubits fiables};
+  \draw[lien] (qec) -- (aut) node[etiq, midway, above=1pt] {usages};
+\end{tikzpicture}}
+\end{center}
+
+\begin{aretenir}
+\begin{itemize}
+  \item Un algorithme quantique organise des \emph{interférences} : l'oracle écrit $f(x)$ dans une phase ; Deutsch décide avec un appel au lieu de deux.
+        Grover : $\approx\frac\pi4\sqrt N$ itérations (rotations de $2\theta$), gain quadratique et optimal ; exact en une itération pour $N=4$.
+  \item Shor : la QFT transforme la période $r$ de $a^x\bmod N$ en pics en $y=jM/r$ ; $\operatorname{pgcd}(a^{r/2}\pm1,N)$ donne les facteurs ;
+        coût $O(n^3)$ ($n=\log_2N$), contre un temps sous-exponentiel classique (exemple : $N=15$, $a=7$, $r=4$).
+  \item RSA, Diffie--Hellman, ECDH et ECDSA tombent face à Shor ; AES-256 et SHA-256 résistent à Grover. Doubler les clés RSA ne protège pas.
+  \item « Stocker maintenant, déchiffrer plus tard » : exposé dès que $X+Y>Z$ (Mosca) ; la forward secrecy n'aide pas. On migre d'abord l'échange de clés
+        (hybride X25519 + ML-KEM), puis les signatures (FIPS 203--205).
+  \item Qubit physique : la décohérence ($T_2$) mélange l'état ; le cryostat à $10\ \mathrm{mK}$ rend $p_1$ négligeable ($hf/k_B=0{,}24\ \mathrm{K}$ à $5\ \mathrm{GHz}$). Correction
+        d'erreurs : seuil, $2d^2-1$ qubits physiques par qubit logique (code de surface).
+  \item Qubit de chat : $\ket{\pm\alpha}$, perte de photon = inversion de phase, inversion de bit en $\ee^{-2|\alpha|^2}$ ; code à répétition. Une annonce d'entreprise
+        n'est pas un résultat évalué.
+  \item Autres usages : simulation (Trotter), VQE et QAOA (heuristiques), HHL (conditionnel), capteurs (limite de Heisenberg), réseaux (répéteurs).
+\end{itemize}
+\end{aretenir}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.12}
+\small
+\begin{tabular}{@{}l l r@{}}
+\toprule
+\textbf{Notion} & \textbf{Formule} & \textbf{§} \\
+\midrule
+Rebond de phase & $U_f\ket{x}\ket{-}=(-1)^{f(x)}\ket{x}\ket{-}$ & \ref{sec:interference} \\
+Grover & $P=\sin^2\!\big((2k+1)\theta\big)$, \quad $\sin\theta=\frac{1}{\sqrt N}$, \quad $k\simeq\frac\pi4\sqrt N$ & \ref{sec:grover} \\
+QFT et période & $\mathrm{QFT}_M\ket x=\frac{1}{\sqrt M}\sum_y\ee^{2\ii\pi xy/M}\ket y$ ; pics en $y=jM/r$, $P=\frac1r$ & \ref{sec:shor} \\
+Facteurs, coût & $\operatorname{pgcd}(a^{r/2}\pm1,N)$, \quad $O(n^3)$ & \ref{sec:shor} \\
+Mosca & $X+Y>Z$ : données déjà exposées & \ref{sec:crypto} \\
+Population thermique & $p_1=\frac{1}{1+\ee^{hf/k_BT}}$, \quad $\operatorname{Tr}\rho^2=\frac{1+\ee^{-2t/T_2}}{2}$ (décohérence) & \ref{sec:machine} \\
+Qubit de chat & $\braket{\alpha}{-\alpha}=\ee^{-2|\alpha|^2}$, \quad $a\ket{C_\pm}=\alpha\frac{N_\pm}{N_\mp}\ket{C_\mp}$ & \ref{sec:machine} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{savoirfaire}
+\begin{itemize}[nosep]
+  \item Suivre un circuit de Deutsch ou de Grover ($N=4$) jusqu'à la mesure (sections~\ref{sec:interference}, \ref{sec:grover}).
+  \item Trouver l'ordre de $a$ modulo $N$, appliquer le critère du pgcd et prévoir la loi de $y$ (section~\ref{sec:shor}, exemple $N=15$).
+  \item Dire ce que casse Shor, ce que Grover affaiblit, et appliquer l'inégalité de Mosca (section~\ref{sec:crypto}).
+  \item Calculer $p_1$, la pureté après décohérence et le recouvrement $\ee^{-2|\alpha|^2}$ ; lire un syndrome (section~\ref{sec:machine}).
+  \item Distinguer résultat prouvé, conditionnel et annonce (section~\ref{sec:autres}).
+\end{itemize}
+\end{savoirfaire}
