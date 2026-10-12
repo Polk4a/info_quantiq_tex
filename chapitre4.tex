@@ -37,8 +37,12 @@ avec $U^\dagger U=\mathrm{Id}$.
 
 C'est la forme de l'équation de Schrödinger du chapitre~\ref{chap:histoire}. Pour un hamiltonien
 $\Hop$ indépendant du temps, $\ii\hbar\,\partial_t\ket{\Psi}=\Hop\ket{\Psi}$ a pour solution
-$\ket{\Psi(t)}=U(t)\ket{\Psi(0)}$ avec $U(t)=\ee^{-\ii\Hop t/\hbar}$. Comme $\Hop$ est hermitien,
-$U(t)^\dagger=\ee^{+\ii\Hop t/\hbar}$ et $U^\dagger U=\mathrm{Id}$ : l'évolution est unitaire. Une
+$\ket{\Psi(t)}=U(t,t_0)\ket{\Psi(t_0)}$, où l'\emph{opérateur d'évolution} est
+\[
+  U(t,t_0)=\ee^{-\ii\Hop(t-t_0)/\hbar}
+\]
+(on écrit $U(t)$ pour $t_0=0$). Comme $\Hop$ est hermitien,
+$U(t,t_0)^\dagger=\ee^{+\ii\Hop(t-t_0)/\hbar}$ et $U^\dagger U=\mathrm{Id}$ : l'évolution est unitaire. Une
 porte est une telle évolution, obtenue en contrôlant $\Hop$ pendant une durée donnée.
 
 \begin{definition}{Porte quantique}
@@ -201,6 +205,19 @@ durée $t$ applique la porte de phase $P_{\omega t}$ : une rotation d'angle $\om
 l'axe $z$.
 \end{remarque}
 
+\begin{remarque}[Conjuguer par $H$ : $HXH=Z$, $HYH=-Y$ et $HSH=\sqrt{X}$]\label{rem:conjH}
+Comme $H$ échange les axes $x$ et $z$ et que $H^2=\mathrm{Id}$, conjuguer une porte par $H$ la
+transporte d'un axe à l'autre : $HXH=Z$, $HZH=X$ et $HYH=-Y$ (l'axe $y$ est retourné ;
+exercice~\ref{ex:conj}). Pour la porte de phase $S$, on obtient une racine carrée de $X$ :
+\[
+  (HSH)^2=HS\,(HH)\,SH=HS^2H=HZH=X,
+  \qquad
+  HSH=\frac12\begin{pmatrix}1+\ii&1-\ii\\1-\ii&1+\ii\end{pmatrix}=\sqrt{X}.
+\]
+$S$ est un quart de tour autour de $z$, donc $HSH$ est un quart de tour autour de $x$ : deux
+quarts de tour font le demi-tour $X$.
+\end{remarque}
+
 % ---------------------------------------------------------------------
 \subsection{Portes et sphère de Bloch}\label{sec:portes-bloch}
 % ---------------------------------------------------------------------
@@ -306,6 +323,16 @@ $\ket{0}$ sur $\ket{+}$ ; $S$, rotation d'un quart de tour autour de $z$, envoie
 $\ket{{+}\ii}$. Les trois états sont alignés sur les axes $z$, $x$ et $y$.}
 \label{fig:trajet}
 \end{figure}
+
+\begin{remarque}[Une porte ne purifie ni ne mélange]\label{rem:purete}
+Sur un état mixte, une porte $U$ agit par $\rho\mapsto U\rho U^\dagger$. Comme
+$\operatorname{Tr}\big[(U\rho U^\dagger)^2\big]=\operatorname{Tr}\big[U\rho^2U^\dagger\big]=\operatorname{Tr}\rho^2$
+(cyclicité de la trace, $U^\dagger U=\mathrm{Id}$), la pureté est conservée : la rotation de la boule de
+Bloch laisse chaque point à la même distance $|\vec r|$ du centre. Un état pur reste pur, un état
+mixte reste mixte, et le centre $\frac{\mathrm{Id}}{2}$ (état complètement mélangé) est fixe : aucune
+porte ne le transforme en un état pur. Passer d'un état mixte à un état pur exige une mesure, qui
+n'est pas une porte.
+\end{remarque}
 
 % ---------------------------------------------------------------------
 \subsection{Circuits quantiques}\label{sec:circuits}
@@ -634,6 +661,18 @@ ci-dessus, et non $\ket{+}\otimes\ket{+}$ : un état quantique inconnu ne peut p
 (théorème de non-clonage, section~\ref{sec:teleportation}).
 \end{remarque}
 
+\begin{remarque}[Rebond de phase]\label{rem:kickback}
+Si la cible $A$ est dans $\ket{-}$, état propre de $X$ pour la valeur propre $-1$, le CNOT laisse
+$\ket{-}_A$ inchangé mais multiplie par $-1$ la composante $\ket{1}$ du contrôle $B$ : comme
+$\mathrm{CNOT}\big(\ket{-}\otimes\ket{b}\big)=(-1)^{b}\,\ket{-}\otimes\ket{b}$, on a pour
+$\ket{\chi}_B=\beta_0\ket{0}+\beta_1\ket{1}$
+\[
+  \mathrm{CNOT}\big(\ket{-}_A\otimes\ket{\chi}_B\big)=\ket{-}_A\otimes\big(\beta_0\ket{0}-\beta_1\ket{1}\big)_B .
+\]
+En particulier $\ket{+}_B$ devient $\ket{-}_B$ : la phase de la cible «~rebondit~» sur le contrôle
+(\emph{phase kickback}, exercice~\ref{ex:kickback}).
+\end{remarque}
+
 \begin{remarque}[Contrôle en dernier ou en premier]
 La matrice dépend de l'ordre d'écriture du ket. Notons $\mathrm{CNOT}_{21}$ le CNOT dont le
 contrôle est le \emph{second} chiffre du ket : c'est la matrice ci-dessus, adoptée dans ce
@@ -646,6 +685,19 @@ correspondant est
 Le même circuit a donc deux matrices, selon que le contrôle est écrit en dernier ou en premier.
 Les deux sont reliées par le SWAP (section~\ref{sec:swap}). La section~\ref{sec:controlees} sur les
 portes contrôlées met le contrôle en premier, avec la matrice $\mathrm{diag}(I,U)$.
+\end{remarque}
+
+\begin{remarque}[Conjuguer un CNOT par $H\otimes H$ échange le contrôle et la cible]\label{rem:HHCNOT}
+Comme $H\ket{0}\bra{0}H=\ket{+}\bra{+}$, $H\ket{1}\bra{1}H=\ket{-}\bra{-}$ et $HXH=Z$,
+\[
+  (H\otimes H)\,\mathrm{CNOT}_{12}\,(H\otimes H)
+  =\ket{+}\bra{+}\otimes I+\ket{-}\bra{-}\otimes Z
+  =I\otimes\ket{0}\bra{0}+X\otimes\ket{1}\bra{1}=\mathrm{CNOT}_{21},
+\]
+la dernière égalité découlant de $Z=\ket{0}\bra{0}-\ket{1}\bra{1}$, de
+$\ket{+}\bra{+}+\ket{-}\bra{-}=I$ et de $\ket{+}\bra{+}-\ket{-}\bra{-}=X$. Dans la base
+$\{\ket{+},\ket{-}\}$, le contrôle et la cible échangent donc leurs rôles : c'est le rebond de phase
+vu plus haut.
 \end{remarque}
 
 % ---------------------------------------------------------------------

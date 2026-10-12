@@ -440,6 +440,15 @@ observable). La base $X$ la révèle : $\braket{\pm}{\Psi'}=(1\pm2\ii)/\sqrt{10}
 $P(+)=P(-)=\frac12$, alors que $\ket{\Psi}$ donne $(\frac{9}{10},\frac{1}{10})$
 (figure~\ref{fig:histo}).
 
+\begin{remarque}[Discerner deux états : seuls des états orthogonaux le sont à coup sûr]\label{rem:discerner}
+Deux états \emph{orthogonaux} ($\braket{a}{b}=0$) se distinguent parfaitement : on mesure dans une
+base qui les contient et le résultat dit lequel c'était. Si $\braket{a}{b}\neq0$, aucune mesure ne
+suffit. Pour $\ket{0}$ et $\ket{+}$ ($\braket{0}{+}=\frac{1}{\sqrt2}$), une mesure en base $Z$ donne
+$0$ avec la probabilité $1$ pour $\ket{0}$ mais aussi avec la probabilité $\frac12$ pour $\ket{+}$ :
+le résultat $0$ ne tranche pas (le résultat $1$ prouve seulement qu'on avait $\ket{+}$). La mesure a
+de plus effondré l'état : on ne peut pas recommencer sur le même qubit.
+\end{remarque}
+
 \begin{figure}[!ht]
 \centering
 \begin{tikzpicture}[>=Stealth, font=\small]

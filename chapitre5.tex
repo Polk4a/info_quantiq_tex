@@ -306,7 +306,10 @@ $X\otimes X$ & $+1$ & $-1$ & $+1$ & $-1$ \\
 Les deux opérateurs commutent, car $ZX=-XZ$ donne
 $(Z\otimes Z)(X\otimes X)=ZX\otimes ZX=XZ\otimes XZ=(X\otimes X)(Z\otimes Z)$ ; les quatre états de
 Bell sont leurs états propres communs, et chaque couple de valeurs propres apparaît une fois
-(figure~\ref{fig:grille-bell}).
+(figure~\ref{fig:grille-bell}). Le même calcul montre que $X\otimes Z$ et $Z\otimes X$
+commutent : $(X\otimes Z)(Z\otimes X)=XZ\otimes ZX=(-ZX)\otimes(-XZ)=ZX\otimes XZ=(Z\otimes X)(X\otimes Z)$.
+Plus généralement, $P\otimes Q$ et $P'\otimes Q'$ (matrices de Pauli) commutent si $P,P'$
+anticommutent et si $Q,Q'$ anticommutent : les deux signes $-1$ se compensent.
 
 \begin{figure}[!ht]
 \centering
@@ -345,6 +348,21 @@ $X\ket{0}=\ket{1}$, $X\ket{1}=\ket{0}$ et $Z\ket{1}=-\ket{1}$, en agissant sur l
 Quatre opérations locales ($I$, $X$, $Z$, $XZ$) sur \emph{un} qubit d'une paire de Bell mènent donc
 aux quatre états de la base ; c'est le principe du codage superdense
 (exercice~\ref{ex:superdense}).
+
+\begin{remarque}[Le singulet est le même dans toutes les bases]\label{rem:singulet}
+Pour toute matrice unitaire $U=\begin{pmatrix}a&b\\c&d\end{pmatrix}$, on a $U\ket{0}=a\ket{0}+c\ket{1}$
+et $U\ket{1}=b\ket{0}+d\ket{1}$, donc
+\begin{align*}
+  (U\otimes U)\big(\ket{01}-\ket{10}\big)
+  &=\big(a\ket{0}+c\ket{1}\big)\big(b\ket{0}+d\ket{1}\big)-\big(b\ket{0}+d\ket{1}\big)\big(a\ket{0}+c\ket{1}\big)\\
+  &=(ad-bc)\big(\ket{01}-\ket{10}\big),
+\end{align*}
+c'est-à-dire $(U\otimes U)\ket{\Psi^-}=\det(U)\,\ket{\Psi^-}$. Comme $|\det U|=1$, ce facteur est une
+phase globale, sans effet physique : $\ket{\Psi^-}$ s'écrit \emph{de la même façon} dans toutes les
+bases orthonormées (avec $U=H$, de déterminant $-1$ : $\ket{\Psi^-}=\frac{1}{\sqrt2}\big(\ket{-+}-\ket{+-}\big)$).
+Si Alice et Bob mesurent dans la \emph{même} base, quelle qu'elle soit, leurs résultats sont
+toujours opposés : c'est le «~singulet~». Parmi les états de Bell, seul $\ket{\Psi^-}$ a cette propriété.
+\end{remarque}
 
 % ---------------------------------------------------------------------
 \subsection{Un circuit quantique : le générateur d'états de Bell}\label{sec:circuit-bell}
@@ -1115,6 +1133,157 @@ section~\ref{sec:cnot}). La téléportation respecte cette interdiction : l'éta
 jamais présent en deux endroits.
 \end{remarque}
 
+% ---------------------------------------------------------------------
+\subsection{Corrélations non locales : le jeu CHSH}\label{sec:chsh}
+% ---------------------------------------------------------------------
+
+Les états de Bell donnent des résultats corrélés en base $Z$ comme en base $X$
+(section~\ref{sec:bell}). Mais deux enveloppes contenant la même carte, préparées à l'avance, donnent
+aussi des résultats égaux : des corrélations dans une seule base ne prouvent pas l'intrication. Bell
+\parencite{bell1964} a montré qu'on peut trancher en \emph{changeant de base de mesure} ; la version de
+Clauser, Horne, Shimony et Holt \parencite{clauser1969} se présente comme un jeu.
+
+\begin{definition}{Le jeu CHSH}
+Alice et Bob, éloignés, ne communiquent plus une fois le jeu commencé. Un arbitre tire deux bits $x$ et
+$y$ de façon uniforme et indépendante, donne $x$ à Alice et $y$ à Bob. Chacun répond par un bit : $a$ pour
+Alice, $b$ pour Bob. Ils \emph{gagnent} si
+\[
+  a\oplus b=x\cdot y,
+\]
+c'est-à-dire si $a=b$ pour $(x,y)\in\{(0,0),(0,1),(1,0)\}$ et si $a\neq b$ pour $(x,y)=(1,1)$.
+\end{definition}
+
+\paragraph{Stratégie classique : au plus $\frac34$.} Une stratégie déterministe est $a=f(x)$,
+$b=g(y)$. Si elle gagnait les quatre parties, on aurait
+\[
+  f(0)\oplus g(0)=0,\qquad f(0)\oplus g(1)=0,\qquad f(1)\oplus g(0)=0,\qquad f(1)\oplus g(1)=1 .
+\]
+En additionnant ces quatre égalités modulo $2$, chacune des valeurs $f(0),f(1),g(0),g(1)$ apparaît
+deux fois : le membre de gauche vaut $0$, celui de droite vaut $1$. C'est absurde, donc au moins une
+partie sur quatre est perdue et $P(\text{gain})\leq\frac34$. La stratégie «~toujours répondre $0$~»
+atteint $\frac34$ (elle ne perd que pour $(1,1)$). Un hasard partagé ne change rien : il mélange des
+stratégies déterministes, dont aucune ne dépasse $\frac34$.
+
+\paragraph{Stratégie quantique.} Alice et Bob partagent avant le jeu une paire $\ket{\Phi^+}$ (un
+e-bit), puis chacun mesure son qubit sans rien dire à l'autre. Pour un angle $\theta$, notons
+\[
+  \ket{\theta_+}=\cos\tfrac\theta2\,\ket{0}+\sin\tfrac\theta2\,\ket{1},
+  \qquad
+  \ket{\theta_-}=-\sin\tfrac\theta2\,\ket{0}+\cos\tfrac\theta2\,\ket{1}
+\]
+la base de mesure d'angle $\theta$ : c'est la direction $\theta$ dans le plan $xz$ de la sphère de
+Bloch ($\theta=0$ : base $Z$ ; $\theta=\frac\pi2$ : base $X$). Le résultat vaut $0$ pour
+$\ket{\theta_+}$ et $1$ pour $\ket{\theta_-}$. La stratégie est
+\begin{itemize}[nosep]
+  \item Alice : $\theta=0$ si $x=0$ (base $Z$), $\theta=\frac\pi2$ si $x=1$ (base $X$) ;
+  \item Bob : $\theta=\frac\pi4$ si $y=0$, $\theta=-\frac\pi4$ si $y=1$ (bases propres de
+        $\frac{Z\pm X}{\sqrt2}$).
+\end{itemize}
+
+\begin{figure}[!ht]
+\centering
+\adjustbox{max width=\linewidth}{%
+\begin{tikzpicture}[>=Stealth, font=\footnotesize,
+    joueur/.style={draw=insarouge, fill=insarouge!6, rounded corners=2pt, thick,
+                   minimum width=2.1cm, minimum height=1.1cm, align=center},
+    arb/.style={draw=insagris, fill=insagris!8, rounded corners=2pt, thick,
+                minimum width=3.6cm, minimum height=0.8cm, align=center}]
+  % --- le jeu ---
+  \node[arb] (arb) at (3.2,2.7) {arbitre : $x,y$ au hasard};
+  \node[joueur] (al) at (0,0) {Alice};
+  \node[joueur] (bo) at (6.4,0) {Bob};
+  \draw[->, thick, insagris] (arb.west) -| node[pos=0.2, above] {$x$} (al.north);
+  \draw[->, thick, insagris] (arb.east) -| node[pos=0.2, above] {$y$} (bo.north);
+  \draw[insarouge, thick, decorate, decoration={snake, amplitude=1.1pt, segment length=6pt}]
+    (al.east) -- (bo.west);
+  \node[insarouge, above=1pt] at (3.2,0.05) {$\ket{\Phi^+}$};
+  \node[text=insagris, below=2pt, font=\scriptsize] at (3.2,-0.05) {paire intriquée};
+  \draw[->, thick] (al.south) -- ++(0,-1.0) node[below] {$a$};
+  \draw[->, thick] (bo.south) -- ++(0,-1.0) node[below] {$b$};
+  \node[draw=insagris, rounded corners=2pt, inner sep=3pt] at (3.2,-1.75) {gain si $a\oplus b=x\cdot y$};
+  % --- directions de mesure dans le plan xz de la sphère de Bloch ---
+  \begin{scope}[shift={(11.9,0.3)}]
+    \draw[insagris!70] (0,0) circle (1.7);
+    \draw[insagris!50, dashed] (-1.7,0) -- (1.7,0);
+    \draw[insagris!50, dashed] (0,-1.7) -- (0,1.7);
+    \node[font=\scriptsize, text=insagris, anchor=north] at (0,-1.72) {$\ket{1}$};
+    \node[font=\scriptsize, text=insagris, anchor=east] at (-1.72,-0.02) {$\ket{-}$};
+    \draw[->, very thick, insarouge] (0,0) -- (90:1.7);
+    \draw[->, very thick, insarouge] (0,0) -- (0:1.7);
+    \draw[->, very thick, insagris] (0,0) -- (45:1.7);
+    \draw[->, very thick, insagris] (0,0) -- (135:1.7);
+    \node[insarouge, anchor=south, inner sep=2pt] at (0,1.72) {$x=0$ : $Z$ $(\ket{0})$};
+    \node[insarouge, anchor=west, inner sep=2pt] at (1.72,0) {$x=1$ : $X$ $(\ket{+})$};
+    \node[text=insagris, anchor=south west, align=left, inner sep=2pt] at (1.25,1.25) {$y=0$\\ $\frac{Z+X}{\sqrt2}$};
+    \node[text=insagris, anchor=south east, align=right, inner sep=2pt] at (-1.25,1.25) {$y=1$\\ $\frac{Z-X}{\sqrt2}$};
+    \draw[insagris] (0.85,0) arc (0:45:0.85);
+    \node[font=\scriptsize, text=insagris] at (22.5:1.12) {$\frac\pi4$};
+    \draw[insagris] (0,0.85) arc (90:135:0.85);
+    \node[font=\scriptsize, text=insagris] at (112.5:1.12) {$\frac\pi4$};
+    \draw[insagris] (0.6,0.6) arc (45:90:0.85);
+    \node[font=\scriptsize, text=insagris] at (67.5:1.12) {$\frac\pi4$};
+  \end{scope}
+\end{tikzpicture}}
+\caption{Le jeu CHSH (à gauche) et les quatre directions de mesure de la stratégie quantique (à
+droite), dans le plan $xz$ de la sphère de Bloch : Alice en rouge, Bob en gris. Pour
+$(x,y)=(0,0),(0,1),(1,0)$, les directions font un angle $\frac\pi4$ ; pour $(1,1)$, un angle
+$\frac{3\pi}4$.}
+\label{fig:chsh}
+\end{figure}
+
+\begin{resultat}{Corrélations de $\ket{\Phi^+}$ en bases tournées}
+Si Alice mesure dans la base d'angle $\alpha$ et Bob dans la base d'angle $\beta$, alors
+\[
+  P(a=b)=\cos^2\frac{\alpha-\beta}{2}.
+\]
+\end{resultat}
+
+\noindent\emph{Preuve.} Avec $c=\cos\frac\alpha2$ et $s=\sin\frac\alpha2$,
+$\ket{\alpha_+\alpha_+}+\ket{\alpha_-\alpha_-}=(c^2+s^2)\ket{00}+(cs-sc)\big(\ket{01}+\ket{10}\big)+(s^2+c^2)\ket{11}
+=\ket{00}+\ket{11}$ : on peut donc écrire $\ket{\Phi^+}=\frac{1}{\sqrt2}\big(\ket{\alpha_+\alpha_+}+\ket{\alpha_-\alpha_-}\big)$.
+Si Alice obtient $a=0$ (probabilité $\frac12$), le qubit de Bob est dans $\ket{\alpha_+}$ et Bob obtient $b=0$
+avec la probabilité $|\braket{\beta_+}{\alpha_+}|^2$, où $\braket{\beta_+}{\alpha_+}=\cos\frac\beta2\cos\frac\alpha2+\sin\frac\beta2\sin\frac\alpha2=\cos\frac{\alpha-\beta}{2}$.
+Si Alice obtient $a=1$, Bob est dans $\ket{\alpha_-}$ et obtient $b=1$ avec la même probabilité, car
+$\braket{\beta_-}{\alpha_-}=\braket{\beta_+}{\alpha_+}$. Donc
+$P(a=b)=\frac12\cos^2\frac{\alpha-\beta}2+\frac12\cos^2\frac{\alpha-\beta}2$. \hfill$\square$
+
+\medskip
+\noindent Pour les quatre couples $(x,y)$ :
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}c c c c c c@{}}
+\toprule
+$(x,y)$ & $\alpha$ & $\beta$ & $P(a=b)$ & condition de gain & $P(\text{gain})$\\
+\midrule
+$(0,0)$ & $0$ & $\frac\pi4$ & $\cos^2\frac\pi8$ & $a=b$ & $\cos^2\frac\pi8$\\
+$(0,1)$ & $0$ & $-\frac\pi4$ & $\cos^2\frac\pi8$ & $a=b$ & $\cos^2\frac\pi8$\\
+$(1,0)$ & $\frac\pi2$ & $\frac\pi4$ & $\cos^2\frac\pi8$ & $a=b$ & $\cos^2\frac\pi8$\\
+$(1,1)$ & $\frac\pi2$ & $-\frac\pi4$ & $\cos^2\frac{3\pi}8=\sin^2\frac\pi8$ & $a\neq b$ &
+  $1-\sin^2\frac\pi8=\cos^2\frac\pi8$\\
+\bottomrule
+\end{tabular}
+\end{center}
+Alice et Bob gagnent donc chaque partie avec la même probabilité :
+\[
+  P(\text{gain})=\cos^2\frac\pi8=\frac{2+\sqrt2}{4}\approx0{,}854>\frac34 .
+\]
+
+\begin{remarque}[Ce que montre le jeu CHSH]
+\begin{itemize}[nosep]
+  \item Aucune stratégie classique, même avec du hasard partagé, ne dépasse $\frac34$ : l'intrication
+        produit des corrélations qu'aucun modèle «~local~» (résultats fixés à l'avance) ne reproduit.
+        Les expériences sur des photons intriqués confirment la valeur quantique.
+  \item $\cos^2\frac\pi8$ est le maximum quantique (\emph{borne de Tsirelson}, résultat admis,
+        \cite{tsirelson1980}) : on ne peut pas gagner à tous les coups. Avec
+        $E_{xy}=P(a=b)-P(a\neq b)=\cos(\alpha-\beta)$ et $S=E_{00}+E_{01}+E_{10}-E_{11}$, on a
+        $P(\text{gain})=\frac12+\frac S8$ ; l'inégalité de Bell donne $|S|\leq2$ en classique, et la
+        stratégie ci-dessus atteint $S=2\sqrt2$.
+  \item Il n'y a pas de communication : la réponse de Bob est uniforme ($P(b=0)=\frac12$) quelle que
+        soit la base choisie par Alice. L'intrication ne transmet pas d'information ; elle ne fait
+        que corréler les résultats.
+\end{itemize}
+\end{remarque}
+
 \clearpage
 % ---------------------------------------------------------------------
 \subsection{Récapitulatif du chapitre}\label{sec:recap5}
@@ -1124,7 +1293,7 @@ jamais présent en deux endroits.
 \adjustbox{max width=\linewidth}{%
 \begin{tikzpicture}[>=Stealth, font=\footnotesize,
     boite/.style={draw=insarouge, fill=insarouge!6, rounded corners=2pt, thick,
-                  minimum width=4.4cm, minimum height=1.5cm, align=center, inner sep=3pt},
+                  minimum width=4.4cm, minimum height=1.45cm, align=center, inner sep=3pt},
     lien/.style={->, very thick, insagris},
     etiq/.style={font=\scriptsize\itshape, text=insagris, inner sep=2pt}]
   \node[boite] (mes) at (0,0)
@@ -1134,17 +1303,18 @@ jamais présent en deux endroits.
   \node[boite] (bel) at (12.6,0)
     {\textbf{États de Bell}\\ $\ket{\Phi^\pm}$, $\ket{\Psi^\pm}$ ; $\mathrm{CNOT}\,(I\otimes H)$\\
      {\scriptsize\S\,\ref{sec:bell}, \ref{sec:circuit-bell}}};
-  \node[boite] (tra) at (12.6,-2.5)
-    {\textbf{Trace partielle}\\ $\rho_A=\operatorname{Tr}_B\rho_{AB}$\\ {\scriptsize\S\,\ref{sec:trace}}};
-  \node[boite] (inf) at (6.3,-2.5)
-    {\textbf{Entropies}\\ $S(\rho)$, $I(A;B)$, $H(A|B)$\\ {\scriptsize\S\,\ref{sec:info}}};
-  \node[boite] (tel) at (0,-2.5)
+  \node[boite] (tra) at (12.6,-2.3)
+    {\textbf{Trace partielle, entropies}\\ $\rho_A=\operatorname{Tr}_B\rho_{AB}$ ; $S(\rho)$, $I(A;B)$\\
+     {\scriptsize\S\,\ref{sec:trace}, \ref{sec:info}}};
+  \node[boite] (tel) at (6.3,-2.3)
     {\textbf{Téléportation}\\ e-bit + 2 bits classiques\\ {\scriptsize\S\,\ref{sec:teleportation}}};
+  \node[boite] (chs) at (0,-2.3)
+    {\textbf{Jeu CHSH}\\ $\frac34$ classique, $\cos^2\frac\pi8$ quantique\\ {\scriptsize\S\,\ref{sec:chsh}}};
   \draw[lien] (mes) -- (sep) node[etiq, midway, above=1pt] {corrélations};
   \draw[lien] (sep) -- (bel) node[etiq, midway, above=1pt] {cas extrême};
   \draw[lien] (bel) -- (tra) node[etiq, midway, right=1pt] {un qubit seul};
-  \draw[lien] (tra) -- (inf) node[etiq, midway, above=1pt] {état mixte};
-  \draw[lien] (inf) -- (tel) node[etiq, midway, above=1pt] {ressource};
+  \draw[lien] (tra) -- (tel) node[etiq, midway, above=1pt] {ressource};
+  \draw[lien] (tel) -- (chs) node[etiq, midway, above=1pt] {non-localité};
 \end{tikzpicture}}
 \end{center}
 
@@ -1157,17 +1327,19 @@ jamais présent en deux endroits.
   \item États de Bell : base orthonormée d'états maximalement intriqués, états propres de
         $Z\otimes Z$ et $X\otimes X$ ; $\mathrm{CNOT}\,(I\otimes H)$ les produit à partir de la base de
         calcul. Des portes locales ne créent pas d'intrication.
-  \item Trace partielle : état d'un qubit seul. Pour un état pur, $\operatorname{Tr}\rho_A^2=1-2|D|^2$ ;
-        pour un état de Bell, $\rho_A=\mathrm{Id}/2$ alors que le couple est pur.
-  \item Pour $\ket{\Phi^+}$ : $S(\rho_{AB})=0$, $S(\rho_A)=S(\rho_B)=1$ bit, $I(A;B)=2$ bits et
-        $H(A|B)=-1$, valeurs impossibles en classique.
+  \item Qubit seul : $\rho_A=\operatorname{Tr}_B\rho_{AB}$, avec $\operatorname{Tr}\rho_A^2=1-2|D|^2$ pour un état pur.
+        Pour $\ket{\Phi^+}$ : $\rho_A=\mathrm{Id}/2$ alors que le couple est pur ; $S(\rho_{AB})=0$,
+        $S(\rho_A)=1$ bit, $I(A;B)=2$ bits, $H(A|B)=-1$ (impossible en classique).
   \item Téléportation : un e-bit et deux bits classiques ; $P(a,q)=\frac14$ ; Bob applique $X$ si $a=1$
         puis $Z$ si $q=1$. L'état est déplacé, pas copié ; sans les bits, $\rho_B=\mathrm{Id}/2$.
+  \item Jeu CHSH : toute stratégie classique gagne avec une probabilité $\leq\frac34$ ; avec $\ket{\Phi^+}$
+        et des bases tournées, $\cos^2\frac\pi8\approx0{,}854$ (borne de Tsirelson), sans aucune
+        communication.
 \end{itemize}
 \end{aretenir}
 
 \begin{center}
-\renewcommand{\arraystretch}{1.45}
+\renewcommand{\arraystretch}{1.2}
 \begin{tabular}{@{}l l r@{}}
 \toprule
 \textbf{Notion} & \textbf{Formule} & \textbf{§} \\
@@ -1176,12 +1348,13 @@ Mesure de deux qubits & $P(ij)=|c_{ij}|^2$, \quad $P(A{=}a)=P(a0)+P(a1)$ & \ref{
 Séparabilité & $\ket{\Psi}=\ket{\Psi}_A\otimes\ket{\Psi}_B\ \Longleftrightarrow\ D=0$ & \ref{sec:separable} \\
 États de Bell & $\ket{\Phi^\pm}=\dfrac{\ket{00}\pm\ket{11}}{\sqrt2}$, \quad
   $\ket{\Psi^\pm}=\dfrac{\ket{01}\pm\ket{10}}{\sqrt2}$ & \ref{sec:bell} \\
-Générateur de Bell & $\mathrm{CNOT}\,(I\otimes H)\ket{00}=\ket{\Phi^+}$ & \ref{sec:circuit-bell} \\
 Trace partielle & $\operatorname{Tr}_B\big(\ket{a}\bra{a'}\otimes\ket{b}\bra{b'}\big)
   =\ket{a}\bra{a'}\,\braket{b'}{b}$ & \ref{sec:trace} \\
 Qubit d'un état pur & $\rho_A=CC^\dagger$, \quad $\operatorname{Tr}\rho_A^2=1-2|D|^2$ & \ref{sec:trace} \\
 Entropies & $S(\rho)=-\sum_i\lambda_i\log_2\lambda_i$, \quad $I(A;B)=H(A)+H(B)-H(A,B)$ & \ref{sec:info} \\
 Téléportation & $P(a,q)=\frac14$, \quad correction $Z^{q}X^{a}$ (d'abord $X$) & \ref{sec:teleportation} \\
+Singulet & $(U\otimes U)\ket{\Psi^-}=\det(U)\,\ket{\Psi^-}$ & \ref{sec:bell} \\
+Jeu CHSH & $P_{\mathrm{cl}}\leq\frac34$, \quad $P_{\mathrm{quant}}=\cos^2\frac\pi8=\frac{2+\sqrt2}{4}$ & \ref{sec:chsh} \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -1189,13 +1362,13 @@ Téléportation & $P(a,q)=\frac14$, \quad correction $Z^{q}X^{a}$ (d'abord $X$) 
 \begin{savoirfaire}
 \begin{itemize}
   \item Calculer $P(ij)$, les probabilités d'un seul qubit et l'état après la mesure de l'un d'eux ;
-        tester la séparabilité avec $D$ (exercice~\ref{ex:separable3}).
+        tester la séparabilité avec $D$ et calculer la pureté de $\rho_A$ (exercice~\ref{ex:separable3}).
   \item Suivre un état dans le générateur de Bell, écrire $\rho_{AB}$ et reconnaître les corrélations
         d'un état de Bell dans deux bases (exercice~\ref{ex:bellX}).
-  \item Calculer une trace partielle et en déduire la pureté de $\rho_A$ (exercice~\ref{ex:separable3}).
-  \item Calculer $H(A)$, $H(A,B)$, $I(A;B)$ et $H(A|B)$ pour une loi jointe ou pour un état
-        (exercice~\ref{ex:entropies}).
+  \item Calculer $H(A)$, $H(A,B)$, $I(A;B)$ et $H(A|B)$ pour une loi ou un état (exercice~\ref{ex:entropies}).
   \item Dérouler la téléportation pour un état donné et utiliser les états de Bell pour le codage
         superdense (exercices~\ref{ex:telenum} et~\ref{ex:superdense}).
+  \item Prouver la borne $\frac34$ du jeu CHSH classique et calculer la probabilité de gain d'une
+        stratégie quantique (section~\ref{sec:chsh}).
 \end{itemize}
 \end{savoirfaire}

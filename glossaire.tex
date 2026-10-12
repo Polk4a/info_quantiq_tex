@@ -149,3 +149,71 @@
 
 \newglossaryentry{porte}{name={porte quantique}, sort={porte quantique},
   description={Opération unitaire appliquée à un ou plusieurs qubits ; dessinée comme une boîte sur un circuit}}
+
+\newglossaryentry{chsh}{name={CHSH (jeu)}, sort={CHSH},
+  description={Jeu coopératif de Clauser, Horne, Shimony et Holt : Alice et Bob gagnent si $a\oplus b=x\cdot y$. Au plus $\frac34$ en classique, $\cos^2\frac\pi8\approx0{,}854$ avec une paire intriquée}}
+
+\newglossaryentry{tsirelson}{name={Tsirelson (borne de)}, sort={Tsirelson},
+  description={Maximum quantique de la violation de l'inégalité de Bell : $S=2\sqrt2$, soit la probabilité de gain $\cos^2\frac\pi8$ au jeu CHSH}}
+
+\newglossaryentry{singulet}{name={singulet}, sort={singulet},
+  description={État de Bell $\ket{\Psi^-}=\frac{1}{\sqrt2}\big(\ket{01}-\ket{10}\big)$ ; $(U\otimes U)\ket{\Psi^-}=\det(U)\ket{\Psi^-}$, donc résultats toujours opposés dans une base commune}}
+
+\newglossaryentry{rebond}{name={rebond de phase}, sort={rebond},
+  description={(\emph{phase kickback}) Avec une cible dans $\ket{-}$, le CNOT laisse la cible inchangée et change la phase du contrôle : $\ket{+}\to\ket{-}$}}
+
+\newglossaryentry{evolution}{name={évolution (opérateur d')}, sort={evolution},
+  description={Opérateur unitaire $U(t,t_0)=\ee^{-\ii\Hop(t-t_0)/\hbar}$ qui fait passer de $\ket{\Psi(t_0)}$ à $\ket{\Psi(t)}$}}
+
+% ---- Entrées du chapitre « Applications et algorithmes quantiques » ----
+
+\newglossaryentry{oracle}{name={oracle}, sort={oracle},
+  description={Porte $U_f\ket{x}\ket{y}=\ket{x}\ket{y\oplus f(x)}$ qui encode une fonction $f$ ; le coût d'un algorithme se compte en appels à l'oracle}}
+
+\newglossaryentry{grover}{name={Grover (algorithme de)}, sort={Grover},
+  description={Recherche d'un élément parmi $N$ avec environ $\frac\pi4\sqrt N$ appels à l'oracle : gain quadratique, optimal}}
+
+\newglossaryentry{shor}{name={Shor (algorithme de)}, sort={Shor},
+  description={Factorisation et logarithme discret en temps polynomial en $\log N$ ; casse RSA et les courbes elliptiques}}
+
+\newglossaryentry{qft}{name={transformée de Fourier quantique}, sort={transformee de Fourier},
+  description={$\ket{x}\mapsto\frac{1}{\sqrt M}\sum_y\ee^{2\ii\pi xy/M}\ket{y}$ ; transforme une période en pics ; brique de l'algorithme de Shor}}
+
+\newglossaryentry{trotter}{name={Trotter (formule de)}, sort={Trotter},
+  description={$\ee^{-\ii(A+B)t}\approx(\ee^{-\ii At/N}\ee^{-\ii Bt/N})^N$, d'erreur au plus $\frac{t^2}{2N}\|[A,B]\|$ ; sert à simuler un hamiltonien}}
+
+\newglossaryentry{rsa}{name={RSA}, sort={RSA},
+  description={Chiffrement asymétrique de clé publique $(n,e)$, $n=pq$ ; sa sécurité repose sur la difficulté de factoriser $n$}}
+
+\newglossaryentry{tls}{name={TLS}, sort={TLS},
+  description={Protocole qui sécurise HTTPS : échange de clés, signature du serveur et chiffrement symétrique (version 1.3 : RFC~8446)}}
+
+\newglossaryentry{hndl}{name={stocker maintenant, déchiffrer plus tard}, sort={stocker maintenant},
+  description={Attaque (\emph{Harvest Now, Decrypt Later}) qui enregistre des échanges chiffrés aujourd'hui pour les lire quand un ordinateur quantique existera ; exposé si $X+Y>Z$ (inégalité de Mosca)}}
+
+\newglossaryentry{pqc}{name={cryptographie post-quantique}, sort={cryptographie post-quantique},
+  description={Algorithmes exécutés sur machines classiques, sans attaque quantique efficace connue (réseaux, hachage, codes) ; normes NIST FIPS~203 à~205}}
+
+\newglossaryentry{qkd}{name={distribution quantique de clé}, sort={distribution quantique},
+  description={Protocoles (BB84, E91) qui échangent une clé avec des qubits : une écoute perturbe les états et se détecte (QBER de $25\,\%$ pour l'attaque intercepter-renvoyer)}}
+
+\newglossaryentry{decoherence}{name={décohérence}, sort={decoherence},
+  description={Perte de cohérence d'un qubit par couplage à l'environnement : l'état devient mixte ; caractérisée par les temps $T_1$ et $T_2$}}
+
+\newglossaryentry{cryostat}{name={cryostat (réfrigérateur à dilution)}, sort={cryostat},
+  description={Appareil à $^3$He/$^4$He qui refroidit les qubits supraconducteurs vers $10\ \mathrm{mK}$, où l'excitation thermique à $5\ \mathrm{GHz}$ est négligeable}}
+
+\newglossaryentry{qec}{name={correction d'erreurs quantique}, sort={correction d'erreurs},
+  description={Codage d'un qubit logique dans plusieurs qubits physiques intriqués ; la mesure des syndromes localise l'erreur sans lire l'information}}
+
+\newglossaryentry{seuil}{name={seuil (de la correction d'erreurs)}, sort={seuil},
+  description={Taux d'erreur physique sous lequel l'erreur logique décroît quand on agrandit le code ($\approx1\,\%$ pour le code de surface)}}
+
+\newglossaryentry{qubitlogique}{name={qubit logique}, sort={qubit logique},
+  description={Qubit protégé par un code, réalisé par plusieurs qubits physiques (environ $2d^2-1$ dans le code de surface de distance $d$)}}
+
+\newglossaryentry{coherent}{name={état cohérent}, sort={etat coherent},
+  description={État $\ket{\alpha}$ d'un oscillateur, vecteur propre de l'opérateur d'annihilation : $a\ket\alpha=\alpha\ket\alpha$ ; nombre moyen de photons $|\alpha|^2$}}
+
+\newglossaryentry{qubitchat}{name={qubit de chat}, sort={qubit de chat},
+  description={Qubit codé dans deux états cohérents $\ket{\pm\alpha}$ d'un oscillateur ; les inversions de bit sont supprimées en $\ee^{-2|\alpha|^2}$, il ne reste que les inversions de phase}}
